@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register Equipment - IEMS</title>
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+</head>
+
+<body>
+        <main class="container">
+        <h1>Register ICT Equipment</h1>
+
+        <p class="subtitle">
+            Add a new ICT asset to the inventory.
+        </p>
+
+        <!-- Display validation errors and flash messages. -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+
+            {% if messages %}
+
+                {% for category, message in messages %}
+
+                    <div class="alert {{ category }}">
+                        {{ message }}
+                    </div>
+
+                {% endfor %}
+
+            {% endif %}
+
+        {% endwith %}
+
+
+        <form method="POST">
+
+            <!-- Flask-WTF CSRF security token. -->
+            {{ form.hidden_tag() }}
+
+
+            <div class="form-group">
+                {{ form.asset_tag.label }}
+                {{ form.asset_tag(class="form-control") }}
+
+                {% for error in form.asset_tag.errors %}
+                    <small class="error">
+                        {{ error }}
+                    </small>
+                {% endfor %}
+            </div>
+
+
+            <div class="form-group">
+                {{ form.serial_number.label }}
+                {{ form.serial_number(class="form-control") }}
+
+                {% for error in form.serial_number.errors %}
+                    <small class="error">
+                        {{ error }}
+                    </small>
+                {% endfor %}
+            </div>
+
+
+            <div class="form-group">
+                {{ form.manufacturer.label }}
+                {{ form.manufacturer(class="form-control") }}
+            </div>
+
+
+            <div class="form-group">
+                {{ form.model.label }}
+                {{ form.model(class="form-control") }}
+            </div>
+
+
+            <div class="form-group">
+                {{ form.category_id.label }}
+                {{ form.category_id(class="form-control") }}
+            </div>
+
+
+            <div class="form-group">
+                {{ form.location_id.label }}
+                {{ form.location_id(class="form-control") }}
+            </div>
+
+
+            <div class="form-group">
+                {{ form.description.label }}
+                {{ form.description(
+                    class="form-control",
+                    rows="4"
+                ) }}
+            </div>
+
+
+            <div class="form-group">
+                {{ form.status.label }}
+                {{ form.status(class="form-control") }}
+            </div>
+
+
+            <div class="form-group">
+                {{ form.condition.label }}
+                {{ form.condition(class="form-control") }}
+            </div>
+
+
+            <div class="form-group">
+                {{ form.purchase_date.label }}
+                {{ form.purchase_date(class="form-control") }}
+            </div>
+
+
+            <div class="form-group">
+                {{ form.purchase_price.label }}
+                {{ form.purchase_price(class="form-control") }}
+            </div>
+
+
+            <div class="form-group">
+                {{ form.warranty_expiry.label }}
+                {{ form.warranty_expiry(class="form-control") }}
+            </div>
+
+
+            <!-- Submit the form. -->
+            {{ form.submit(class="btn") }}
+
+        </form>
+
+    </main>
+
+</body>
+
+</html>

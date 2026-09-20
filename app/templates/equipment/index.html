@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>ICT Equipment - IEMS</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+
+</head>
+
+<body>
+
+    <main class="container">
+
+        <h1>ICT Equipment Inventory</h1>
+
+        <a
+            href="{{ url_for('equipment.create') }}"
+            class="btn"
+        >
+            + Register Equipment
+        </a>
+
+
+        {% if equipment %}
+
+            <table>
+
+                <thead>
+
+                    <tr>
+                        <th>Asset Tag</th>
+                        <th>Category</th>
+                        <th>Manufacturer</th>
+                        <th>Model</th>
+                        <th>Serial Number</th>
+                        <th>Status</th>
+                        <th>Condition</th>
+                        <th>Location</th>
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for item in equipment %}
+
+                        <tr>
+
+                            <td>
+                                {{ item.asset_tag }}
+                            </td>
+
+                            <td>
+                                {{ item.category.name }}
+                            </td>
+
+                            <td>
+                                {{ item.manufacturer }}
+                            </td>
+
+                            <td>
+                                {{ item.model }}
+                            </td>
+
+                            <td>
+                                {{ item.serial_number or "—" }}
+                            </td>
+
+                            <td>
+                                {{ item.status }}
+                            </td>
+
+                            <td>
+                                {{ item.condition }}
+                            </td>
+
+                            <td>
+
+                                {% if item.location %}
+
+                                    {{ item.location.name }}
+
+                                {% else %}
+
+                                    —
+
+                                {% endif %}
+
+                            </td>
+
+                        </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        {% else %}
+
+            <p>
+                No ICT equipment has been registered yet.
+            </p>
+
+        {% endif %}
+
+    </main>
+
+</body>
+
+</html>

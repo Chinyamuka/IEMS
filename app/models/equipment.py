@@ -27,7 +27,7 @@ class Equipment(db.Model):
     purchase_price = db.Column(db.Numeric(12, 2),nullable=True)
     warranty_expiry = db.Column(db.Date,nullable=True)
     created_at = db.Column(db.DateTime,nullable=False,server_default=db.func.now())
-    updated_at = db.Column( db.DateTime,nullable=False,erver_default=db.func.now(),onupdate=db.func.now())
+    updated_at = db.Column( db.DateTime,nullable=False,default=db.func.now(),onupdate=db.func.now())
     category = db.relationship( "Category",backref=db.backref("equipment",lazy=True))
     location = db.relationship("Location",backref=db.backref("equipment",lazy=True))
     def __repr__(self):

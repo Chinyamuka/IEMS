@@ -1,0 +1,165 @@
+
+* {
+    box-sizing: border-box;
+}
+body {
+    margin: 0;
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    background: #f4f6f8;
+
+    color: #222;
+}
+
+
+/* ---------------------------------------------------------
+   MAIN CONTAINER
+   --------------------------------------------------------- */
+
+.container {
+    width: 90%;
+
+    max-width: 1100px;
+
+    margin: 40px auto;
+
+    background: white;
+
+    padding: 30px;
+
+    border-radius: 8px;
+}
+
+
+/* ---------------------------------------------------------
+   HEADINGS
+   --------------------------------------------------------- */
+
+h1 {
+    margin-top: 0;
+}
+
+
+/* ---------------------------------------------------------
+   FORM
+   --------------------------------------------------------- */
+
+.form-group {
+    margin-bottom: 18px;
+}
+
+
+.form-control {
+    width: 100%;
+
+    padding: 10px;
+
+    margin-top: 6px;
+
+    border: 1px solid #ccc;
+
+    border-radius: 5px;
+
+    font-size: 15px;
+}
+
+
+textarea.form-control {
+    resize: vertical;
+}
+
+
+/* ---------------------------------------------------------
+   BUTTON
+   --------------------------------------------------------- */
+
+.btn {
+    display: inline-block;
+
+    padding: 10px 16px;
+
+    border: none;
+
+    border-radius: 5px;
+
+    background: #222;
+
+    color: white;
+
+    text-decoration: none;
+
+    cursor: pointer;
+}
+
+
+.btn:hover {
+    opacity: 0.85;
+}
+
+
+/* ---------------------------------------------------------
+   ERRORS
+   --------------------------------------------------------- */
+
+.error {
+    display: block;
+
+    margin-top: 5px;
+
+    color: #c00;
+}
+
+
+/* ---------------------------------------------------------
+   ALERTS
+   --------------------------------------------------------- */
+
+.alert {
+    padding: 12px;
+
+    margin-bottom: 20px;
+
+    border-radius: 5px;
+}
+
+
+.alert.success {
+    background: #e8f5e9;
+
+    color: #1b5e20;
+}
+.alert.error {
+    background: #ffebee;
+    color: #b71c1c;
+}
+
+
+/* ---------------------------------------------------------
+   TABLE
+   --------------------------------------------------------- */
+
+table {
+    width: 100%;
+
+    margin-top: 25px;
+
+    border-collapse: collapse;
+}
+
+
+th,
+td {
+    padding: 12px;
+
+    border-bottom: 1px solid #ddd;
+
+    text-align: left;
+}
+
+
+th {
+    background: #f1f1f1;
+}
