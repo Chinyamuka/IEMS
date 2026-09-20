@@ -1,0 +1,104 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Delete {{ equipment.asset_tag }} - IEMS
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for(
+            'static',
+            filename='css/style.css'
+        ) }}"
+    >
+
+</head>
+
+<body>
+
+    <main class="container">
+
+        <div class="delete-box">
+
+            <!-- Page heading -->
+            <h1>
+                Delete Equipment
+            </h1>
+
+
+            <!-- Warning message -->
+            <p>
+                Are you sure you want to permanently delete
+                this equipment record?
+            </p>
+
+
+            <!-- Equipment being deleted -->
+            <div class="delete-equipment">
+
+                <strong>
+                    {{ equipment.asset_tag }}
+                </strong>
+
+                <span>
+                    {{ equipment.manufacturer }}
+                    {{ equipment.model }}
+                </span>
+
+            </div>
+
+
+            <!-- Permanent deletion warning -->
+            <p class="warning">
+                ⚠ This action cannot be undone.
+            </p>
+
+
+            <!-- Confirmation form -->
+            <form method="POST">
+
+                <div class="actions">
+
+                    <!-- Cancel -->
+                    <a
+                        href="{{ url_for(
+                            'equipment.detail',
+                            equipment_id=equipment.id
+                        ) }}"
+                        class="btn secondary"
+                    >
+                        Cancel
+                    </a>
+
+
+                    <!-- Confirm deletion -->
+                    <button
+                        type="submit"
+                        class="btn danger"
+                    >
+                        Delete Equipment
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </main>
+
+</body>
+
+</html>
+```
