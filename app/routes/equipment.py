@@ -387,3 +387,58 @@ def delete(equipment_id):
         "equipment/delete.html",
         equipment=equipment,
     )
+@equipment_bp.route("/")
+def index():
+    """
+    Display the equipment inventory.
+
+    Supports searching by:
+    - Asset tag
+    - Serial number
+    - Manufacturer
+    - Model
+    """
+
+    # Get the search text from the URL.
+    #
+    # Example:
+    # /equipment/?q=dell
+    search = request.args.get("q", "").strip()
+
+    # Start with the base Equipment query.
+    query = Equipment.query
+
+    # ---------------------------------------------------------
+    # SEARCH
+    # ---------------------------------------------------------
+
+    if search:
+
+        search_term = f"%{search}%"
+
+        query = query.filter(
+            db.or_(
+                Equipment.asset_tag.ilike(search_term),
+                Equipment.serial_number.ilike(search_term),
+                Equipment.manufacturer.ilike(search_term),
+                Equipment.model.ilike(search_term),
+            )
+        )
+
+    # ---------------------------------------------------------
+    # ORDER RESULTS
+    # ---------------------------------------------------------
+
+    equipment = query.order_by(
+        Equipment.id.desc()
+    ).all()
+
+    # ---------------------------------------------------------
+    # DISPLAY PAGE
+    # ---------------------------------------------------------
+
+    return render_template(
+        "equipment/index.html",
+        equipment=equipment,
+        search=search,
+    )
