@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <!-- Make the page responsive. -->
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        {{ equipment.asset_tag }} - IEMS
+    </title>
+
+    <!-- Load application CSS. -->
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+
+</head>
+
+
+<body>
+
+    <main class="container">
+
+        <!-- -------------------------------------------------
+             PAGE HEADER
+             ------------------------------------------------- -->
+
+        <div class="page-header">
+
+            <div>
+
+                <h1>
+                    {{ equipment.asset_tag }}
+                </h1>
+
+                <p class="subtitle">
+                    ICT Equipment Details
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- -------------------------------------------------
+             EQUIPMENT INFORMATION
+             ------------------------------------------------- -->
+
+        <div class="details-grid">
+
+
+            <!-- Asset Tag -->
+
+            <div class="detail-item">
+
+                <span class="detail-label">
+                    Asset Tag
+                </span>
+
+                <span class="detail-value">
+                    {{ equipment.asset_tag }}
+                </span>
+
+            </div>
+
+
+            <!-- Serial Number -->
+
+            <div class="detail-item">
+
+                <span class="detail-label">
+                    Serial Number
+                </span>
+
+                <span class="detail-value">
+
+                    {{ equipment.serial_number or "—" }}
+
+                </span>
+
+            </div>
+
+
+            <!-- Manufacturer -->
+
+            <div class="detail-item">
+
+                <span class="detail-label">
+                    Manufacturer
+                </span>
+
+                <span class="detail-value">
+                    {{ equipment.manufacturer }}
+                </span>
+
+            </div>
+
+
+            <!-- Model -->
+
+            <div class="detail-item">
+
+                <span class="detail-label">
+                    Model
+                </span>
+
+                <span class="detail-value">
+                    {{ equipment.model }}
+                </span>
+
+            </div>
+
+
+            <!-- Category -->
+
+            <div class="detail-item">
+
+                <span class="detail-label">
+                    Category
+                </span>
+
+                <span class="detail-value">
+
+                    {% if equipment.category %}
+
+                        {{ equipment.category.name }}
+
+                    {% else %}
+
+                        —
+
+                    {% endif %}
+
+                </span>
+
+            </div>
+
+
+            <!-- Location -->
+
+            <div class="detail-item">
+
+                <span class="detail-label">
+                    Location
+                </span>
+
+                <span class="detail-value">
+
+                    {% if equipment.location %}
+
+                        {{ equipment.location.name }}
+
+                    {% else %}
+
+                        —
+
+                    {% endif %}
+
+                </span>
+
+            </div>
+
+
+            <!-- Status -->
+
+            <div class="detail-item">
+
+                <span class="detail-label">
+                    Status
+                </span>
+
+                <span class="detail-value">
+                    {{ equipment.status }}
+                </span>
+
+            </div>
+
+
+            <!-- Condition -->
+
+            <div class="detail-item">
+
+                <span class="detail-label">
+                    Condition
+                </span>
+
+                <span class="detail-value">
+                    {{ equipment.condition }}
+                </span>
+
+            </div>
+
+
+            <!-- Purchase Date -->
+
+            <div class="detail-item">
+
+                <span class="detail-label">
+                    Purchase Date
+                </span>
+
+                <span class="detail-value">
+
+                    {% if equipment.purchase_date %}
+
+                        {{ equipment.purchase_date.strftime("%d %B %Y") }}
+
+                    {% else %}
+
+                        —
+
+                    {% endif %}
+
+                </span>
+
+            </div>
+
+
+            <!-- Purchase Price -->
+
+            <div class="detail-item">
+
+                <span class="detail-label">
+                    Purchase Price
+                </span>
+
+                <span class="detail-value">
+
+                    {% if equipment.purchase_price %}
+
+                        {{ "%.2f"|format(equipment.purchase_price) }}
+
+                    {% else %}
+
+                        —
+
+                    {% endif %}
+
+                </span>
+
+            </div>
+
+
+            <!-- Warranty -->
+
+            <div class="detail-item">
+
+                <span class="detail-label">
+                    Warranty Expiry
+                </span>
+
+                <span class="detail-value">
+
+                    {% if equipment.warranty_expiry %}
+
+                        {{ equipment.warranty_expiry.strftime("%d %B %Y") }}
+
+                    {% else %}
+
+                        —
+
+                    {% endif %}
+
+                </span>
+
+            </div>
+
+
+            <!-- Created -->
+
+            <div class="detail-item">
+
+                <span class="detail-label">
+                    Record Created
+                </span>
+
+                <span class="detail-value">
+
+                    {{ equipment.created_at.strftime("%d %B %Y %H:%M") }}
+
+                </span>
+
+            </div>
+
+
+        </div>
+
+
+        <!-- -------------------------------------------------
+             DESCRIPTION
+             ------------------------------------------------- -->
+
+        <section class="description-section">
+
+            <h2>Description</h2>
+
+            <p>
+
+                {{ equipment.description or
+                   "No description provided." }}
+
+            </p>
+
+        </section>
+
+
+        <!-- -------------------------------------------------
+             ACTIONS
+             ------------------------------------------------- -->
+
+        <div class="actions">
+
+            <a
+                href="{{ url_for('equipment.index') }}"
+                class="btn secondary"
+            >
+                ← Back to Equipment
+            </a>
+
+
+            <a
+                href="#"
+                class="btn"
+            >
+                Edit Equipment
+            </a>
+
+        </div>
+
+
+    </main>
+
+</body>
+
+</html>

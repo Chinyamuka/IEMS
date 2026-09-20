@@ -59,9 +59,13 @@
 
                         <tr>
 
-                            <td>
-                                {{ item.asset_tag }}
-                            </td>
+                         <td>
+
+    <a href="{{ url_for('equipment.detail',equipment_id=item.id) }}">
+        {{ item.asset_tag }}
+    </a>
+
+</td>
 
                             <td>
                                 {{ item.category.name }}
