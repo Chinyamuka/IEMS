@@ -1,0 +1,169 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+    <title>IEMS Dashboard</title>
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+</head>
+<body>
+    <main class="container">
+        <!-- =================================================
+             PAGE HEADER
+             ================================================= -->
+        <div class="page-header">
+
+            <div>
+
+                <h1>
+                    IEMS Dashboard
+                </h1>
+
+                <p class="subtitle">
+                    ICT Equipment Inventory Management System
+                </p>
+
+            </div>
+
+
+            <a
+                href="{{ url_for('equipment.index') }}"
+                class="btn"
+            >
+                View Equipment
+            </a>
+
+        </div>
+
+
+        <!-- =================================================
+             SUMMARY CARDS
+             ================================================= -->
+
+        <div class="dashboard-grid">
+
+
+            <!-- Total equipment -->
+
+            <div class="dashboard-card">
+
+                <span class="dashboard-card-label">
+                    Total Equipment
+                </span>
+
+                <strong class="dashboard-card-number">
+                    {{ total_equipment }}
+                </strong>
+
+            </div>
+
+
+            <!-- In stock -->
+
+            <div class="dashboard-card">
+
+                <span class="dashboard-card-label">
+                    In Stock
+                </span>
+
+                <strong class="dashboard-card-number">
+                    {{ in_stock }}
+                </strong>
+
+            </div>
+
+
+            <!-- Assigned -->
+
+            <div class="dashboard-card">
+
+                <span class="dashboard-card-label">
+                    Assigned
+                </span>
+
+                <strong class="dashboard-card-number">
+                    {{ assigned }}
+                </strong>
+
+            </div>
+
+
+            <!-- Under repair -->
+
+            <div class="dashboard-card">
+
+                <span class="dashboard-card-label">
+                    Under Repair
+                </span>
+
+                <strong class="dashboard-card-number">
+                    {{ under_repair }}
+                </strong>
+
+            </div>
+
+
+            <!-- Retired -->
+
+            <div class="dashboard-card">
+
+                <span class="dashboard-card-label">
+                    Retired
+                </span>
+
+                <strong class="dashboard-card-number">
+                    {{ retired }}
+                </strong>
+
+            </div>
+
+
+        </div>
+
+
+        <!-- =================================================
+             QUICK ACTIONS
+             ================================================= -->
+
+        <section class="dashboard-section">
+
+            <h2>
+                Quick Actions
+            </h2>
+
+
+            <div class="quick-actions">
+
+                <a
+                    href="{{ url_for('equipment.create') }}"
+                    class="btn"
+                >
+                    + Add Equipment
+                </a>
+
+
+                <a
+                    href="{{ url_for('equipment.index') }}"
+                    class="btn secondary"
+                >
+                    View Inventory
+                </a>
+
+            </div>
+
+        </section>
+
+
+    </main>
+
+</body>
+
+</html>
+
