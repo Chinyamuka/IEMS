@@ -1,4 +1,4 @@
-```html
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -49,42 +49,144 @@
         </div>
 
 
+
+<!-- =====================================================
+     SEARCH AND FILTERS
+     ===================================================== -->
+
+<div class="equipment-search">
+
+    <form
+        method="GET"
+        action="{{ url_for('equipment.index') }}"
+    >
+
         <!-- Search -->
-        <div class="equipment-search">
+        <input
+            type="text"
+            name="q"
+            value="{{ search }}"
+            placeholder="Search asset tag, serial number, manufacturer or model..."
+        >
 
-            <form
-                method="GET"
-                action="{{ url_for('equipment.index') }}"
-            >
 
-                <input
-                    type="text"
-                    name="q"
-                    value="{{ search }}"
-                    placeholder="Search asset tag, serial number, manufacturer or model..."
+        <!-- Category -->
+        <select name="category">
+
+            <option value="">
+                All Categories
+            </option>
+
+            {% for category in categories %}
+
+                <option
+                    value="{{ category.id }}"
+                    {% if selected_category == category.id %}
+                        selected
+                    {% endif %}
                 >
+                    {{ category.name }}
+                </option>
 
-                <button
-                    type="submit"
-                    class="btn"
-                >
-                    Search
-                </button>
+            {% endfor %}
 
-                {% if search %}
+        </select>
 
-                    <a
-                        href="{{ url_for('equipment.index') }}"
-                        class="btn secondary"
-                    >
-                        Clear
-                    </a>
 
+        <!-- Status -->
+        <select name="status">
+
+            <option value="">
+                All Statuses
+            </option>
+
+            <option
+                value="In Stock"
+                {% if selected_status == "In Stock" %}
+                    selected
                 {% endif %}
+            >
+                In Stock
+            </option>
 
-            </form>
+            <option
+                value="Assigned"
+                {% if selected_status == "Assigned" %}
+                    selected
+                {% endif %}
+            >
+                Assigned
+            </option>
 
-        </div>
+            <option
+                value="Under Repair"
+                {% if selected_status == "Under Repair" %}
+                    selected
+                {% endif %}
+            >
+                Under Repair
+            </option>
+
+            <option
+                value="Retired"
+                {% if selected_status == "Retired" %}
+                    selected
+                {% endif %}
+            >
+                Retired
+            </option>
+
+        </select>
+
+
+        <!-- Location -->
+        <select name="location">
+
+            <option value="">
+                All Locations
+            </option>
+
+            {% for location in locations %}
+
+                <option
+                    value="{{ location.id }}"
+                    {% if selected_location == location.id %}
+                        selected
+                    {% endif %}
+                >
+                    {{ location.name }}
+                </option>
+
+            {% endfor %}
+
+        </select>
+
+
+        <!-- Search -->
+        <button
+            type="submit"
+            class="btn"
+        >
+            Search
+        </button>
+
+
+        <!-- Clear -->
+        {% if search or selected_category or selected_status or selected_location %}
+
+            <a
+                href="{{ url_for('equipment.index') }}"
+                class="btn secondary"
+            >
+                Clear
+            </a>
+
+        {% endif %}
+
+    </form>
+
+</div>
+
 
 
         <!-- Search result information -->
@@ -102,6 +204,17 @@
             </p>
 
         {% endif %}
+
+
+        <div class="equipment-count">
+
+    Showing
+    <strong>{{ pagination.items|length }}</strong>
+    of
+    <strong>{{ pagination.total }}</strong>
+    equipment records
+
+</div>
 
 
         <!-- Equipment table -->
@@ -205,9 +318,107 @@
 
         </div>
 
+<!-- =====================================================
+     PAGINATION
+     ===================================================== -->
+
+{% if pagination.pages > 1 %}
+
+    <div class="pagination">
+
+        <!-- Previous button -->
+        {% if pagination.has_prev %}
+
+            <a
+                href="{{ url_for(
+                    'equipment.index',
+                    page=pagination.prev_num,
+                    q=search,
+                    category=selected_category,
+                    status=selected_status,
+                    location=selected_location
+                ) }}"
+                class="pagination-link"
+            >
+                ← Previous
+            </a>
+
+        {% endif %}
+
+
+        <!-- Page numbers -->
+        {% for page_number in pagination.iter_pages() %}
+
+            {% if page_number %}
+
+                {% if page_number == pagination.page %}
+
+                    <!-- Current page -->
+                    <span class="pagination-link active">
+                        {{ page_number }}
+                    </span>
+
+                {% else %}
+
+                    <!-- Other page -->
+                    <a
+                        href="{{ url_for(
+                            'equipment.index',
+                            page=page_number,
+                            q=search,
+                            category=selected_category,
+                            status=selected_status,
+                            location=selected_location
+                        ) }}"
+                        class="pagination-link"
+                    >
+                        {{ page_number }}
+                    </a>
+
+                {% endif %}
+
+            {% else %}
+
+                <!-- Ellipsis when there are many pages -->
+                <span class="pagination-dots">
+                    ...
+                </span>
+
+            {% endif %}
+
+        {% endfor %}
+
+
+        <!-- Next button -->
+        {% if pagination.has_next %}
+
+            <a
+                href="{{ url_for(
+                    'equipment.index',
+                    page=pagination.next_num,
+                    q=search,
+                    category=selected_category,
+                    status=selected_status,
+                    location=selected_location
+                ) }}"
+                class="pagination-link"
+            >
+                Next →
+            </a>
+
+        {% endif %}
+
+    </div>
+
+{% endif %}
+
+
+
+
+
     </main>
 
 </body>
 
 </html>
-```
+

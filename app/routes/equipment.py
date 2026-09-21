@@ -370,35 +370,142 @@ def delete(equipment_id):
         "equipment/delete.html",
         equipment=equipment,
     )
+
 @equipment_bp.route("/")
 def index():
     """
-    Display the equipment inventory.
+    Display the ICT equipment inventory.
 
-    Supports searching by:
-    - Asset tag
-    - Serial number
-    - Manufacturer
-    - Model
+    Features:
+    - Search by asset tag
+    - Search by serial number
+    - Search by manufacturer
+    - Search by model
+    - Filter by category
+    - Filter by status
+    - Filter by location
+    - Pagination
     """
 
-    # Get the search text from the URL.
+    # =========================================================
+    # READ SEARCH AND FILTER VALUES FROM THE URL
+    # =========================================================
+
+    # Search text.
     #
     # Example:
     # /equipment/?q=dell
-    search = request.args.get("q", "").strip()
+    search = request.args.get(
+        "q",
+        ""
+    ).strip()
 
-    # Start with the base Equipment query.
+
+    # Category filter.
+    #
+    # type=int automatically converts the value
+    # from a string to an integer.
+    #
+    # Example:
+    # /equipment/?category=2
+    category_id = request.args.get(
+        "category",
+        type=int
+    )
+
+
+    # Status filter.
+    #
+    # Example:
+    # /equipment/?status=In%20Stock
+    status = request.args.get(
+        "status",
+        ""
+    ).strip()
+
+
+    # Location filter.
+    #
+    # Example:
+    # /equipment/?location=1
+    location_id = request.args.get(
+        "location",
+        type=int
+    )
+
+
+    # =========================================================
+    # READ PAGE NUMBER
+    # =========================================================
+
+    # Get the requested page from the URL.
+    #
+    # Example:
+    # /equipment/?page=2
+    #
+    # If no page is supplied, page 1 is used.
+    page = request.args.get(
+        "page",
+        1,
+        type=int
+    )
+
+
+    # =========================================================
+    # LOAD CATEGORY OPTIONS
+    # =========================================================
+
+    # Import the Category model.
+    from app.models.category import Category
+
+    # Get all categories for the filter dropdown.
+    categories = Category.query.order_by(
+        Category.name.asc()
+    ).all()
+
+
+    # =========================================================
+    # LOAD LOCATION OPTIONS
+    # =========================================================
+
+    # Import the Location model.
+    from app.models.location import Location
+
+    # Get all locations for the filter dropdown.
+    locations = Location.query.order_by(
+        Location.name.asc()
+    ).all()
+
+
+    # =========================================================
+    # START THE EQUIPMENT QUERY
+    # =========================================================
+
+    # Start with all equipment.
+    #
+    # We will progressively add filters to this query.
     query = Equipment.query
 
-    # ---------------------------------------------------------
-    # SEARCH
-    # ---------------------------------------------------------
+
+    # =========================================================
+    # SEARCH FILTER
+    # =========================================================
 
     if search:
 
+        # Add % around the search value.
+        #
+        # Example:
+        # Dell
+        #
+        # becomes:
+        # %Dell%
+        #
+        # This means "contains Dell".
         search_term = f"%{search}%"
 
+
+        # Search across multiple equipment fields.
         query = query.filter(
             db.or_(
                 Equipment.asset_tag.ilike(search_term),
@@ -408,20 +515,76 @@ def index():
             )
         )
 
-    # ---------------------------------------------------------
-    # ORDER RESULTS
-    # ---------------------------------------------------------
 
-    equipment = query.order_by(
+    # =========================================================
+    # CATEGORY FILTER
+    # =========================================================
+
+    if category_id:
+
+        query = query.filter(
+            Equipment.category_id == category_id
+        )
+
+
+    # =========================================================
+    # STATUS FILTER
+    # =========================================================
+
+    if status:
+
+        query = query.filter(
+            Equipment.status == status
+        )
+
+
+    # =========================================================
+    # LOCATION FILTER
+    # =========================================================
+
+    if location_id:
+
+        query = query.filter(
+            Equipment.location_id == location_id
+        )
+
+
+    # =========================================================
+    # PAGINATION
+    # =========================================================
+
+    # Number of records displayed on each page.
+    per_page = 10
+    pagination = query.order_by(
         Equipment.id.desc()
-    ).all()
+    ).paginate(
+        page=page,
+        per_page=per_page
+    )
 
-    # ---------------------------------------------------------
-    # DISPLAY PAGE
-    # ---------------------------------------------------------
+
+    # =========================================================
+    # GET RECORDS FOR CURRENT PAGE
+    # =========================================================
+
+    # pagination.items contains only the equipment
+    # records belonging to the current page.
+    equipment = pagination.items
+
+
+    # =========================================================
+    # SEND DATA TO THE TEMPLATE
+    # =========================================================
 
     return render_template(
         "equipment/index.html",
         equipment=equipment,
+        pagination=pagination,
         search=search,
+        categories=categories,
+        locations=locations,
+        selected_category=category_id,
+        selected_status=status,
+        selected_location=location_id,
     )
+
