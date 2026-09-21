@@ -128,23 +128,6 @@ def create():
         form=form,
     )
 
-
-@equipment_bp.route("/")
-def index():
-    """
-    Display all registered ICT equipment.
-    """
-
-    # Retrieve equipment from PostgreSQL.
-    equipment = Equipment.query.order_by(
-        Equipment.id.desc()
-    ).all()
-
-    return render_template(
-        "equipment/index.html",
-        equipment=equipment,
-    )
-
 # DETAILS OF THE EQUIPMENT
 @equipment_bp.route("/<int:equipment_id>")
 def detail(equipment_id):

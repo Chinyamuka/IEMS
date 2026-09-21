@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 
@@ -10,7 +11,7 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>ICT Equipment - IEMS</title>
+    <title>IEMS - Equipment</title>
 
     <link
         rel="stylesheet"
@@ -23,31 +24,107 @@
 
     <main class="container">
 
-        <h1>ICT Equipment Inventory</h1>
+        <!-- Page heading -->
+        <div class="page-header">
 
-        <a
-            href="{{ url_for('equipment.create') }}"
-            class="btn"
-        >
-            + Register Equipment
-        </a>
+            <div>
+
+                <h1>
+                    ICT Equipment
+                </h1>
+
+                <p class="subtitle">
+                    Equipment Inventory
+                </p>
+
+            </div>
+
+            <a
+                href="{{ url_for('equipment.create') }}"
+                class="btn"
+            >
+                + Add Equipment
+            </a>
+
+        </div>
 
 
-        {% if equipment %}
+        <!-- Search -->
+        <div class="equipment-search">
+
+            <form
+                method="GET"
+                action="{{ url_for('equipment.index') }}"
+            >
+
+                <input
+                    type="text"
+                    name="q"
+                    value="{{ search }}"
+                    placeholder="Search asset tag, serial number, manufacturer or model..."
+                >
+
+                <button
+                    type="submit"
+                    class="btn"
+                >
+                    Search
+                </button>
+
+                {% if search %}
+
+                    <a
+                        href="{{ url_for('equipment.index') }}"
+                        class="btn secondary"
+                    >
+                        Clear
+                    </a>
+
+                {% endif %}
+
+            </form>
+
+        </div>
+
+
+        <!-- Search result information -->
+        {% if search %}
+
+            <p>
+
+                Search results for:
+                <strong>{{ search }}</strong>
+
+                —
+                {{ equipment|length }}
+                result(s)
+
+            </p>
+
+        {% endif %}
+
+
+        <!-- Equipment table -->
+        <div class="table-container">
 
             <table>
 
                 <thead>
 
                     <tr>
+
                         <th>Asset Tag</th>
-                        <th>Category</th>
-                        <th>Manufacturer</th>
-                        <th>Model</th>
+
                         <th>Serial Number</th>
+
+                        <th>Manufacturer</th>
+
+                        <th>Model</th>
+
                         <th>Status</th>
-                        <th>Condition</th>
-                        <th>Location</th>
+
+                        <th>Action</th>
+
                     </tr>
 
                 </thead>
@@ -59,16 +136,12 @@
 
                         <tr>
 
-                         <td>
-
-    <a href="{{ url_for('equipment.detail',equipment_id=item.id) }}">
-        {{ item.asset_tag }}
-    </a>
-
-</td>
+                            <td>
+                                {{ item.asset_tag }}
+                            </td>
 
                             <td>
-                                {{ item.category.name }}
+                                {{ item.serial_number }}
                             </td>
 
                             <td>
@@ -80,26 +153,43 @@
                             </td>
 
                             <td>
-                                {{ item.serial_number or "—" }}
-                            </td>
-
-                            <td>
                                 {{ item.status }}
                             </td>
 
                             <td>
-                                {{ item.condition }}
+
+                                <a
+                                    href="{{ url_for(
+                                        'equipment.detail',
+                                        equipment_id=item.id
+                                    ) }}"
+                                    class="btn secondary"
+                                >
+                                    View
+                                </a>
+
                             </td>
 
-                            <td>
+                        </tr>
 
-                                {% if item.location %}
+                    {% else %}
 
-                                    {{ item.location.name }}
+                        <tr>
+
+                            <td
+                                colspan="6"
+                                style="text-align: center;"
+                            >
+
+                                {% if search %}
+
+                                    No equipment found
+                                    matching
+                                    "{{ search }}".
 
                                 {% else %}
 
-                                    —
+                                    No equipment records found.
 
                                 {% endif %}
 
@@ -113,16 +203,11 @@
 
             </table>
 
-        {% else %}
-
-            <p>
-                No ICT equipment has been registered yet.
-            </p>
-
-        {% endif %}
+        </div>
 
     </main>
 
 </body>
 
 </html>
+```
