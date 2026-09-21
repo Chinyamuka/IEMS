@@ -749,3 +749,57 @@ th {
 .category-stat-row strong {
     font-size: 16px;
 }
+
+/* ========================================================= STATUS STATISTICS ========================================================= */
+.status-statistics {
+    display: flex;
+    flex-direction: column;
+    gap: 10px; margin-top: 20px;
+}
+.status-stat-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+}
+.status-stat-row strong {
+    font-size: 16px;
+}
+/* =========================================================
+   STATUS STATISTICS
+   ========================================================= */
+
+.status-statistics {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 10px;
+
+    margin-top: 20px;
+}
+
+
+.status-stat-row {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    padding: 14px 16px;
+
+    background: #f9fafb;
+
+    border: 1px solid #e5e7eb;
+
+    border-radius: 8px;
+}
+
+
+.status-stat-row strong {
+    font-size: 16px;
+}

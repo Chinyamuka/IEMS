@@ -187,6 +187,14 @@
     {% endif %}
 
 </section>
+
+        <!-- ================================================= EQUIPMENT BY STATUS ================================================= -->
+        <section class="dashboard-section">
+            <h2> Equipment by Status </h2>
+            {% if status_statistics %} <div class="status-statistics"> {% for status_name, equipment_count in status_statistics %} <div class="status-stat-row"> <span> {{ status_name }} </span> <strong> {{ equipment_count }} </strong> </div> {% endfor %} </div> {% else %} <p> No status data available. </p> {% endif %}
+        </section>
+
+
     </main>
 </body>
 </html>
