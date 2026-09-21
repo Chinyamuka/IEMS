@@ -160,10 +160,34 @@
 
         </section>
 
+<!-- =================================================
+     EQUIPMENT BY CATEGORY
+     ================================================= -->
 
+<section class="dashboard-section">
+    <h2>Equipment by Category</h2>
+    {% if category_statistics %}
+        <div class="category-statistics">
+            {% for category_name, equipment_count in category_statistics %}
+                <div class="category-stat-row">
+                    <span>
+                        {{ category_name }}
+                    </span>
+                    <strong>
+                        {{ equipment_count }}
+                    </strong>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>
+            No category data available.
+        </p>
+
+    {% endif %}
+
+</section>
     </main>
-
 </body>
-
 </html>
 
