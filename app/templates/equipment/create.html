@@ -1,142 +1,552 @@
-<!DOCTYPE html>
-<html lang="en">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register Equipment - IEMS</title>
-    <link
-        rel="stylesheet"
-        href="{{ url_for('static', filename='css/style.css') }}"
-    >
-</head>
+{% extends "base.html" %}
 
-<body>
-        <main class="container">
-        <h1>Register ICT Equipment</h1>
+{% block title %}
+    Add Equipment — IEMS
+{% endblock %}
+
+
+{% block content %}
+
+<!-- =====================================================
+     PAGE HEADER
+     ===================================================== -->
+
+<div class="page-header">
+
+    <div>
+
+        <h1>
+            Add Equipment
+        </h1>
 
         <p class="subtitle">
-            Add a new ICT asset to the inventory.
+            Register a new ICT asset in the inventory.
         </p>
 
-        <!-- Display validation errors and flash messages. -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
+    </div>
 
-            {% if messages %}
 
-                {% for category, message in messages %}
+    <a
+        href="{{ url_for('equipment.index') }}"
+        class="btn btn-secondary"
+    >
+        ← Back to Equipment
+    </a>
 
-                    <div class="alert {{ category }}">
-                        {{ message }}
+</div>
+
+
+<!-- =====================================================
+     FORM CARD
+     ===================================================== -->
+
+<section class="form-card">
+
+    <div class="form-card-header">
+
+        <h2>
+            Equipment Information
+        </h2>
+
+        <p>
+            Enter the details of the ICT equipment below.
+        </p>
+
+    </div>
+
+
+    <!-- =================================================
+         FORM
+         ================================================= -->
+
+    <form
+        method="POST"
+        action="{{ url_for('equipment.create') }}"
+        class="equipment-form"
+    >
+
+        {{ form.hidden_tag() }}
+
+
+        <!-- =============================================
+             IDENTIFICATION
+             ============================================= -->
+
+        <div class="form-section">
+
+            <div class="form-section-title">
+
+                <h3>
+                    Identification
+                </h3>
+
+                <p>
+                    Basic information used to identify the asset.
+                </p>
+
+            </div>
+
+
+            <div class="form-grid">
+
+                <!-- Asset Tag -->
+
+                <div class="form-group">
+
+                    {{ form.asset_tag.label }}
+
+                    {{ form.asset_tag(
+                        class="form-control",
+                        placeholder="e.g. ICT-00006"
+                    ) }}
+
+                    {% if form.asset_tag.errors %}
+
+                        <div class="form-errors">
+
+                            {% for error in form.asset_tag.errors %}
+
+                                <span>
+                                    {{ error }}
+                                </span>
+
+                            {% endfor %}
+
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+
+                <!-- Serial Number -->
+
+                <div class="form-group">
+
+                    {{ form.serial_number.label }}
+
+                    {{ form.serial_number(
+                        class="form-control",
+                        placeholder="Enter serial number"
+                    ) }}
+
+                    {% if form.serial_number.errors %}
+
+                        <div class="form-errors">
+
+                            {% for error in form.serial_number.errors %}
+
+                                <span>
+                                    {{ error }}
+                                </span>
+
+                            {% endfor %}
+
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =============================================
+             EQUIPMENT DETAILS
+             ============================================= -->
+
+        <div class="form-section">
+
+            <div class="form-section-title">
+
+                <h3>
+                    Equipment Details
+                </h3>
+
+                <p>
+                    Manufacturer, model and classification.
+                </p>
+
+            </div>
+
+
+            <div class="form-grid">
+
+                <!-- Manufacturer -->
+
+                <div class="form-group">
+
+                    {{ form.manufacturer.label }}
+
+                    {{ form.manufacturer(
+                        class="form-control",
+                        placeholder="e.g. Dell"
+                    ) }}
+
+                    {% if form.manufacturer.errors %}
+
+                        <div class="form-errors">
+
+                            {% for error in form.manufacturer.errors %}
+
+                                <span>
+                                    {{ error }}
+                                </span>
+
+                            {% endfor %}
+
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+
+                <!-- Model -->
+
+                <div class="form-group">
+
+                    {{ form.model.label }}
+
+                    {{ form.model(
+                        class="form-control",
+                        placeholder="e.g. Latitude 5450"
+                    ) }}
+
+                    {% if form.model.errors %}
+
+                        <div class="form-errors">
+
+                            {% for error in form.model.errors %}
+
+                                <span>
+                                    {{ error }}
+                                </span>
+
+                            {% endfor %}
+
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+
+                <!-- Category -->
+
+                <div class="form-group">
+
+                    {{ form.category_id.label }}
+
+                    {{ form.category_id(
+                        class="form-control"
+                    ) }}
+
+                    {% if form.category_id.errors %}
+
+                        <div class="form-errors">
+
+                            {% for error in form.category_id.errors %}
+
+                                <span>
+                                    {{ error }}
+                                </span>
+
+                            {% endfor %}
+
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+
+                <!-- Location -->
+
+                <div class="form-group">
+
+                    {{ form.location_id.label }}
+
+                    {{ form.location_id(
+                        class="form-control"
+                    ) }}
+
+                    {% if form.location_id.errors %}
+
+                        <div class="form-errors">
+
+                            {% for error in form.location_id.errors %}
+
+                                <span>
+                                    {{ error }}
+                                </span>
+
+                            {% endfor %}
+
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+
+            <!-- Description -->
+
+            <div class="form-group">
+
+                {{ form.description.label }}
+
+                {{ form.description(
+                    class="form-control form-textarea",
+                    rows="4",
+                    placeholder="Optional description of the equipment"
+                ) }}
+
+                {% if form.description.errors %}
+
+                    <div class="form-errors">
+
+                        {% for error in form.description.errors %}
+
+                            <span>
+                                {{ error }}
+                            </span>
+
+                        {% endfor %}
+
                     </div>
 
-                {% endfor %}
+                {% endif %}
 
-            {% endif %}
+            </div>
 
-        {% endwith %}
-
-
-        <form method="POST">
-
-            <!-- Flask-WTF CSRF security token. -->
-            {{ form.hidden_tag() }}
+        </div>
 
 
-            <div class="form-group">
-                {{ form.asset_tag.label }}
-                {{ form.asset_tag(class="form-control") }}
+        <!-- =============================================
+             STATUS
+             ============================================= -->
 
-                {% for error in form.asset_tag.errors %}
-                    <small class="error">
-                        {{ error }}
-                    </small>
-                {% endfor %}
+        <div class="form-section">
+
+            <div class="form-section-title">
+
+                <h3>
+                    Inventory Status
+                </h3>
+
+                <p>
+                    Current operational and physical condition.
+                </p>
+
             </div>
 
 
-            <div class="form-group">
-                {{ form.serial_number.label }}
-                {{ form.serial_number(class="form-control") }}
+            <div class="form-grid">
 
-                {% for error in form.serial_number.errors %}
-                    <small class="error">
-                        {{ error }}
-                    </small>
-                {% endfor %}
+                <!-- Status -->
+
+                <div class="form-group">
+
+                    {{ form.status.label }}
+
+                    {{ form.status(
+                        class="form-control"
+                    ) }}
+
+                    {% if form.status.errors %}
+
+                        <div class="form-errors">
+
+                            {% for error in form.status.errors %}
+
+                                <span>
+                                    {{ error }}
+                                </span>
+
+                            {% endfor %}
+
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+
+                <!-- Condition -->
+
+                <div class="form-group">
+
+                    {{ form.condition.label }}
+
+                    {{ form.condition(
+                        class="form-control"
+                    ) }}
+
+                    {% if form.condition.errors %}
+
+                        <div class="form-errors">
+
+                            {% for error in form.condition.errors %}
+
+                                <span>
+                                    {{ error }}
+                                </span>
+
+                            {% endfor %}
+
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =============================================
+             PURCHASE INFORMATION
+             ============================================= -->
+
+        <div class="form-section">
+
+            <div class="form-section-title">
+
+                <h3>
+                    Purchase & Warranty
+                </h3>
+
+                <p>
+                    Financial and warranty information for the asset.
+                </p>
+
             </div>
 
 
-            <div class="form-group">
-                {{ form.manufacturer.label }}
-                {{ form.manufacturer(class="form-control") }}
+            <div class="form-grid">
+
+                <!-- Purchase Date -->
+
+                <div class="form-group">
+
+                    {{ form.purchase_date.label }}
+
+                    {{ form.purchase_date(
+                        class="form-control"
+                    ) }}
+
+                    {% if form.purchase_date.errors %}
+
+                        <div class="form-errors">
+
+                            {% for error in form.purchase_date.errors %}
+
+                                <span>
+                                    {{ error }}
+                                </span>
+
+                            {% endfor %}
+
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+
+                <!-- Purchase Price -->
+
+                <div class="form-group">
+
+                    {{ form.purchase_price.label }}
+
+                    {{ form.purchase_price(
+                        class="form-control",
+                        placeholder="0.00"
+                    ) }}
+
+                    {% if form.purchase_price.errors %}
+
+                        <div class="form-errors">
+
+                            {% for error in form.purchase_price.errors %}
+
+                                <span>
+                                    {{ error }}
+                                </span>
+
+                            {% endfor %}
+
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+
+                <!-- Warranty -->
+
+                <div class="form-group">
+
+                    {{ form.warranty_expiry.label }}
+
+                    {{ form.warranty_expiry(
+                        class="form-control"
+                    ) }}
+
+                    {% if form.warranty_expiry.errors %}
+
+                        <div class="form-errors">
+
+                            {% for error in form.warranty_expiry.errors %}
+
+                                <span>
+                                    {{ error }}
+                                </span>
+
+                            {% endfor %}
+
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
             </div>
 
-
-            <div class="form-group">
-                {{ form.model.label }}
-                {{ form.model(class="form-control") }}
-            </div>
+        </div>
 
 
-            <div class="form-group">
-                {{ form.category_id.label }}
-                {{ form.category_id(class="form-control") }}
-            </div>
+        <!-- =============================================
+             FORM ACTIONS
+             ============================================= -->
+
+        <div class="form-actions">
+
+            <a
+                href="{{ url_for('equipment.index') }}"
+                class="btn btn-secondary"
+            >
+                Cancel
+            </a>
 
 
-            <div class="form-group">
-                {{ form.location_id.label }}
-                {{ form.location_id(class="form-control") }}
-            </div>
+            {{ form.submit(
+                class="btn"
+            ) }}
 
+        </div>
 
-            <div class="form-group">
-                {{ form.description.label }}
-                {{ form.description(
-                    class="form-control",
-                    rows="4"
-                ) }}
-            </div>
+    </form>
 
+</section>
 
-            <div class="form-group">
-                {{ form.status.label }}
-                {{ form.status(class="form-control") }}
-            </div>
+{% endblock %}
 
-
-            <div class="form-group">
-                {{ form.condition.label }}
-                {{ form.condition(class="form-control") }}
-            </div>
-
-
-            <div class="form-group">
-                {{ form.purchase_date.label }}
-                {{ form.purchase_date(class="form-control") }}
-            </div>
-
-
-            <div class="form-group">
-                {{ form.purchase_price.label }}
-                {{ form.purchase_price(class="form-control") }}
-            </div>
-
-
-            <div class="form-group">
-                {{ form.warranty_expiry.label }}
-                {{ form.warranty_expiry(class="form-control") }}
-            </div>
-
-
-            <!-- Submit the form. -->
-            {{ form.submit(class="btn") }}
-
-        </form>
-
-    </main>
-
-</body>
-
-</html>

@@ -23,7 +23,7 @@ def index():
                             .order_by(
                             db.func.count(Equipment.id).desc()).all())
 
-
+    recent_equipment = (Equipment.query.order_by(Equipment.created_at.desc()).limit(5).all())
     return render_template(
         "dashboard/index.html",
         total_equipment=total_equipment,
@@ -33,5 +33,6 @@ def index():
         retired=retired,
         category_statistics=category_statistics,
         status_statistics=status_statistics,
+        recent_equipment=recent_equipment,
     )
 

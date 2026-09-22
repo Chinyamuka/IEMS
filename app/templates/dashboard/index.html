@@ -1,185 +1,165 @@
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
+{% extends "base.html" %}
+
+
+{% block title %}
+    Dashboard — IEMS
+{% endblock %}
+
+
+{% block content %}
+
+
+<!-- =====================================================
+     PAGE HEADER
+     ===================================================== -->
+
+<div class="page-header">
+
+    <div>
+
+        <h1>
+            IEMS Dashboard
+        </h1>
+
+        <p class="subtitle">
+            ICT Equipment Inventory Management System
+        </p>
+
+    </div>
+
+
+    <a
+        href="{{ url_for('equipment.create') }}"
+        class="btn"
     >
-    <title>IEMS Dashboard</title>
-    <link
-        rel="stylesheet"
-        href="{{ url_for('static', filename='css/style.css') }}"
-    >
-</head>
-<body>
-    <main class="container">
-        <!-- =================================================
-             PAGE HEADER
-             ================================================= -->
-        <div class="page-header">
+        + Add Equipment
+    </a>
 
-            <div>
-
-                <h1>
-                    IEMS Dashboard
-                </h1>
-
-                <p class="subtitle">
-                    ICT Equipment Inventory Management System
-                </p>
-
-            </div>
+</div>
 
 
-            <a
-                href="{{ url_for('equipment.index') }}"
-                class="btn"
-            >
-                View Equipment
-            </a>
+<!-- =====================================================
+     SUMMARY CARDS
+     ===================================================== -->
 
-        </div>
+<div class="dashboard-grid">
 
 
-        <!-- =================================================
-             SUMMARY CARDS
-             ================================================= -->
+    <!-- Total equipment -->
 
-        <div class="dashboard-grid">
+    <div class="dashboard-card">
 
+        <span class="dashboard-card-label">
+            Total Equipment
+        </span>
 
-            <!-- Total equipment -->
+        <strong class="dashboard-card-number">
+            {{ total_equipment }}
+        </strong>
 
-            <div class="dashboard-card">
-
-                <span class="dashboard-card-label">
-                    Total Equipment
-                </span>
-
-                <strong class="dashboard-card-number">
-                    {{ total_equipment }}
-                </strong>
-
-            </div>
+    </div>
 
 
-            <!-- In stock -->
+    <!-- In stock -->
 
-            <div class="dashboard-card">
+    <div class="dashboard-card">
 
-                <span class="dashboard-card-label">
-                    In Stock
-                </span>
+        <span class="dashboard-card-label">
+            In Stock
+        </span>
 
-                <strong class="dashboard-card-number">
-                    {{ in_stock }}
-                </strong>
+        <strong class="dashboard-card-number">
+            {{ in_stock }}
+        </strong>
 
-            </div>
-
-
-            <!-- Assigned -->
-
-            <div class="dashboard-card">
-
-                <span class="dashboard-card-label">
-                    Assigned
-                </span>
-
-                <strong class="dashboard-card-number">
-                    {{ assigned }}
-                </strong>
-
-            </div>
+    </div>
 
 
-            <!-- Under repair -->
+    <!-- Assigned -->
 
-            <div class="dashboard-card">
+    <div class="dashboard-card">
 
-                <span class="dashboard-card-label">
-                    Under Repair
-                </span>
+        <span class="dashboard-card-label">
+            Assigned
+        </span>
 
-                <strong class="dashboard-card-number">
-                    {{ under_repair }}
-                </strong>
+        <strong class="dashboard-card-number">
+            {{ assigned }}
+        </strong>
 
-            </div>
-
-
-            <!-- Retired -->
-
-            <div class="dashboard-card">
-
-                <span class="dashboard-card-label">
-                    Retired
-                </span>
-
-                <strong class="dashboard-card-number">
-                    {{ retired }}
-                </strong>
-
-            </div>
+    </div>
 
 
-        </div>
+    <!-- Under repair -->
+
+    <div class="dashboard-card">
+
+        <span class="dashboard-card-label">
+            Under Repair
+        </span>
+
+        <strong class="dashboard-card-number">
+            {{ under_repair }}
+        </strong>
+
+    </div>
 
 
-        <!-- =================================================
-             QUICK ACTIONS
-             ================================================= -->
+    <!-- Retired -->
 
-        <section class="dashboard-section">
+    <div class="dashboard-card">
 
-            <h2>
-                Quick Actions
-            </h2>
+        <span class="dashboard-card-label">
+            Retired
+        </span>
 
+        <strong class="dashboard-card-number">
+            {{ retired }}
+        </strong>
 
-            <div class="quick-actions">
-
-                <a
-                    href="{{ url_for('equipment.create') }}"
-                    class="btn"
-                >
-                    + Add Equipment
-                </a>
+    </div>
 
 
-                <a
-                    href="{{ url_for('equipment.index') }}"
-                    class="btn secondary"
-                >
-                    View Inventory
-                </a>
+</div>
 
-            </div>
 
-        </section>
-
-<!-- =================================================
+<!-- =====================================================
      EQUIPMENT BY CATEGORY
-     ================================================= -->
+     ===================================================== -->
 
 <section class="dashboard-section">
-    <h2>Equipment by Category</h2>
+
+    <h2>
+        Equipment by Category
+    </h2>
+
+
     {% if category_statistics %}
+
         <div class="category-statistics">
-            {% for category_name, equipment_count in category_statistics %}
+
+            {% for category_name, equipment_count
+               in category_statistics %}
+
                 <div class="category-stat-row">
+
                     <span>
                         {{ category_name }}
                     </span>
+
                     <strong>
                         {{ equipment_count }}
                     </strong>
+
                 </div>
+
             {% endfor %}
+
         </div>
+
     {% else %}
+
         <p>
             No category data available.
         </p>
@@ -188,14 +168,172 @@
 
 </section>
 
-        <!-- ================================================= EQUIPMENT BY STATUS ================================================= -->
-        <section class="dashboard-section">
-            <h2> Equipment by Status </h2>
-            {% if status_statistics %} <div class="status-statistics"> {% for status_name, equipment_count in status_statistics %} <div class="status-stat-row"> <span> {{ status_name }} </span> <strong> {{ equipment_count }} </strong> </div> {% endfor %} </div> {% else %} <p> No status data available. </p> {% endif %}
-        </section>
+
+<!-- =====================================================
+     EQUIPMENT BY STATUS
+     ===================================================== -->
+
+<section class="dashboard-section">
+
+    <h2>
+        Equipment by Status
+    </h2>
 
 
-    </main>
-</body>
-</html>
+    {% if status_statistics %}
+
+        <div class="status-statistics">
+
+            {% for status_name, equipment_count
+               in status_statistics %}
+
+                <div class="status-stat-row">
+
+                    <span>
+                        {{ status_name }}
+                    </span>
+
+                    <strong>
+                        {{ equipment_count }}
+                    </strong>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    {% endif %}
+
+</section>
+
+
+<!-- =====================================================
+     RECENT EQUIPMENT
+     ===================================================== -->
+
+<section class="dashboard-section">
+
+
+    <div class="section-header">
+
+        <div>
+
+            <h2>
+                Recent Equipment
+            </h2>
+
+            <p class="section-description">
+                The latest equipment added to the inventory.
+            </p>
+
+        </div>
+
+
+        <a
+            href="{{ url_for('equipment.index') }}"
+            class="section-link"
+        >
+            View All
+        </a>
+
+    </div>
+
+
+    {% if recent_equipment %}
+
+        <div class="recent-equipment-table">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>Asset Tag</th>
+
+                        <th>Manufacturer</th>
+
+                        <th>Model</th>
+
+                        <th>Category</th>
+
+                        <th>Status</th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for item in recent_equipment %}
+
+                        <tr>
+
+                            <td>
+
+                                <a
+                                    href="{{ url_for(
+                                        'equipment.detail',
+                                        equipment_id=item.id
+                                    ) }}"
+                                >
+                                    {{ item.asset_tag }}
+                                </a>
+
+                            </td>
+
+
+                            <td>
+                                {{ item.manufacturer }}
+                            </td>
+
+
+                            <td>
+                                {{ item.model }}
+                            </td>
+
+
+                            <td>
+
+                                {% if item.category %}
+
+                                    {{ item.category.name }}
+
+                                {% else %}
+
+                                    —
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <td>
+                                {{ item.status }}
+                            </td>
+
+                        </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    {% else %}
+
+        <p>
+            No equipment has been added yet.
+        </p>
+
+    {% endif %}
+
+</section>
+
+
+{% endblock %}
 

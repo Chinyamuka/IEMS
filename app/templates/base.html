@@ -1,0 +1,126 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        {% block title %}
+            IEMS
+        {% endblock %}
+    </title>
+
+    <!-- Main IEMS stylesheet -->
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+
+</head>
+
+
+<body>
+
+    <!-- ==================================================
+         APPLICATION HEADER
+         ================================================== -->
+
+    <header class="app-header">
+
+        <div class="app-header-inner">
+
+            <!-- IEMS brand -->
+            <a
+                href="{{ url_for('dashboard.index') }}"
+                class="app-brand"
+            >
+
+                <span class="app-brand-name">
+                    IEMS
+                </span>
+
+                <span class="app-brand-subtitle">
+                    ICT Equipment Management
+                </span>
+
+            </a>
+
+
+            <!-- Main navigation -->
+            <nav class="main-navigation">
+
+                <a
+                    href="{{ url_for('dashboard.index') }}"
+                    class="nav-link"
+                >
+                    Dashboard
+                </a>
+
+
+                <a
+                    href="{{ url_for('equipment.index') }}"
+                    class="nav-link"
+                >
+                    Equipment
+                </a>
+
+
+                <a
+                    href="{{ url_for('equipment.create') }}"
+                    class="nav-link"
+                >
+                    Add Equipment
+                </a>
+
+            </nav>
+
+        </div>
+
+    </header>
+
+
+    <!-- ==================================================
+         MAIN APPLICATION CONTENT
+         ================================================== -->
+
+    <main class="app-main">
+
+        <div class="app-container">
+
+            <!-- Each child template places its content here -->
+            {% block content %}
+            {% endblock %}
+
+        </div>
+
+    </main>
+
+
+    <!-- ==================================================
+         FOOTER
+         ================================================== -->
+
+    <footer class="app-footer">
+
+        <div class="app-container">
+
+            <p>
+                IEMS &copy; 2026 —
+                ICT Equipment Inventory Management System
+            </p>
+
+        </div>
+
+    </footer>
+
+</body>
+
+</html>
+

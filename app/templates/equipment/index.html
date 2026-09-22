@@ -1,182 +1,79 @@
 
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
 
-<head>
 
-    <meta charset="UTF-8">
+{% block title %}
+    Equipment — IEMS
+{% endblock %}
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
+
+{% block content %}
+
+<!-- =====================================================
+     PAGE HEADER
+     ===================================================== -->
+
+<div class="page-header">
+
+    <div>
+
+        <h1>
+            Equipment
+        </h1>
+
+        <p class="subtitle">
+            Manage all ICT equipment in the inventory.
+        </p>
+
+    </div>
+
+
+    <!-- Add equipment button -->
+
+    <a
+        href="{{ url_for('equipment.create') }}"
+        class="btn"
     >
+        + Add Equipment
+    </a>
 
-    <title>IEMS - Equipment</title>
-
-    <link
-        rel="stylesheet"
-        href="{{ url_for('static', filename='css/style.css') }}"
-    >
-
-</head>
-
-<body>
-
-    <main class="container">
-
-        <!-- Page heading -->
-        <div class="page-header">
-
-            <div>
-
-                <h1>
-                    ICT Equipment
-                </h1>
-
-                <p class="subtitle">
-                    Equipment Inventory
-                </p>
-
-            </div>
-
-            <a
-                href="{{ url_for('equipment.create') }}"
-                class="btn"
-            >
-                + Add Equipment
-            </a>
-
-        </div>
-
+</div>
 
 
 <!-- =====================================================
-     SEARCH AND FILTERS
+     SEARCH AREA
      ===================================================== -->
 
-<div class="equipment-search">
+<section class="equipment-toolbar">
 
     <form
         method="GET"
         action="{{ url_for('equipment.index') }}"
+        class="search-form"
     >
 
-        <!-- Search -->
         <input
-            type="text"
+            type="search"
             name="q"
-            value="{{ search }}"
-            placeholder="Search asset tag, serial number, manufacturer or model..."
+            value="{{ request.args.get('q', '') }}"
+            placeholder="Search asset tag, serial number, manufacturer..."
+            class="search-input"
         >
 
 
-        <!-- Category -->
-        <select name="category">
-
-            <option value="">
-                All Categories
-            </option>
-
-            {% for category in categories %}
-
-                <option
-                    value="{{ category.id }}"
-                    {% if selected_category == category.id %}
-                        selected
-                    {% endif %}
-                >
-                    {{ category.name }}
-                </option>
-
-            {% endfor %}
-
-        </select>
-
-
-        <!-- Status -->
-        <select name="status">
-
-            <option value="">
-                All Statuses
-            </option>
-
-            <option
-                value="In Stock"
-                {% if selected_status == "In Stock" %}
-                    selected
-                {% endif %}
-            >
-                In Stock
-            </option>
-
-            <option
-                value="Assigned"
-                {% if selected_status == "Assigned" %}
-                    selected
-                {% endif %}
-            >
-                Assigned
-            </option>
-
-            <option
-                value="Under Repair"
-                {% if selected_status == "Under Repair" %}
-                    selected
-                {% endif %}
-            >
-                Under Repair
-            </option>
-
-            <option
-                value="Retired"
-                {% if selected_status == "Retired" %}
-                    selected
-                {% endif %}
-            >
-                Retired
-            </option>
-
-        </select>
-
-
-        <!-- Location -->
-        <select name="location">
-
-            <option value="">
-                All Locations
-            </option>
-
-            {% for location in locations %}
-
-                <option
-                    value="{{ location.id }}"
-                    {% if selected_location == location.id %}
-                        selected
-                    {% endif %}
-                >
-                    {{ location.name }}
-                </option>
-
-            {% endfor %}
-
-        </select>
-
-
-        <!-- Search -->
         <button
             type="submit"
-            class="btn"
+            class="btn search-button"
         >
             Search
         </button>
 
 
-        <!-- Clear -->
-        {% if search or selected_category or selected_status or selected_location %}
+        {% if request.args.get('q') %}
 
             <a
                 href="{{ url_for('equipment.index') }}"
-                class="btn secondary"
+                class="btn btn-secondary"
             >
                 Clear
             </a>
@@ -185,40 +82,49 @@
 
     </form>
 
-</div>
+</section>
 
 
+<!-- =====================================================
+     EQUIPMENT TABLE
+     ===================================================== -->
 
-        <!-- Search result information -->
-        {% if search %}
+<section class="dashboard-section">
 
-            <p>
+    <div class="section-header">
 
-                Search results for:
-                <strong>{{ search }}</strong>
+        <div>
 
-                —
-                {{ equipment|length }}
-                result(s)
+            <h2>
+                Equipment Inventory
+            </h2>
 
-            </p>
+            {% if pagination %}
 
-        {% endif %}
+                <p class="section-description">
+
+                    Showing
+                    {{ pagination.first }}
+                    –
+                    {{ pagination.last }}
+
+                    of
+                    {{ pagination.total }}
+
+                    equipment records.
+
+                </p>
+
+            {% endif %}
+
+        </div>
+
+    </div>
 
 
-        <div class="equipment-count">
+    {% if equipment %}
 
-    Showing
-    <strong>{{ pagination.items|length }}</strong>
-    of
-    <strong>{{ pagination.total }}</strong>
-    equipment records
-
-</div>
-
-
-        <!-- Equipment table -->
-        <div class="table-container">
+        <div class="recent-equipment-table">
 
             <table>
 
@@ -226,17 +132,33 @@
 
                     <tr>
 
-                        <th>Asset Tag</th>
+                        <th>
+                            Asset Tag
+                        </th>
 
-                        <th>Serial Number</th>
+                        <th>
+                            Serial Number
+                        </th>
 
-                        <th>Manufacturer</th>
+                        <th>
+                            Manufacturer
+                        </th>
 
-                        <th>Model</th>
+                        <th>
+                            Model
+                        </th>
 
-                        <th>Status</th>
+                        <th>
+                            Category
+                        </th>
 
-                        <th>Action</th>
+                        <th>
+                            Status
+                        </th>
+
+                        <th>
+                            Actions
+                        </th>
 
                     </tr>
 
@@ -249,25 +171,7 @@
 
                         <tr>
 
-                            <td>
-                                {{ item.asset_tag }}
-                            </td>
-
-                            <td>
-                                {{ item.serial_number }}
-                            </td>
-
-                            <td>
-                                {{ item.manufacturer }}
-                            </td>
-
-                            <td>
-                                {{ item.model }}
-                            </td>
-
-                            <td>
-                                {{ item.status }}
-                            </td>
+                            <!-- Asset tag -->
 
                             <td>
 
@@ -276,35 +180,102 @@
                                         'equipment.detail',
                                         equipment_id=item.id
                                     ) }}"
-                                    class="btn secondary"
                                 >
-                                    View
+                                    {{ item.asset_tag }}
                                 </a>
 
                             </td>
 
-                        </tr>
 
-                    {% else %}
+                            <!-- Serial number -->
 
-                        <tr>
+                            <td>
 
-                            <td
-                                colspan="6"
-                                style="text-align: center;"
-                            >
+                                {% if item.serial_number %}
 
-                                {% if search %}
-
-                                    No equipment found
-                                    matching
-                                    "{{ search }}".
+                                    {{ item.serial_number }}
 
                                 {% else %}
 
-                                    No equipment records found.
+                                    —
 
                                 {% endif %}
+
+                            </td>
+
+
+                            <!-- Manufacturer -->
+
+                            <td>
+                                {{ item.manufacturer }}
+                            </td>
+
+
+                            <!-- Model -->
+
+                            <td>
+                                {{ item.model }}
+                            </td>
+
+
+                            <!-- Category -->
+
+                            <td>
+
+                                {% if item.category %}
+
+                                    {{ item.category.name }}
+
+                                {% else %}
+
+                                    —
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <!-- Status -->
+
+                            <td>
+
+                                <span
+                                    class="status-badge status-{{ item.status|lower|replace(' ', '-') }}"
+                                >
+                                    {{ item.status }}
+                                </span>
+
+                            </td>
+
+
+                            <!-- Actions -->
+
+                            <td>
+
+                                <div class="table-actions">
+
+                                    <a
+                                        href="{{ url_for(
+                                            'equipment.detail',
+                                            equipment_id=item.id
+                                        ) }}"
+                                        class="action-link"
+                                    >
+                                        View
+                                    </a>
+
+
+                                    <a
+                                        href="{{ url_for(
+                                            'equipment.edit',
+                                            equipment_id=item.id
+                                        ) }}"
+                                        class="action-link"
+                                    >
+                                        Edit
+                                    </a>
+
+                                </div>
 
                             </td>
 
@@ -318,57 +289,113 @@
 
         </div>
 
+
+    {% else %}
+
+        <!-- Empty state -->
+
+        <div class="empty-state">
+
+            <h3>
+                No equipment found
+            </h3>
+
+            {% if request.args.get('q') %}
+
+                <p>
+                    No equipment matched your search.
+                </p>
+
+
+                <a
+                    href="{{ url_for('equipment.index') }}"
+                    class="btn btn-secondary"
+                >
+                    Clear Search
+                </a>
+
+            {% else %}
+
+                <p>
+                    Your inventory does not contain any equipment yet.
+                </p>
+
+
+                <a
+                    href="{{ url_for('equipment.create') }}"
+                    class="btn"
+                >
+                    + Add Equipment
+                </a>
+
+            {% endif %}
+
+        </div>
+
+    {% endif %}
+
+</section>
+
+
 <!-- =====================================================
      PAGINATION
      ===================================================== -->
 
-{% if pagination.pages > 1 %}
+{% if pagination and pagination.pages > 1 %}
 
-    <div class="pagination">
+    <nav
+        class="pagination"
+        aria-label="Equipment pagination"
+    >
 
-        <!-- Previous button -->
+        <!-- Previous -->
+
         {% if pagination.has_prev %}
 
             <a
                 href="{{ url_for(
                     'equipment.index',
                     page=pagination.prev_num,
-                    q=search,
-                    category=selected_category,
-                    status=selected_status,
-                    location=selected_location
+                    q=request.args.get('q', '')
                 ) }}"
                 class="pagination-link"
             >
                 ← Previous
             </a>
 
+        {% else %}
+
+            <span class="pagination-link disabled">
+                ← Previous
+            </span>
+
         {% endif %}
 
 
         <!-- Page numbers -->
-        {% for page_number in pagination.iter_pages() %}
+
+        {% for page_number in pagination.iter_pages(
+            left_edge=1,
+            left_current=1,
+            right_current=1,
+            right_edge=1
+        ) %}
 
             {% if page_number %}
 
                 {% if page_number == pagination.page %}
 
-                    <!-- Current page -->
                     <span class="pagination-link active">
                         {{ page_number }}
                     </span>
 
                 {% else %}
 
-                    <!-- Other page -->
                     <a
                         href="{{ url_for(
                             'equipment.index',
                             page=page_number,
-                            q=search,
-                            category=selected_category,
-                            status=selected_status,
-                            location=selected_location
+                            q=request.args.get('q', '')
                         ) }}"
                         class="pagination-link"
                     >
@@ -379,9 +406,8 @@
 
             {% else %}
 
-                <!-- Ellipsis when there are many pages -->
-                <span class="pagination-dots">
-                    ...
+                <span class="pagination-ellipsis">
+                    …
                 </span>
 
             {% endif %}
@@ -389,36 +415,32 @@
         {% endfor %}
 
 
-        <!-- Next button -->
+        <!-- Next -->
+
         {% if pagination.has_next %}
 
             <a
                 href="{{ url_for(
                     'equipment.index',
                     page=pagination.next_num,
-                    q=search,
-                    category=selected_category,
-                    status=selected_status,
-                    location=selected_location
+                    q=request.args.get('q', '')
                 ) }}"
                 class="pagination-link"
             >
                 Next →
             </a>
 
+        {% else %}
+
+            <span class="pagination-link disabled">
+                Next →
+            </span>
+
         {% endif %}
 
-    </div>
+    </nav>
 
 {% endif %}
 
 
-
-
-
-    </main>
-
-</body>
-
-</html>
-
+{% endblock %}
