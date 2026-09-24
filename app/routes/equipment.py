@@ -19,6 +19,7 @@ from app.forms.equipment_form import EquipmentForm
 from app.models.category import Category
 from app.models.location import Location
 from app.models.equipment import Equipment
+from app.auth.decorators import login_required
 
 
 # Create the equipment Blueprint.
@@ -33,6 +34,7 @@ equipment_bp = Blueprint(
 
 
 @equipment_bp.route("/new", methods=["GET", "POST"])
+@login_required
 def create():
     """
     Display the equipment registration form and process
@@ -130,6 +132,7 @@ def create():
 
 # DETAILS OF THE EQUIPMENT
 @equipment_bp.route("/<int:equipment_id>")
+@login_required
 def detail(equipment_id):
     # If it does not exist:
     # Flask automatically returns a 404 page.
@@ -372,6 +375,7 @@ def delete(equipment_id):
     )
 
 @equipment_bp.route("/")
+@login_required
 def index():
     """
     Display the ICT equipment inventory.

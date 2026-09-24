@@ -3,9 +3,12 @@ from flask import Blueprint,render_template
 from app.extensions import db
 from app.models.equipment import Equipment
 from app.models.category import Category
+from app.auth.decorators import login_required
 
 dashboard_bp = Blueprint("dashboard", __name__, url_prefix="/dashboard")
+
 @dashboard_bp.route("/")
+@login_required
 def index():
     total_equipment = Equipment.query.count()
     in_stock = Equipment.query.filter_by( status="In Stock").count()

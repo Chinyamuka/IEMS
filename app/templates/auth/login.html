@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Sign In | IEMS</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/auth.css') }}"
+    >
+
+</head>
+
+
+<body class="auth-page">
+
+    <main class="auth-container">
+
+        <section class="auth-card">
+
+
+            <!-- =================================================
+                 LEFT BRAND PANEL
+                 ================================================= -->
+
+            <div class="auth-brand-panel">
+
+                <div class="auth-brand">
+
+                    <div class="auth-brand-mark">
+                        ICT
+                    </div>
+
+                    <div>
+                        <strong>IEMS</strong>
+
+                        <span>
+                            ICT Equipment Management
+                        </span>
+                    </div>
+
+                </div>
+
+
+                <div class="auth-brand-content">
+
+                    <span class="auth-eyebrow">
+                        INVENTORY MANAGEMENT
+                    </span>
+
+                    <h1>
+                        Manage your ICT
+                        equipment with clarity.
+                    </h1>
+
+                    <p>
+                        IEMS provides a centralized environment
+                        for managing ICT assets, assignments,
+                        employees, locations and equipment records.
+                    </p>
+
+                </div>
+
+
+                <div class="auth-brand-footer">
+
+                    <span>
+                        Secure inventory management
+                    </span>
+
+                    <span>
+                        IEMS
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 RIGHT LOGIN PANEL
+                 ================================================= -->
+
+            <div class="auth-form-panel">
+
+                <div class="auth-form-content">
+
+
+                    <div class="auth-heading">
+
+                        <span class="auth-eyebrow">
+                            ACCOUNT ACCESS
+                        </span>
+
+                        <h2>
+                            Sign in
+                        </h2>
+
+                        <p>
+                            Enter your employee credentials
+                            to continue.
+                        </p>
+
+                    </div>
+
+
+                    <!-- =================================================
+                         FLASH MESSAGES
+                         ================================================= -->
+
+                    {% with messages =
+                        get_flashed_messages(
+                            with_categories=true
+                        )
+                    %}
+
+                        {% if messages %}
+
+                            <div class="auth-alerts">
+
+                                {% for category, message in messages %}
+
+                                    <div
+                                        class="auth-alert auth-alert-{{ category }}"
+                                    >
+                                        {{ message }}
+                                    </div>
+
+                                {% endfor %}
+
+                            </div>
+
+                        {% endif %}
+
+                    {% endwith %}
+
+
+                    <!-- =================================================
+                         LOGIN FORM
+                         ================================================= -->
+
+                    <form
+                        method="POST"
+                        action="{{ url_for('auth.login') }}"
+                        class="auth-form"
+                    >
+
+
+                        <div class="auth-field">
+
+                            <label for="employee_number">
+                                Employee Number
+                            </label>
+
+                            <input
+                                type="text"
+                                id="employee_number"
+                                name="employee_number"
+                                placeholder="e.g. EMP20260001"
+                                autocomplete="username"
+                                value="{{ request.form.get('employee_number', '') }}"
+                                required
+                            >
+
+                        </div>
+
+
+                        <div class="auth-field">
+
+                            <div class="auth-label-row">
+
+                                <label for="password">
+                                    Password
+                                </label>
+
+                            </div>
+
+                            <input
+                                type="password"
+                                id="password"
+                                name="password"
+                                placeholder="Enter your password"
+                                autocomplete="current-password"
+                                required
+                            >
+
+                        </div>
+
+
+                        <button
+                            type="submit"
+                            class="auth-submit"
+                        >
+                            Sign In
+                        </button>
+
+
+                    </form>
+
+
+                    <div class="auth-security-note">
+
+                        <span>
+                            Access is restricted to authorized
+                            IEMS users.
+                        </span>
+
+                    </div>
+
+
+                </div>
+
+            </div>
+
+
+        </section>
+
+
+        <footer class="auth-footer">
+
+            <span>
+                IEMS © 2026
+            </span>
+
+            <span>
+                ICT Equipment Inventory Management System
+            </span>
+
+        </footer>
+
+    </main>
+
+</body>
+
+</html>

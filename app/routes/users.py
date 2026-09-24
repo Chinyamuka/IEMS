@@ -12,7 +12,7 @@ Handles:
 Authentication and RBAC will be connected to these routes
 as the security layer is implemented.
 """
-
+from app.auth.decorators import login_required
 from flask import (
     Blueprint,
     render_template,
@@ -40,6 +40,7 @@ users_bp = Blueprint(
 # =========================================================
 
 @users_bp.route("/")
+@login_required
 def index():
     """Display all employees with optional search."""
 
@@ -89,6 +90,7 @@ def index():
 # =========================================================
 
 @users_bp.route("/new", methods=["GET", "POST"])
+@login_required
 def create():
     """Create a new employee account."""
 
@@ -330,6 +332,7 @@ def create():
 # =========================================================
 
 @users_bp.route("/<int:user_id>")
+@login_required
 def detail(user_id):
     """Display employee details."""
 
@@ -349,6 +352,7 @@ def detail(user_id):
 # =========================================================
 
 @users_bp.route("/<int:user_id>/edit", methods=["GET", "POST"])
+@login_required
 def edit(user_id):
     """Edit an existing employee."""
 
@@ -508,6 +512,7 @@ def edit(user_id):
     "/<int:user_id>/deactivate",
     methods=["POST"]
 )
+@login_required
 def deactivate(user_id):
     """
     Deactivate an employee.
@@ -546,6 +551,7 @@ def deactivate(user_id):
     "/<int:user_id>/activate",
     methods=["POST"]
 )
+@login_required
 def activate(user_id):
     """Reactivate an employee."""
 
