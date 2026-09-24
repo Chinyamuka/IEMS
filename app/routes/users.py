@@ -7,9 +7,10 @@ Handles:
 - Employee details
 - Employee editing
 - Employee deactivation
+- Employee reactivation
 
-Authentication and RBAC checks will be added when the
-security layer is implemented.
+Authentication and RBAC will be connected to these routes
+as the security layer is implemented.
 """
 
 from flask import (
@@ -20,10 +21,8 @@ from flask import (
     flash,
     request,
 )
-
 from app.extensions import db
 from app.models import User, Department
-
 
 # =========================================================
 # BLUEPRINT
@@ -42,15 +41,7 @@ users_bp = Blueprint(
 
 @users_bp.route("/")
 def index():
-    """
-    Display all employees.
-
-    Supports a simple search by:
-    - employee number
-    - first name
-    - last name
-    - email
-    """
+    """Display all employees with optional search."""
 
     search = request.args.get(
         "search",
@@ -99,19 +90,17 @@ def index():
 
 @users_bp.route("/new", methods=["GET", "POST"])
 def create():
-    """
-    Create a new employee.
-
-    Password authentication will be connected later.
-    For now this creates the employee record required
-    by the equipment assignment system.
-    """
+    """Create a new employee account."""
 
     departments = Department.query.order_by(
         Department.name.asc()
     ).all()
 
     if request.method == "POST":
+
+        # -------------------------------------------------
+        # GET FORM DATA
+        # -------------------------------------------------
 
         employee_number = request.form.get(
             "employee_number",
@@ -143,10 +132,25 @@ def create():
         )
 
         # -------------------------------------------------
+        # GET PASSWORD DATA
+        # -------------------------------------------------
+
+        password = request.form.get(
+            "password",
+            ""
+        )
+
+        confirm_password = request.form.get(
+            "confirm_password",
+            ""
+        )
+
+        # -------------------------------------------------
         # BASIC VALIDATION
         # -------------------------------------------------
 
         if not employee_number:
+
             flash(
                 "Employee number is required.",
                 "danger"
@@ -158,6 +162,7 @@ def create():
             )
 
         if not first_name:
+
             flash(
                 "First name is required.",
                 "danger"
@@ -169,8 +174,49 @@ def create():
             )
 
         if not last_name:
+
             flash(
                 "Last name is required.",
+                "danger"
+            )
+
+            return render_template(
+                "users/create.html",
+                departments=departments
+            )
+
+        # -------------------------------------------------
+        # PASSWORD VALIDATION
+        # -------------------------------------------------
+
+        if not password:
+
+            flash(
+                "Password is required.",
+                "danger"
+            )
+
+            return render_template(
+                "users/create.html",
+                departments=departments
+            )
+
+        if len(password) < 8:
+
+            flash(
+                "Password must contain at least 8 characters.",
+                "danger"
+            )
+
+            return render_template(
+                "users/create.html",
+                departments=departments
+            )
+
+        if password != confirm_password:
+
+            flash(
+                "Passwords do not match.",
                 "danger"
             )
 
@@ -222,7 +268,7 @@ def create():
                 )
 
         # -------------------------------------------------
-        # CREATE EMPLOYEE
+        # CREATE USER
         # -------------------------------------------------
 
         user = User(
@@ -231,10 +277,28 @@ def create():
             last_name=last_name,
             email=email or None,
             phone=phone or None,
-            department_id=int(department_id)
-            if department_id else None,
+            department_id=(
+                int(department_id)
+                if department_id
+                else None
+            ),
             is_active=True
         )
+
+        # -------------------------------------------------
+        # HASH PASSWORD
+        # -------------------------------------------------
+
+        # IMPORTANT:
+        # Never store the plain-text password.
+        #
+        # set_password() uses Werkzeug's secure
+        # password hashing implementation.
+        user.set_password(password)
+
+        # -------------------------------------------------
+        # SAVE USER
+        # -------------------------------------------------
 
         db.session.add(user)
         db.session.commit()
@@ -251,6 +315,10 @@ def create():
             )
         )
 
+    # -----------------------------------------------------
+    # DISPLAY FORM
+    # -----------------------------------------------------
+
     return render_template(
         "users/create.html",
         departments=departments
@@ -263,9 +331,7 @@ def create():
 
 @users_bp.route("/<int:user_id>")
 def detail(user_id):
-    """
-    Display employee details.
-    """
+    """Display employee details."""
 
     user = db.get_or_404(
         User,
@@ -284,9 +350,7 @@ def detail(user_id):
 
 @users_bp.route("/<int:user_id>/edit", methods=["GET", "POST"])
 def edit(user_id):
-    """
-    Edit an existing employee.
-    """
+    """Edit an existing employee."""
 
     user = db.get_or_404(
         User,
@@ -298,6 +362,10 @@ def edit(user_id):
     ).all()
 
     if request.method == "POST":
+
+        # -------------------------------------------------
+        # GET FORM DATA
+        # -------------------------------------------------
 
         employee_number = request.form.get(
             "employee_number",
@@ -392,7 +460,7 @@ def edit(user_id):
                 )
 
         # -------------------------------------------------
-        # UPDATE RECORD
+        # UPDATE EMPLOYEE
         # -------------------------------------------------
 
         user.employee_number = employee_number
@@ -421,6 +489,10 @@ def edit(user_id):
             )
         )
 
+    # -----------------------------------------------------
+    # DISPLAY EDIT FORM
+    # -----------------------------------------------------
+
     return render_template(
         "users/edit.html",
         user=user,
@@ -432,7 +504,10 @@ def edit(user_id):
 # DEACTIVATE EMPLOYEE
 # =========================================================
 
-@users_bp.route("/<int:user_id>/deactivate", methods=["POST"])
+@users_bp.route(
+    "/<int:user_id>/deactivate",
+    methods=["POST"]
+)
 def deactivate(user_id):
     """
     Deactivate an employee.
@@ -467,11 +542,12 @@ def deactivate(user_id):
 # REACTIVATE EMPLOYEE
 # =========================================================
 
-@users_bp.route("/<int:user_id>/activate", methods=["POST"])
+@users_bp.route(
+    "/<int:user_id>/activate",
+    methods=["POST"]
+)
 def activate(user_id):
-    """
-    Reactivate an employee.
-    """
+    """Reactivate an employee."""
 
     user = db.get_or_404(
         User,
@@ -486,7 +562,6 @@ def activate(user_id):
         f"{user.full_name} has been reactivated.",
         "success"
     )
-
     return redirect(
         url_for(
             "users.detail",
