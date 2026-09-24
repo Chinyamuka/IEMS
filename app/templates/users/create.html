@@ -1,0 +1,268 @@
+{% extends "base.html" %}
+
+{% block title %}Add Employee - IEMS{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+
+    <div>
+
+        <div class="breadcrumb">
+
+            <a href="{{ url_for('dashboard.index') }}">
+                Dashboard
+            </a>
+
+            <span>/</span>
+
+            <a href="{{ url_for('users.index') }}">
+                Employees
+            </a>
+
+            <span>/</span>
+
+            <span>Add Employee</span>
+
+        </div>
+
+        <h1>Add Employee</h1>
+
+        <p>
+            Create an employee record for IEMS.
+        </p>
+
+    </div>
+
+</div>
+
+
+<div class="form-layout">
+
+    <div class="card form-card">
+
+        <div class="card-header">
+
+            <div>
+
+                <h2>Employee Information</h2>
+
+                <p>
+                    Enter the employee's organisational and contact details.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <form method="POST">
+
+            <div class="form-body">
+
+                <!-- Employee Number -->
+
+                <div class="form-group">
+
+                    <label for="employee_number">
+                        Employee Number
+                        <span class="required">*</span>
+                    </label>
+
+                    <input
+                        type="text"
+                        id="employee_number"
+                        name="employee_number"
+                        placeholder="e.g. EMP-0001"
+                        required
+                        value="{{ request.form.get('employee_number', '') }}"
+                    >
+
+                    <small>
+                        A unique identifier assigned to the employee.
+                    </small>
+
+                </div>
+
+
+                <!-- Name -->
+
+                <div class="form-grid">
+
+                    <div class="form-group">
+
+                        <label for="first_name">
+                            First Name
+                            <span class="required">*</span>
+                        </label>
+
+                        <input
+                            type="text"
+                            id="first_name"
+                            name="first_name"
+                            required
+                            value="{{ request.form.get('first_name', '') }}"
+                        >
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="last_name">
+                            Last Name
+                            <span class="required">*</span>
+                        </label>
+
+                        <input
+                            type="text"
+                            id="last_name"
+                            name="last_name"
+                            required
+                            value="{{ request.form.get('last_name', '') }}"
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <!-- Department -->
+
+                <div class="form-group">
+
+                    <label for="department_id">
+                        Department
+                    </label>
+
+                    <select
+                        id="department_id"
+                        name="department_id"
+                    >
+
+                        <option value="">
+                            Select department
+                        </option>
+
+                        {% for department in departments %}
+
+                        <option
+                            value="{{ department.id }}"
+                            {% if request.form.get('department_id') == department.id|string %}
+                                selected
+                            {% endif %}
+                        >
+                            {{ department.name }}
+                        </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <!-- Contact -->
+
+                <div class="form-grid">
+
+                    <div class="form-group">
+
+                        <label for="email">
+                            Email Address
+                        </label>
+
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            placeholder="employee@example.com"
+                            value="{{ request.form.get('email', '') }}"
+                        >
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="phone">
+                            Phone Number
+                        </label>
+
+                        <input
+                            type="text"
+                            id="phone"
+                            name="phone"
+                            placeholder="+260..."
+                            value="{{ request.form.get('phone', '') }}"
+                        >
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="form-footer">
+
+                <a
+                    href="{{ url_for('users.index') }}"
+                    class="btn btn-secondary"
+                >
+                    Cancel
+                </a>
+
+                <button
+                    type="submit"
+                    class="btn btn-primary"
+                >
+                    Create Employee
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+
+    <div class="card info-card">
+
+        <div class="card-header">
+
+            <h2>About Employees</h2>
+
+        </div>
+
+        <div class="info-content">
+
+            <p>
+                Employees can receive ICT equipment through the
+                equipment assignment module.
+            </p>
+
+            <p>
+                Deactivating an employee preserves their historical
+                assignment records.
+            </p>
+
+            <div class="info-note">
+
+                <strong>Security</strong>
+
+                <p>
+                    Authentication credentials and RBAC permissions
+                    will be managed separately as we build the
+                    security layer.
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

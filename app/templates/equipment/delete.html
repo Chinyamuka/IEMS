@@ -1,104 +1,139 @@
-```html
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
 
-<head>
-
-    <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
-    <title>
-        Delete {{ equipment.asset_tag }} - IEMS
-    </title>
-
-    <link
-        rel="stylesheet"
-        href="{{ url_for(
-            'static',
-            filename='css/style.css'
-        ) }}"
-    >
-
-</head>
-
-<body>
-
-    <main class="container">
-
-        <div class="delete-box">
-
-            <!-- Page heading -->
-            <h1>
-                Delete Equipment
-            </h1>
+{% block title %}Delete {{ equipment.asset_tag }} | IEMS{% endblock %}
 
 
-            <!-- Warning message -->
-            <p>
-                Are you sure you want to permanently delete
-                this equipment record?
-            </p>
+{% block content %}
+
+<div class="danger-page">
 
 
-            <!-- Equipment being deleted -->
-            <div class="delete-equipment">
+    <!-- =========================================================
+         DELETE CONFIRMATION CARD
+         ========================================================= -->
+
+    <section class="delete-card">
+
+        <div class="delete-icon">
+            !
+        </div>
+
+
+        <h1>
+            Delete Equipment?
+        </h1>
+
+
+        <p class="delete-warning">
+
+            You are about to permanently delete this equipment
+            record.
+
+        </p>
+
+
+        <!-- =====================================================
+             EQUIPMENT INFORMATION
+             ===================================================== -->
+
+        <div class="delete-equipment-summary">
+
+            <div class="delete-summary-row">
+
+                <span>
+                    Asset Tag
+                </span>
 
                 <strong>
                     {{ equipment.asset_tag }}
                 </strong>
 
+            </div>
+
+
+            <div class="delete-summary-row">
+
                 <span>
-                    {{ equipment.manufacturer }}
-                    {{ equipment.model }}
+                    Manufacturer
                 </span>
+
+                <strong>
+                    {{ equipment.manufacturer }}
+                </strong>
 
             </div>
 
 
-            <!-- Permanent deletion warning -->
-            <p class="warning">
-                ⚠ This action cannot be undone.
-            </p>
+            <div class="delete-summary-row">
+
+                <span>
+                    Model
+                </span>
+
+                <strong>
+                    {{ equipment.model }}
+                </strong>
+
+            </div>
 
 
-            <!-- Confirmation form -->
-            <form method="POST">
+            <div class="delete-summary-row">
 
-                <div class="actions">
+                <span>
+                    Serial Number
+                </span>
 
-                    <!-- Cancel -->
-                    <a
-                        href="{{ url_for(
-                            'equipment.detail',
-                            equipment_id=equipment.id
-                        ) }}"
-                        class="btn secondary"
-                    >
-                        Cancel
-                    </a>
+                <strong>
+                    {{ equipment.serial_number or '—' }}
+                </strong>
 
-
-                    <!-- Confirm deletion -->
-                    <button
-                        type="submit"
-                        class="btn danger"
-                    >
-                        Delete Equipment
-                    </button>
-
-                </div>
-
-            </form>
+            </div>
 
         </div>
 
-    </main>
 
-</body>
+        <div class="delete-notice">
 
-</html>
-```
+            <strong>
+                Warning
+            </strong>
+
+            <p>
+                This action cannot be undone.
+            </p>
+
+        </div>
+
+
+        <!-- =====================================================
+             CONFIRMATION FORM
+             ===================================================== -->
+
+        <form
+            method="POST"
+            action="{{ url_for('equipment.delete', id=equipment.id) }}"
+            class="delete-form"
+        >
+
+            <a
+                href="{{ url_for('equipment.detail', id=equipment.id) }}"
+                class="btn btn-secondary"
+            >
+                Cancel
+            </a>
+
+
+            <button
+                type="submit"
+                class="btn btn-danger"
+            >
+                Yes, Delete Equipment
+            </button>
+
+        </form>
+
+    </section>
+
+</div>
+
+{% endblock %}

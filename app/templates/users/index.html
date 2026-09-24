@@ -1,0 +1,300 @@
+{% extends "base.html" %}
+
+{% block title %}Employees - IEMS{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+
+    <div>
+        <div class="breadcrumb">
+            <a href="{{ url_for('dashboard.index') }}">Dashboard</a>
+            <span>/</span>
+            <span>Employees</span>
+        </div>
+
+        <h1>Employees</h1>
+
+        <p>
+            Manage employees and their ICT equipment assignments.
+        </p>
+    </div>
+
+    <div class="page-header-actions">
+
+        <a
+            href="{{ url_for('users.create') }}"
+            class="btn btn-primary"
+        >
+            + Add Employee
+        </a>
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     SEARCH
+     ===================================================== -->
+
+<div class="card search-card">
+
+    <form
+        method="GET"
+        action="{{ url_for('users.index') }}"
+        class="search-form"
+    >
+
+        <div class="search-input-wrapper">
+
+            <span class="search-icon">⌕</span>
+
+            <input
+                type="search"
+                name="search"
+                value="{{ search }}"
+                placeholder="Search by employee number, name or email..."
+                autocomplete="off"
+            >
+
+        </div>
+
+        <button
+            type="submit"
+            class="btn btn-primary"
+        >
+            Search
+        </button>
+
+        {% if search %}
+
+        <a
+            href="{{ url_for('users.index') }}"
+            class="btn btn-secondary"
+        >
+            Clear
+        </a>
+
+        {% endif %}
+
+    </form>
+
+</div>
+
+
+<!-- =====================================================
+     EMPLOYEE TABLE
+     ===================================================== -->
+
+<div class="card table-card">
+
+    <div class="card-header">
+
+        <div>
+            <h2>Employee Directory</h2>
+
+            <p>
+                {{ users|length }}
+                employee{% if users|length != 1 %}s{% endif %}
+                found
+            </p>
+        </div>
+
+    </div>
+
+
+    {% if users %}
+
+    <div class="table-responsive">
+
+        <table class="data-table">
+
+            <thead>
+
+                <tr>
+
+                    <th>Employee</th>
+
+                    <th>Name</th>
+
+                    <th>Department</th>
+
+                    <th>Email</th>
+
+                    <th>Status</th>
+
+                    <th class="text-right">Actions</th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                {% for user in users %}
+
+                <tr>
+
+                    <td>
+
+                        <strong>
+                            {{ user.employee_number }}
+                        </strong>
+
+                    </td>
+
+
+                    <td>
+
+                        <div class="person-cell">
+
+                            <div class="avatar">
+                                {{ user.first_name[0]|upper }}{{ user.last_name[0]|upper }}
+                            </div>
+
+                            <div>
+
+                                <strong>
+                                    {{ user.full_name }}
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+                    </td>
+
+
+                    <td>
+
+                        {% if user.department %}
+
+                            {{ user.department.name }}
+
+                        {% else %}
+
+                            <span class="muted-text">
+                                Not assigned
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <td>
+
+                        {% if user.email %}
+
+                            {{ user.email }}
+
+                        {% else %}
+
+                            <span class="muted-text">
+                                —
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <td>
+
+                        {% if user.is_active %}
+
+                            <span class="status-badge status-active">
+                                Active
+                            </span>
+
+                        {% else %}
+
+                            <span class="status-badge status-inactive">
+                                Inactive
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <td class="text-right">
+
+                        <div class="table-actions">
+
+                            <a
+                                href="{{ url_for('users.detail', user_id=user.id) }}"
+                                class="btn btn-small btn-secondary"
+                            >
+                                View
+                            </a>
+
+                            <a
+                                href="{{ url_for('users.edit', user_id=user.id) }}"
+                                class="btn btn-small btn-secondary"
+                            >
+                                Edit
+                            </a>
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    {% else %}
+
+    <div class="empty-state">
+
+        <div class="empty-state-icon">
+            👥
+        </div>
+
+        <h3>No employees found</h3>
+
+        {% if search %}
+
+            <p>
+                No employees matched
+                <strong>"{{ search }}"</strong>.
+            </p>
+
+            <a
+                href="{{ url_for('users.index') }}"
+                class="btn btn-secondary"
+            >
+                Clear Search
+            </a>
+
+        {% else %}
+
+            <p>
+                Add your first employee to start assigning ICT equipment.
+            </p>
+
+            <a
+                href="{{ url_for('users.create') }}"
+                class="btn btn-primary"
+            >
+                + Add Employee
+            </a>
+
+        {% endif %}
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

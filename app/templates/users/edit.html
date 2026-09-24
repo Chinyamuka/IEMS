@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+
+{% block title %}Edit {{ user.full_name }} - IEMS{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+
+    <div>
+
+        <div class="breadcrumb">
+
+            <a href="{{ url_for('dashboard.index') }}">
+                Dashboard
+            </a>
+
+            <span>/</span>
+
+            <a href="{{ url_for('users.index') }}">
+                Employees
+            </a>
+
+            <span>/</span>
+
+            <a href="{{ url_for('users.detail', user_id=user.id) }}">
+                {{ user.employee_number }}
+            </a>
+
+            <span>/</span>
+
+            <span>Edit</span>
+
+        </div>
+
+        <h1>Edit Employee</h1>
+
+        <p>
+            Update {{ user.full_name }}'s information.
+        </p>
+
+    </div>
+
+</div>
+
+
+<div class="card form-card">
+
+    <div class="card-header">
+
+        <div>
+
+            <h2>Employee Information</h2>
+
+            <p>
+                Update the employee's organisational and contact details.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <form method="POST">
+
+        <div class="form-body">
+
+            <!-- Employee Number -->
+
+            <div class="form-group">
+
+                <label for="employee_number">
+                    Employee Number
+                    <span class="required">*</span>
+                </label>
+
+                <input
+                    type="text"
+                    id="employee_number"
+                    name="employee_number"
+                    required
+                    value="{{ request.form.get('employee_number', user.employee_number) }}"
+                >
+
+            </div>
+
+
+            <!-- Name -->
+
+            <div class="form-grid">
+
+                <div class="form-group">
+
+                    <label for="first_name">
+                        First Name
+                        <span class="required">*</span>
+                    </label>
+
+                    <input
+                        type="text"
+                        id="first_name"
+                        name="first_name"
+                        required
+                        value="{{ request.form.get('first_name', user.first_name) }}"
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="last_name">
+                        Last Name
+                        <span class="required">*</span>
+                    </label>
+
+                    <input
+                        type="text"
+                        id="last_name"
+                        name="last_name"
+                        required
+                        value="{{ request.form.get('last_name', user.last_name) }}"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <!-- Department -->
+
+            <div class="form-group">
+
+                <label for="department_id">
+                    Department
+                </label>
+
+                <select
+                    id="department_id"
+                    name="department_id"
+                >
+
+                    <option value="">
+                        Select department
+                    </option>
+
+                    {% for department in departments %}
+
+                    <option
+                        value="{{ department.id }}"
+                        {% if request.form.get('department_id', user.department_id|string if user.department_id else '') == department.id|string %}
+                            selected
+                        {% endif %}
+                    >
+                        {{ department.name }}
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <!-- Contact -->
+
+            <div class="form-grid">
+
+                <div class="form-group">
+
+                    <label for="email">
+                        Email Address
+                    </label>
+
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        value="{{ request.form.get('email', user.email or '') }}"
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="phone">
+                        Phone Number
+                    </label>
+
+                    <input
+                        type="text"
+                        id="phone"
+                        name="phone"
+                        value="{{ request.form.get('phone', user.phone or '') }}"
+                    >
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="form-footer">
+
+            <a
+                href="{{ url_for('users.detail', user_id=user.id) }}"
+                class="btn btn-secondary"
+            >
+                Cancel
+            </a>
+
+            <button
+                type="submit"
+                class="btn btn-primary"
+            >
+                Save Changes
+            </button>
+
+        </div>
+
+    </form>
+
+</div>
+
+{% endblock %}

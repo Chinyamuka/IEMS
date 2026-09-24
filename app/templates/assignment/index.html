@@ -1,0 +1,251 @@
+{% extends "base.html" %}
+
+{% block title %}Assignment History{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+
+    <div>
+
+        <div class="breadcrumb">
+            <a href="{{ url_for('equipment.index') }}">
+                Equipment
+            </a>
+
+            <span>/</span>
+
+            <span>Assignment History</span>
+        </div>
+
+        <h1>Assignment History</h1>
+
+        <p>
+            View current and previous equipment assignments.
+        </p>
+
+    </div>
+
+
+    <div class="page-actions">
+
+        <a
+            href="{{ url_for('assignment.create') }}"
+            class="btn btn-primary"
+        >
+            + Assign Equipment
+        </a>
+
+    </div>
+
+</div>
+
+
+<div class="table-card">
+
+    <div class="table-card-header">
+
+        <div>
+            <h2>Equipment Assignments</h2>
+
+            <p>
+                {{ assignments|length }}
+                assignment{% if assignments|length != 1 %}s{% endif %}
+                recorded
+            </p>
+        </div>
+
+    </div>
+
+
+    {% if assignments %}
+
+    <div class="table-responsive">
+
+        <table class="data-table">
+
+            <thead>
+
+                <tr>
+
+                    <th>Equipment</th>
+
+                    <th>Employee</th>
+
+                    <th>Assigned</th>
+
+                    <th>Returned</th>
+
+                    <th>Status</th>
+
+                    <th>Actions</th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                {% for assignment in assignments %}
+
+                <tr>
+
+                    <!-- EQUIPMENT -->
+
+                    <td>
+
+                        <a
+                            href="{{ url_for(
+                                'equipment.detail',
+                                equipment_id=assignment.equipment.id
+                            ) }}"
+                            class="table-primary-link"
+                        >
+                            {{ assignment.equipment.asset_tag }}
+                        </a>
+
+                        <div class="table-secondary-text">
+
+                            {{ assignment.equipment.manufacturer }}
+
+                            {{ assignment.equipment.model }}
+
+                        </div>
+
+                    </td>
+
+
+                    <!-- EMPLOYEE -->
+
+                    <td>
+
+                        <strong>
+                            {{ assignment.user.full_name }}
+                        </strong>
+
+                        <div class="table-secondary-text">
+
+                            {{ assignment.user.employee_number }}
+
+                        </div>
+
+                    </td>
+
+
+                    <!-- ASSIGNED -->
+
+                    <td>
+
+                        {{ assignment.assigned_at.strftime(
+                            "%d %b %Y"
+                        ) }}
+
+                        <div class="table-secondary-text">
+
+                            {{ assignment.assigned_at.strftime(
+                                "%H:%M"
+                            ) }}
+
+                        </div>
+
+                    </td>
+
+
+                    <!-- RETURNED -->
+
+                    <td>
+
+                        {% if assignment.returned_at %}
+
+                            {{ assignment.returned_at.strftime(
+                                "%d %b %Y"
+                            ) }}
+
+                        {% else %}
+
+                            <span class="muted-text">
+                                —
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <!-- STATUS -->
+
+                    <td>
+
+                        {% if assignment.is_active %}
+
+                            <span class="status-badge status-assigned">
+                                Active
+                            </span>
+
+                        {% else %}
+
+                            <span class="status-badge status-returned">
+                                Returned
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <!-- ACTIONS -->
+
+                    <td>
+
+                        <a
+                            href="{{ url_for(
+                                'equipment.detail',
+                                equipment_id=assignment.equipment.id
+                            ) }}"
+                            class="btn btn-small btn-secondary"
+                        >
+                            View
+                        </a>
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    {% else %}
+
+        <div class="empty-state">
+
+            <div class="empty-state-icon">
+                —
+            </div>
+
+            <h3>No assignments yet</h3>
+
+            <p>
+                Equipment assignments will appear here once
+                an ICT asset has been assigned to an employee.
+            </p>
+
+            <a
+                href="{{ url_for('assignment.create') }}"
+                class="btn btn-primary"
+            >
+                Assign Equipment
+            </a>
+
+        </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

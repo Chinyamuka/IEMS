@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+
+{% block title %}Assign Equipment{% endblock %}
+
+{% block content %}
+
+<!-- =========================================================
+     PAGE HEADER
+========================================================= -->
+
+<div class="page-header">
+
+    <div>
+
+        <div class="breadcrumb">
+
+            <a href="{{ url_for('equipment.index') }}">
+                Equipment
+            </a>
+
+            <span>/</span>
+
+            <span>Assign Equipment</span>
+
+        </div>
+
+        <h1>Assign Equipment</h1>
+
+        <p>
+            Assign an ICT asset to an active employee.
+        </p>
+
+    </div>
+
+    <div class="page-actions">
+
+        <a
+            href="{{ url_for('assignment.index') }}"
+            class="btn btn-secondary"
+        >
+            Assignment History
+        </a>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     ASSIGNMENT FORM CARD
+========================================================= -->
+
+<div class="assignment-form-card">
+
+    <div class="assignment-form-header">
+
+        <div class="assignment-form-icon">
+            ICT
+        </div>
+
+        <div>
+
+            <h2>Equipment Assignment</h2>
+
+            <p>
+                Select the equipment and employee receiving the asset.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <form
+        method="POST"
+        action="{{ url_for('assignment.create') }}"
+        class="assignment-form"
+    >
+
+        {{ form.hidden_tag() }}
+
+
+        <!-- =================================================
+             EQUIPMENT
+        ================================================== -->
+
+        <div class="form-group">
+
+            {{ form.equipment_id.label(class="form-label") }}
+
+            {{ form.equipment_id(
+                class="form-control"
+            ) }}
+
+            <small class="form-help">
+                Only equipment that is currently available will appear.
+            </small>
+
+            {% for error in form.equipment_id.errors %}
+
+                <div class="form-error">
+                    {{ error }}
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+
+        <!-- =================================================
+             EMPLOYEE
+        ================================================== -->
+
+        <div class="form-group">
+
+            {{ form.user_id.label(class="form-label") }}
+
+            {{ form.user_id(
+                class="form-control"
+            ) }}
+
+            <small class="form-help">
+                Select an active employee who will receive this asset.
+            </small>
+
+            {% for error in form.user_id.errors %}
+
+                <div class="form-error">
+                    {{ error }}
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+
+        <!-- =================================================
+             ASSIGNMENT DATE
+        ================================================== -->
+
+        <div class="form-group">
+
+            {{ form.assigned_at.label(class="form-label") }}
+
+            {{ form.assigned_at(
+                class="form-control"
+            ) }}
+
+            <small class="form-help">
+                Specify when the equipment was handed over.
+            </small>
+
+            {% for error in form.assigned_at.errors %}
+
+                <div class="form-error">
+                    {{ error }}
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+
+        <!-- =================================================
+             NOTES
+        ================================================== -->
+
+        <div class="form-group">
+
+            {{ form.notes.label(class="form-label") }}
+
+            {{ form.notes(
+                class="form-control",
+                rows="5",
+                placeholder="Optional notes about this assignment..."
+            ) }}
+
+            <small class="form-help">
+                Add any relevant handover or assignment information.
+            </small>
+
+            {% for error in form.notes.errors %}
+
+                <div class="form-error">
+                    {{ error }}
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+
+        <!-- =================================================
+             ACTIONS
+        ================================================== -->
+
+        <div class="assignment-form-actions">
+
+            <a
+                href="{{ url_for('equipment.index') }}"
+                class="btn btn-secondary"
+            >
+                Cancel
+            </a>
+
+            {{ form.submit(
+                class="btn btn-primary"
+            ) }}
+
+        </div>
+
+    </form>
+
+</div>
+
+{% endblock %}

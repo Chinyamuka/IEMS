@@ -1,88 +1,69 @@
-
 {% extends "base.html" %}
 
-{% block title %}
-    Add Equipment — IEMS
-{% endblock %}
+{% block title %}Add Equipment | IEMS{% endblock %}
 
 
 {% block content %}
 
-<!-- =====================================================
+<!-- =========================================================
      PAGE HEADER
-     ===================================================== -->
+     ========================================================= -->
 
 <div class="page-header">
 
     <div>
 
-        <h1>
-            Add Equipment
-        </h1>
+        <div class="breadcrumb">
 
-        <p class="subtitle">
+            <a href="{{ url_for('dashboard.index') }}">
+                Dashboard
+            </a>
+
+            <span>/</span>
+
+            <a href="{{ url_for('equipment.index') }}">
+                Equipment
+            </a>
+
+            <span>/</span>
+
+            <span>Add</span>
+
+        </div>
+
+        <h1>Add Equipment</h1>
+
+        <p>
             Register a new ICT asset in the inventory.
         </p>
 
     </div>
 
-
-    <a
-        href="{{ url_for('equipment.index') }}"
-        class="btn btn-secondary"
-    >
-        ← Back to Equipment
-    </a>
-
 </div>
 
 
-<!-- =====================================================
+<!-- =========================================================
      FORM CARD
-     ===================================================== -->
+     ========================================================= -->
 
 <section class="form-card">
 
-    <div class="form-card-header">
+    <form method="POST">
 
-        <h2>
-            Equipment Information
-        </h2>
-
-        <p>
-            Enter the details of the ICT equipment below.
-        </p>
-
-    </div>
-
-
-    <!-- =================================================
-         FORM
-         ================================================= -->
-
-    <form
-        method="POST"
-        action="{{ url_for('equipment.create') }}"
-        class="equipment-form"
-    >
-
-        {{ form.hidden_tag() }}
-
-
-        <!-- =============================================
+        <!-- =====================================================
              IDENTIFICATION
-             ============================================= -->
+             ===================================================== -->
 
         <div class="form-section">
 
-            <div class="form-section-title">
+            <div class="form-section-header">
 
-                <h3>
+                <h2>
                     Identification
-                </h3>
+                </h2>
 
                 <p>
-                    Basic information used to identify the asset.
+                    Basic identification information for the asset.
                 </p>
 
             </div>
@@ -90,62 +71,72 @@
 
             <div class="form-grid">
 
-                <!-- Asset Tag -->
-
                 <div class="form-group">
 
-                    {{ form.asset_tag.label }}
+                    <label for="asset_tag">
+                        Asset Tag
+                        <span class="required">*</span>
+                    </label>
 
-                    {{ form.asset_tag(
-                        class="form-control",
-                        placeholder="e.g. ICT-00006"
-                    ) }}
-
-                    {% if form.asset_tag.errors %}
-
-                        <div class="form-errors">
-
-                            {% for error in form.asset_tag.errors %}
-
-                                <span>
-                                    {{ error }}
-                                </span>
-
-                            {% endfor %}
-
-                        </div>
-
-                    {% endif %}
+                    <input
+                        type="text"
+                        id="asset_tag"
+                        name="asset_tag"
+                        required
+                        placeholder="e.g. ICT-00010"
+                    >
 
                 </div>
 
 
-                <!-- Serial Number -->
+                <div class="form-group">
+
+                    <label for="serial_number">
+                        Serial Number
+                    </label>
+
+                    <input
+                        type="text"
+                        id="serial_number"
+                        name="serial_number"
+                        placeholder="Enter serial number"
+                    >
+
+                </div>
+
 
                 <div class="form-group">
 
-                    {{ form.serial_number.label }}
+                    <label for="manufacturer">
+                        Manufacturer
+                        <span class="required">*</span>
+                    </label>
 
-                    {{ form.serial_number(
-                        class="form-control",
-                        placeholder="Enter serial number"
-                    ) }}
+                    <input
+                        type="text"
+                        id="manufacturer"
+                        name="manufacturer"
+                        required
+                        placeholder="e.g. Dell"
+                    >
 
-                    {% if form.serial_number.errors %}
+                </div>
 
-                        <div class="form-errors">
 
-                            {% for error in form.serial_number.errors %}
+                <div class="form-group">
 
-                                <span>
-                                    {{ error }}
-                                </span>
+                    <label for="model">
+                        Model
+                        <span class="required">*</span>
+                    </label>
 
-                            {% endfor %}
-
-                        </div>
-
-                    {% endif %}
+                    <input
+                        type="text"
+                        id="model"
+                        name="model"
+                        required
+                        placeholder="e.g. Latitude 5340"
+                    >
 
                 </div>
 
@@ -154,20 +145,20 @@
         </div>
 
 
-        <!-- =============================================
-             EQUIPMENT DETAILS
-             ============================================= -->
+        <!-- =====================================================
+             CLASSIFICATION
+             ===================================================== -->
 
         <div class="form-section">
 
-            <div class="form-section-title">
+            <div class="form-section-header">
 
-                <h3>
-                    Equipment Details
-                </h3>
+                <h2>
+                    Classification
+                </h2>
 
                 <p>
-                    Manufacturer, model and classification.
+                    Classify and locate the equipment.
                 </p>
 
             </div>
@@ -175,256 +166,150 @@
 
             <div class="form-grid">
 
-                <!-- Manufacturer -->
-
                 <div class="form-group">
 
-                    {{ form.manufacturer.label }}
+                    <label for="category_id">
+                        Category
+                        <span class="required">*</span>
+                    </label>
 
-                    {{ form.manufacturer(
-                        class="form-control",
-                        placeholder="e.g. Dell"
-                    ) }}
+                    <select
+                        id="category_id"
+                        name="category_id"
+                        required
+                    >
 
-                    {% if form.manufacturer.errors %}
+                        <option value="">
+                            Select category
+                        </option>
 
-                        <div class="form-errors">
+                        {% for category in categories %}
 
-                            {% for error in form.manufacturer.errors %}
-
-                                <span>
-                                    {{ error }}
-                                </span>
-
-                            {% endfor %}
-
-                        </div>
-
-                    {% endif %}
-
-                </div>
-
-
-                <!-- Model -->
-
-                <div class="form-group">
-
-                    {{ form.model.label }}
-
-                    {{ form.model(
-                        class="form-control",
-                        placeholder="e.g. Latitude 5450"
-                    ) }}
-
-                    {% if form.model.errors %}
-
-                        <div class="form-errors">
-
-                            {% for error in form.model.errors %}
-
-                                <span>
-                                    {{ error }}
-                                </span>
-
-                            {% endfor %}
-
-                        </div>
-
-                    {% endif %}
-
-                </div>
-
-
-                <!-- Category -->
-
-                <div class="form-group">
-
-                    {{ form.category_id.label }}
-
-                    {{ form.category_id(
-                        class="form-control"
-                    ) }}
-
-                    {% if form.category_id.errors %}
-
-                        <div class="form-errors">
-
-                            {% for error in form.category_id.errors %}
-
-                                <span>
-                                    {{ error }}
-                                </span>
-
-                            {% endfor %}
-
-                        </div>
-
-                    {% endif %}
-
-                </div>
-
-
-                <!-- Location -->
-
-                <div class="form-group">
-
-                    {{ form.location_id.label }}
-
-                    {{ form.location_id(
-                        class="form-control"
-                    ) }}
-
-                    {% if form.location_id.errors %}
-
-                        <div class="form-errors">
-
-                            {% for error in form.location_id.errors %}
-
-                                <span>
-                                    {{ error }}
-                                </span>
-
-                            {% endfor %}
-
-                        </div>
-
-                    {% endif %}
-
-                </div>
-
-            </div>
-
-
-            <!-- Description -->
-
-            <div class="form-group">
-
-                {{ form.description.label }}
-
-                {{ form.description(
-                    class="form-control form-textarea",
-                    rows="4",
-                    placeholder="Optional description of the equipment"
-                ) }}
-
-                {% if form.description.errors %}
-
-                    <div class="form-errors">
-
-                        {% for error in form.description.errors %}
-
-                            <span>
-                                {{ error }}
-                            </span>
+                            <option value="{{ category.id }}">
+                                {{ category.name }}
+                            </option>
 
                         {% endfor %}
 
-                    </div>
+                    </select>
 
-                {% endif %}
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="location_id">
+                        Location
+                    </label>
+
+                    <select
+                        id="location_id"
+                        name="location_id"
+                    >
+
+                        <option value="">
+                            Select location
+                        </option>
+
+                        {% for location in locations %}
+
+                            <option value="{{ location.id }}">
+                                {{ location.name }}
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="status">
+                        Status
+                    </label>
+
+                    <select
+                        id="status"
+                        name="status"
+                    >
+
+                        <option value="In Stock">
+                            In Stock
+                        </option>
+
+                        <option value="Assigned">
+                            Assigned
+                        </option>
+
+                        <option value="Under Repair">
+                            Under Repair
+                        </option>
+
+                        <option value="Retired">
+                            Retired
+                        </option>
+
+                        <option value="Disposed">
+                            Disposed
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="condition">
+                        Condition
+                    </label>
+
+                    <select
+                        id="condition"
+                        name="condition"
+                    >
+
+                        <option value="Excellent">
+                            Excellent
+                        </option>
+
+                        <option value="Good">
+                            Good
+                        </option>
+
+                        <option value="Fair">
+                            Fair
+                        </option>
+
+                        <option value="Poor">
+                            Poor
+                        </option>
+
+                    </select>
+
+                </div>
 
             </div>
 
         </div>
 
 
-        <!-- =============================================
-             STATUS
-             ============================================= -->
-
-        <div class="form-section">
-
-            <div class="form-section-title">
-
-                <h3>
-                    Inventory Status
-                </h3>
-
-                <p>
-                    Current operational and physical condition.
-                </p>
-
-            </div>
-
-
-            <div class="form-grid">
-
-                <!-- Status -->
-
-                <div class="form-group">
-
-                    {{ form.status.label }}
-
-                    {{ form.status(
-                        class="form-control"
-                    ) }}
-
-                    {% if form.status.errors %}
-
-                        <div class="form-errors">
-
-                            {% for error in form.status.errors %}
-
-                                <span>
-                                    {{ error }}
-                                </span>
-
-                            {% endfor %}
-
-                        </div>
-
-                    {% endif %}
-
-                </div>
-
-
-                <!-- Condition -->
-
-                <div class="form-group">
-
-                    {{ form.condition.label }}
-
-                    {{ form.condition(
-                        class="form-control"
-                    ) }}
-
-                    {% if form.condition.errors %}
-
-                        <div class="form-errors">
-
-                            {% for error in form.condition.errors %}
-
-                                <span>
-                                    {{ error }}
-                                </span>
-
-                            {% endfor %}
-
-                        </div>
-
-                    {% endif %}
-
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <!-- =============================================
+        <!-- =====================================================
              PURCHASE INFORMATION
-             ============================================= -->
+             ===================================================== -->
 
         <div class="form-section">
 
-            <div class="form-section-title">
+            <div class="form-section-header">
 
-                <h3>
-                    Purchase & Warranty
-                </h3>
+                <h2>
+                    Purchase Information
+                </h2>
 
                 <p>
-                    Financial and warranty information for the asset.
+                    Financial and warranty information.
                 </p>
 
             </div>
@@ -432,90 +317,50 @@
 
             <div class="form-grid">
 
-                <!-- Purchase Date -->
-
                 <div class="form-group">
 
-                    {{ form.purchase_date.label }}
+                    <label for="purchase_date">
+                        Purchase Date
+                    </label>
 
-                    {{ form.purchase_date(
-                        class="form-control"
-                    ) }}
-
-                    {% if form.purchase_date.errors %}
-
-                        <div class="form-errors">
-
-                            {% for error in form.purchase_date.errors %}
-
-                                <span>
-                                    {{ error }}
-                                </span>
-
-                            {% endfor %}
-
-                        </div>
-
-                    {% endif %}
+                    <input
+                        type="date"
+                        id="purchase_date"
+                        name="purchase_date"
+                    >
 
                 </div>
 
 
-                <!-- Purchase Price -->
-
                 <div class="form-group">
 
-                    {{ form.purchase_price.label }}
+                    <label for="purchase_price">
+                        Purchase Price
+                    </label>
 
-                    {{ form.purchase_price(
-                        class="form-control",
+                    <input
+                        type="number"
+                        id="purchase_price"
+                        name="purchase_price"
+                        step="0.01"
+                        min="0"
                         placeholder="0.00"
-                    ) }}
-
-                    {% if form.purchase_price.errors %}
-
-                        <div class="form-errors">
-
-                            {% for error in form.purchase_price.errors %}
-
-                                <span>
-                                    {{ error }}
-                                </span>
-
-                            {% endfor %}
-
-                        </div>
-
-                    {% endif %}
+                    >
 
                 </div>
 
 
-                <!-- Warranty -->
-
                 <div class="form-group">
 
-                    {{ form.warranty_expiry.label }}
+                    <label for="warranty_expiry">
+                        Warranty Expiry
+                    </label>
 
-                    {{ form.warranty_expiry(
-                        class="form-control"
-                    ) }}
-
-                    {% if form.warranty_expiry.errors %}
-
-                        <div class="form-errors">
-
-                            {% for error in form.warranty_expiry.errors %}
-
-                                <span>
-                                    {{ error }}
-                                </span>
-
-                            {% endfor %}
-
-                        </div>
-
-                    {% endif %}
+                    <input
+                        type="date"
+                        id="warranty_expiry"
+                        name="warranty_expiry"
+                    >
 
                 </div>
 
@@ -524,9 +369,46 @@
         </div>
 
 
-        <!-- =============================================
+        <!-- =====================================================
+             DESCRIPTION
+             ===================================================== -->
+
+        <div class="form-section">
+
+            <div class="form-section-header">
+
+                <h2>
+                    Description
+                </h2>
+
+                <p>
+                    Optional additional information.
+                </p>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="description">
+                    Description
+                </label>
+
+                <textarea
+                    id="description"
+                    name="description"
+                    rows="5"
+                    placeholder="Enter any additional information about this equipment..."
+                ></textarea>
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
              FORM ACTIONS
-             ============================================= -->
+             ===================================================== -->
 
         <div class="form-actions">
 
@@ -537,10 +419,12 @@
                 Cancel
             </a>
 
-
-            {{ form.submit(
-                class="btn"
-            ) }}
+            <button
+                type="submit"
+                class="btn btn-primary"
+            >
+                Save Equipment
+            </button>
 
         </div>
 
@@ -549,4 +433,3 @@
 </section>
 
 {% endblock %}
-

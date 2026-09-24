@@ -1,0 +1,442 @@
+{% extends "base.html" %}
+
+{% block title %}{{ user.full_name }} - IEMS{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+
+    <div>
+
+        <div class="breadcrumb">
+
+            <a href="{{ url_for('dashboard.index') }}">
+                Dashboard
+            </a>
+
+            <span>/</span>
+
+            <a href="{{ url_for('users.index') }}">
+                Employees
+            </a>
+
+            <span>/</span>
+
+            <span>{{ user.employee_number }}</span>
+
+        </div>
+
+        <h1>{{ user.full_name }}</h1>
+
+        <p>
+            Employee profile and equipment assignment information.
+        </p>
+
+    </div>
+
+
+    <div class="detail-actions">
+
+        <a
+            href="{{ url_for('users.edit', user_id=user.id) }}"
+            class="btn btn-secondary"
+        >
+            Edit Employee
+        </a>
+
+        {% if user.is_active %}
+
+        <form
+            method="POST"
+            action="{{ url_for('users.deactivate', user_id=user.id) }}"
+        >
+
+            <button
+                type="submit"
+                class="btn btn-danger"
+                onclick="return confirm('Deactivate this employee?')"
+            >
+                Deactivate
+            </button>
+
+        </form>
+
+        {% else %}
+
+        <form
+            method="POST"
+            action="{{ url_for('users.activate', user_id=user.id) }}"
+        >
+
+            <button
+                type="submit"
+                class="btn btn-primary"
+            >
+                Reactivate
+            </button>
+
+        </form>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     EMPLOYEE SUMMARY
+     ===================================================== -->
+
+<div class="equipment-summary-card">
+
+    <div class="equipment-summary-main">
+
+        <div class="equipment-icon">
+            {{ user.first_name[0]|upper }}{{ user.last_name[0]|upper }}
+        </div>
+
+        <div>
+
+            <span class="summary-label">
+                Employee Number
+            </span>
+
+            <strong>
+                {{ user.employee_number }}
+            </strong>
+
+        </div>
+
+    </div>
+
+
+    <div class="summary-meta">
+
+        <div>
+
+            <span class="summary-label">
+                Department
+            </span>
+
+            <strong>
+
+                {% if user.department %}
+                    {{ user.department.name }}
+                {% else %}
+                    Not assigned
+                {% endif %}
+
+            </strong>
+
+        </div>
+
+
+        <div>
+
+            <span class="summary-label">
+                Status
+            </span>
+
+            {% if user.is_active %}
+
+                <span class="status-badge status-active">
+                    Active
+                </span>
+
+            {% else %}
+
+                <span class="status-badge status-inactive">
+                    Inactive
+                </span>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     DETAILS
+     ===================================================== -->
+
+<div class="details-grid">
+
+    <div class="detail-card">
+
+        <div class="detail-card-header">
+
+            <h2>Personal Information</h2>
+
+            <p>
+                Employee identification details.
+            </p>
+
+        </div>
+
+
+        <div class="detail-list">
+
+            <div class="detail-row">
+
+                <span>Employee Number</span>
+
+                <strong>
+                    {{ user.employee_number }}
+                </strong>
+
+            </div>
+
+
+            <div class="detail-row">
+
+                <span>First Name</span>
+
+                <strong>
+                    {{ user.first_name }}
+                </strong>
+
+            </div>
+
+
+            <div class="detail-row">
+
+                <span>Last Name</span>
+
+                <strong>
+                    {{ user.last_name }}
+                </strong>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="detail-card">
+
+        <div class="detail-card-header">
+
+            <h2>Contact Information</h2>
+
+            <p>
+                Employee contact details.
+            </p>
+
+        </div>
+
+
+        <div class="detail-list">
+
+            <div class="detail-row">
+
+                <span>Email</span>
+
+                <strong>
+
+                    {% if user.email %}
+                        {{ user.email }}
+                    {% else %}
+                        <span class="muted-text">Not provided</span>
+                    {% endif %}
+
+                </strong>
+
+            </div>
+
+
+            <div class="detail-row">
+
+                <span>Phone</span>
+
+                <strong>
+
+                    {% if user.phone %}
+                        {{ user.phone }}
+                    {% else %}
+                        <span class="muted-text">Not provided</span>
+                    {% endif %}
+
+                </strong>
+
+            </div>
+
+
+            <div class="detail-row">
+
+                <span>Department</span>
+
+                <strong>
+
+                    {% if user.department %}
+                        {{ user.department.name }}
+                    {% else %}
+                        <span class="muted-text">Not assigned</span>
+                    {% endif %}
+
+                </strong>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     ASSIGNMENTS
+     ===================================================== -->
+
+<div class="card description-card">
+
+    <div class="card-header">
+
+        <div>
+
+            <h2>Equipment Assignments</h2>
+
+            <p>
+                ICT equipment currently or previously assigned
+                to this employee.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    {% if user.equipment_assignments %}
+
+    <div class="table-responsive">
+
+        <table class="data-table">
+
+            <thead>
+
+                <tr>
+
+                    <th>Asset Tag</th>
+                    <th>Equipment</th>
+                    <th>Assigned</th>
+                    <th>Returned</th>
+                    <th>Status</th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                {% for assignment in user.equipment_assignments %}
+
+                <tr>
+
+                    <td>
+
+                        <strong>
+                            {{ assignment.equipment.asset_tag }}
+                        </strong>
+
+                    </td>
+
+
+                    <td>
+
+                        {{ assignment.equipment.manufacturer }}
+                        {{ assignment.equipment.model }}
+
+                    </td>
+
+
+                    <td>
+
+                        {{ assignment.assigned_at.strftime('%d %b %Y') }}
+
+                    </td>
+
+
+                    <td>
+
+                        {% if assignment.returned_at %}
+
+                            {{ assignment.returned_at.strftime('%d %b %Y') }}
+
+                        {% else %}
+
+                            <span class="muted-text">
+                                —
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <td>
+
+                        {% if assignment.is_active %}
+
+                            <span class="status-badge status-active">
+                                Active
+                            </span>
+
+                        {% else %}
+
+                            <span class="status-badge status-inactive">
+                                Returned
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    {% else %}
+
+    <div class="empty-state">
+
+        <div class="empty-state-icon">
+            💻
+        </div>
+
+        <h3>No equipment assignments</h3>
+
+        <p>
+            This employee currently has no equipment assignment history.
+        </p>
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+
+<div class="detail-bottom-actions">
+
+    <a
+        href="{{ url_for('users.index') }}"
+        class="btn btn-secondary"
+    >
+        ← Back to Employees
+    </a>
+
+</div>
+
+{% endblock %}
