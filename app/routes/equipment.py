@@ -13,7 +13,7 @@ from flask import (
     url_for,
     request,
 )
-
+from app.utils.permissions import login_required, role_required
 from app.extensions import db
 from app.forms.equipment_form import EquipmentForm
 from app.models.category import Category
@@ -34,6 +34,7 @@ equipment_bp = Blueprint(
 
 
 @equipment_bp.route("/new", methods=["GET", "POST"])
+@role_required("ADMIN","INVENTORY_MANAGER")
 @login_required
 def create():
     """
@@ -143,6 +144,8 @@ def detail(equipment_id):
     )
 
 @equipment_bp.route("/<int:equipment_id>/edit", methods=["GET", "POST"])
+@login_required
+@role_required("ADMIN","INVENTORY_MANAGER")
 def edit(equipment_id):
     """
     Edit an existing equipment record.
@@ -319,10 +322,9 @@ def edit(equipment_id):
         equipment=equipment,
     )
 
-@equipment_bp.route(
-    "/<int:equipment_id>/delete",
-    methods=["GET", "POST"]
-)
+@equipment_bp.route("/<int:equipment_id>/delete", methods=["GET", "POST"])
+@login_required
+@role_required("ADMIN")
 def delete(equipment_id):
     """
     Delete an equipment record.
