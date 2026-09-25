@@ -1,370 +1,595 @@
 {% extends "base.html" %}
 
-{% block title %}Dashboard — IEMS{% endblock %}
+{% block title %}Dashboard | IEMS{% endblock %}
+{% block head_extra %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+{% endblock %}
 
 {% block content %}
 
-<!-- =========================================================
-     DASHBOARD HEADER
-     ========================================================= -->
+<div class="dashboard-page">
 
-<section class="dashboard-header">
 
-    <div>
-        <div class="breadcrumb">
-            <span>Overview</span>
-        </div>
+    <!-- =========================================================
+         DASHBOARD HEADER
+         ========================================================= -->
 
-        <h1 class="dashboard-title">
-            IEMS Dashboard
-        </h1>
-
-        <p class="dashboard-subtitle">
-            ICT Equipment Inventory Management System
-        </p>
-    </div>
-
-    <div class="button-group">
-        <a
-            href="{{ url_for('equipment.index') }}"
-            class="btn btn-secondary"
-        >
-            View Equipment
-        </a>
-
-        <a
-            href="{{ url_for('equipment.create') }}"
-            class="btn btn-primary"
-        >
-            Add Equipment
-        </a>
-    </div>
-
-</section>
-
-
-<!-- =========================================================
-     INVENTORY SUMMARY
-     ========================================================= -->
-
-<section class="stats-grid dashboard-stats-grid">
-
-    <article class="stat-card stat-card-primary">
-        <span class="stat-label">Total Equipment</span>
-
-        <strong class="stat-value">
-            {{ total_equipment }}
-        </strong>
-
-        <span class="stat-description">
-            Assets registered in IEMS
-        </span>
-    </article>
-
-
-    <article class="stat-card">
-        <span class="stat-label">In Stock</span>
-
-        <strong class="stat-value">
-            {{ in_stock }}
-        </strong>
-
-        <span class="stat-description">
-            Available for assignment
-        </span>
-    </article>
-
-
-    <article class="stat-card">
-        <span class="stat-label">Assigned</span>
-
-        <strong class="stat-value">
-            {{ assigned }}
-        </strong>
-
-        <span class="stat-description">
-            Currently assigned assets
-        </span>
-    </article>
-
-
-    <article class="stat-card">
-        <span class="stat-label">Under Repair</span>
-
-        <strong class="stat-value">
-            {{ under_repair }}
-        </strong>
-
-        <span class="stat-description">
-            Assets requiring maintenance
-        </span>
-    </article>
-
-
-    <article class="stat-card">
-        <span class="stat-label">Retired</span>
-
-        <strong class="stat-value">
-            {{ retired }}
-        </strong>
-
-        <span class="stat-description">
-            Retired or disposed assets
-        </span>
-    </article>
-
-</section>
-
-
-<!-- =========================================================
-     INVENTORY BREAKDOWN
-     ========================================================= -->
-
-<section class="dashboard-grid dashboard-breakdown-grid">
-
-    <!-- Equipment by category -->
-
-    <article class="card">
-
-        <div class="card-header">
-            <h2>Equipment by Category</h2>
-
-            <p>
-                Distribution of assets across equipment categories.
-            </p>
-        </div>
-
-        <div class="card-body">
-
-            {% if category_statistics %}
-
-                <ul class="dashboard-list">
-
-                    {% for category_name, equipment_count in category_statistics %}
-
-                        <li>
-                            <span>{{ category_name }}</span>
-
-                            <strong>
-                                {{ equipment_count }}
-                            </strong>
-                        </li>
-
-                    {% endfor %}
-
-                </ul>
-
-            {% else %}
-
-                <div class="empty-state">
-                    <h3>No category data</h3>
-
-                    <p>
-                        Equipment categories will appear here once assets
-                        have been registered.
-                    </p>
-                </div>
-
-            {% endif %}
-
-        </div>
-
-    </article>
-
-
-    <!-- Equipment by status -->
-
-    <article class="card">
-
-        <div class="card-header">
-            <h2>Equipment by Status</h2>
-
-            <p>
-                Current operational status of inventory assets.
-            </p>
-        </div>
-
-        <div class="card-body">
-
-            {% if status_statistics %}
-
-                <ul class="dashboard-list">
-
-                    {% for status_name, equipment_count in status_statistics %}
-
-                        <li>
-                            <span>
-                                {{ status_name }}
-                            </span>
-
-                            <strong>
-                                {{ equipment_count }}
-                            </strong>
-                        </li>
-
-                    {% endfor %}
-
-                </ul>
-
-            {% else %}
-
-                <div class="empty-state">
-                    <h3>No status data</h3>
-
-                    <p>
-                        Equipment status information will appear here.
-                    </p>
-                </div>
-
-            {% endif %}
-
-        </div>
-
-    </article>
-
-</section>
-
-
-<!-- =========================================================
-     RECENT EQUIPMENT
-     ========================================================= -->
-
-<section class="card dashboard-recent-card">
-
-    <div class="card-header dashboard-section-header">
+    <section class="dashboard-header">
 
         <div>
-            <h2>Recent Equipment</h2>
 
-            <p>
-                The latest equipment added to the inventory.
+            <div class="breadcrumb">
+
+                <span>
+                    Dashboard
+                </span>
+
+            </div>
+
+
+            <h1 class="dashboard-title">
+                IEMS Dashboard
+            </h1>
+
+
+            <p class="dashboard-subtitle">
+                ICT Equipment Inventory Management System
             </p>
+
         </div>
 
-        <a
-            href="{{ url_for('equipment.index') }}"
-            class="section-link"
-        >
-            View all
-        </a>
 
-    </div>
+        <!-- ADMIN / MANAGEMENT ACTION -->
 
+        {% if session.get("role") in [
+            "Administrator",
+            "IT Manager",
+            "IT Officer"
+        ] %}
 
-    {% if recent_equipment %}
+            <div class="button-group">
 
-        <div class="table-wrapper">
+                <a
+                    href="{{ url_for('equipment.create') }}"
+                    class="btn btn-primary"
+                >
+                    + Add Equipment
+                </a>
 
-            <table class="data-table">
+            </div>
 
-                <thead>
-                    <tr>
-                        <th>Asset Tag</th>
-                        <th>Manufacturer</th>
-                        <th>Model</th>
-                        <th>Category</th>
-                        <th>Status</th>
-                        <th class="table-action-column">
-                            Action
-                        </th>
-                    </tr>
-                </thead>
+        {% endif %}
+
+    </section>
 
 
-                <tbody>
 
-                    {% for item in recent_equipment %}
+    <!-- =========================================================
+         SUMMARY STATISTICS
+         ========================================================= -->
+
+    <section class="dashboard-stats-grid">
+
+
+        <!-- TOTAL -->
+
+        <div class="stat-card stat-card-primary">
+
+            <div>
+
+                <span class="stat-label">
+                    Total Equipment
+                </span>
+
+
+                <span class="stat-value">
+                    {{ total_equipment }}
+                </span>
+
+            </div>
+
+
+            <span class="stat-description">
+                Equipment records in the inventory
+            </span>
+
+        </div>
+
+
+
+        <!-- IN STOCK -->
+
+        <div class="stat-card">
+
+            <div>
+
+                <span class="stat-label">
+                    In Stock
+                </span>
+
+
+                <span class="stat-value">
+                    {{ in_stock }}
+                </span>
+
+            </div>
+
+
+            <span class="stat-description">
+                Equipment currently available
+            </span>
+
+        </div>
+
+
+
+        <!-- ASSIGNED -->
+
+        <div class="stat-card">
+
+            <div>
+
+                <span class="stat-label">
+                    Assigned
+                </span>
+
+
+                <span class="stat-value">
+                    {{ assigned }}
+                </span>
+
+            </div>
+
+
+            <span class="stat-description">
+                Equipment assigned to employees
+            </span>
+
+        </div>
+
+
+
+        <!-- UNDER MAINTENANCE -->
+
+        <div class="stat-card">
+
+            <div>
+
+                <span class="stat-label">
+                    Under Maintenance
+                </span>
+
+
+                <span class="stat-value">
+                    {{ under_repair }}
+                </span>
+
+            </div>
+
+
+            <span class="stat-description">
+                Equipment currently under maintenance
+            </span>
+
+        </div>
+
+
+
+        <!-- RETIRED / DISPOSED -->
+
+        <div class="stat-card">
+
+            <div>
+
+                <span class="stat-label">
+                    Disposed
+                </span>
+
+
+                <span class="stat-value">
+                    {{ retired }}
+                </span>
+
+            </div>
+
+
+            <span class="stat-description">
+                Retired or disposed equipment
+            </span>
+
+        </div>
+
+
+    </section>
+
+
+
+    <!-- =========================================================
+         CATEGORY + STATUS
+         ========================================================= -->
+
+    <section class="dashboard-breakdown-grid">
+
+
+        <!-- =====================================================
+             EQUIPMENT BY CATEGORY
+             ===================================================== -->
+
+        <div class="card">
+
+
+            <div class="card-header">
+
+                <h2>
+                    Equipment by Category
+                </h2>
+
+
+                <p>
+                    Inventory distribution across categories.
+                </p>
+
+            </div>
+
+
+            <div class="card-body">
+
+
+                {% if category_statistics %}
+
+                    <ul class="dashboard-list">
+
+                        {% for category_name, category_count
+                            in category_statistics %}
+
+                            <li>
+
+                                <span>
+                                    {{ category_name }}
+                                </span>
+
+
+                                <strong>
+                                    {{ category_count }}
+                                </strong>
+
+                            </li>
+
+                        {% endfor %}
+
+                    </ul>
+
+                {% else %}
+
+                    <div class="empty-state">
+
+                        <h3>
+                            No category information available.
+                        </h3>
+
+                        <p>
+                            Equipment categories will appear here
+                            once equipment has been recorded.
+                        </p>
+
+                    </div>
+
+                {% endif %}
+
+
+            </div>
+
+        </div>
+
+
+
+        <!-- =====================================================
+             EQUIPMENT BY STATUS
+             ===================================================== -->
+
+        <div class="card">
+
+
+            <div class="card-header">
+
+                <h2>
+                    Equipment by Status
+                </h2>
+
+
+                <p>
+                    Current equipment status distribution.
+                </p>
+
+            </div>
+
+
+            <div class="card-body">
+
+
+                {% if status_statistics %}
+
+                    <ul class="dashboard-list">
+
+                        {% for status_name, status_count
+                            in status_statistics %}
+
+                            <li>
+
+                                <span>
+                                    {{ status_name }}
+                                </span>
+
+
+                                <strong>
+                                    {{ status_count }}
+                                </strong>
+
+                            </li>
+
+                        {% endfor %}
+
+                    </ul>
+
+                {% else %}
+
+                    <div class="empty-state">
+
+                        <h3>
+                            No status information available.
+                        </h3>
+
+                        <p>
+                            Equipment status information will
+                            appear here.
+                        </p>
+
+                    </div>
+
+                {% endif %}
+
+
+            </div>
+
+        </div>
+
+
+    </section>
+
+
+
+    <!-- =========================================================
+         RECENT EQUIPMENT
+         ========================================================= -->
+
+    <section class="dashboard-recent-card">
+
+
+        <!-- HEADER -->
+
+        <div class="card-header">
+
+
+            <div class="dashboard-section-header">
+
+
+                <div>
+
+                    <h2>
+                        Recent Equipment
+                    </h2>
+
+
+                    <p>
+                        The latest equipment added to the inventory.
+                    </p>
+
+                </div>
+
+
+                <a
+                    href="{{ url_for('equipment.index') }}"
+                    class="section-link"
+                >
+                    View All
+                </a>
+
+
+            </div>
+
+
+        </div>
+
+
+
+        <!-- TABLE -->
+
+        {% if recent_equipment %}
+
+            <div class="table-wrapper">
+
+                <table class="data-table">
+
+
+                    <thead>
 
                         <tr>
 
-                            <td>
-                                <a
-                                    href="{{ url_for(
-                                        'equipment.detail',
-                                        equipment_id=item.id
-                                    ) }}"
-                                    class="table-primary-link"
-                                >
-                                    {{ item.asset_tag }}
-                                </a>
-                            </td>
+                            <th>
+                                Asset Tag
+                            </th>
 
 
-                            <td>
-                                {{ item.manufacturer }}
-                            </td>
+                            <th>
+                                Manufacturer
+                            </th>
 
 
-                            <td>
-                                {{ item.model }}
-                            </td>
+                            <th>
+                                Model
+                            </th>
 
 
-                            <td>
-                                {% if item.category %}
-                                    {{ item.category.name }}
-                                {% else %}
-                                    <span class="muted-text">—</span>
-                                {% endif %}
-                            </td>
+                            <th>
+                                Category
+                            </th>
 
 
-                            <td>
-
-                                <span
-                                    class="status-badge status-{{ item.status|lower|replace(' ', '-') }}"
-                                >
-                                    {{ item.status }}
-                                </span>
-
-                            </td>
+                            <th>
+                                Status
+                            </th>
 
 
-                            <td class="table-action-column">
-
-                                <a
-                                    href="{{ url_for(
-                                        'equipment.detail',
-                                        equipment_id=item.id
-                                    ) }}"
-                                    class="btn btn-secondary btn-sm"
-                                >
-                                    View
-                                </a>
-
-                            </td>
+                            <th class="table-action-column">
+                                Action
+                            </th>
 
                         </tr>
 
-                    {% endfor %}
+                    </thead>
 
-                </tbody>
 
-            </table>
 
-        </div>
+                    <tbody>
 
-    {% else %}
+                        {% for item in recent_equipment %}
 
-        <div class="empty-state">
+                            <tr>
 
-            <h3>No equipment registered</h3>
 
-            <p>
-                Your inventory is currently empty.
-            </p>
+                                <!-- ASSET TAG -->
 
-            <a
-                href="{{ url_for('equipment.create') }}"
-                class="btn btn-primary"
-            >
-                Add First Equipment
-            </a>
+                                <td>
 
-        </div>
+                                    <a
+                                        href="{{ url_for(
+                                            'equipment.detail',
+                                            equipment_id=item.id
+                                        ) }}"
+                                        class="table-primary-link"
+                                    >
+                                        {{ item.asset_tag }}
+                                    </a>
 
-    {% endif %}
+                                </td>
 
-</section>
+
+
+                                <!-- MANUFACTURER -->
+
+                                <td>
+
+                                    {{ item.manufacturer or "—" }}
+
+                                </td>
+
+
+
+                                <!-- MODEL -->
+
+                                <td>
+
+                                    {{ item.model or "—" }}
+
+                                </td>
+
+
+
+                                <!-- CATEGORY -->
+
+                                <td>
+
+                                    {% if item.category %}
+
+                                        {{ item.category.name }}
+
+                                    {% else %}
+
+                                        —
+
+                                    {% endif %}
+
+                                </td>
+
+
+
+                                <!-- STATUS -->
+
+                                <td>
+
+                                    {% set status_class =
+                                        (item.status or "unknown")
+                                        |lower
+                                        |replace(" ", "-")
+                                    %}
+
+
+                                    <span
+                                        class="
+                                            status-badge
+                                            status-{{ status_class }}
+                                        "
+                                    >
+
+                                        {{ item.status or "Unknown" }}
+
+                                    </span>
+
+                                </td>
+
+
+
+                                <!-- ACTION -->
+
+                                <td class="table-action-column">
+
+                                    <a
+                                        href="{{ url_for(
+                                            'equipment.detail',
+                                            equipment_id=item.id
+                                        ) }}"
+                                        class="btn btn-small btn-secondary"
+                                    >
+                                        View
+                                    </a>
+
+                                </td>
+
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+
+                </table>
+
+            </div>
+
+
+        {% else %}
+
+
+            <div class="empty-state">
+
+                <h3>
+                    No equipment records are currently available.
+                </h3>
+
+                <p>
+                    Add equipment to begin building the inventory.
+                </p>
+
+            </div>
+
+
+        {% endif %}
+
+
+    </section>
+
+
+</div>
 
 {% endblock %}

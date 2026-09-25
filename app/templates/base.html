@@ -1,74 +1,144 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}IEMS{% endblock %}</title>
-
-    <link
-        rel="stylesheet"
-        href="{{ url_for('static', filename='css/style.css') }}"
-    >
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block head_extra %}{% endblock %}
 </head>
-
 <body>
-    <div class="app-shell">
+    <header class="app-header">
+        <div class="header-container">
+            <a
+                href="{{ url_for('dashboard.index') }}"
+                class="brand"
+            >
 
-        <header class="app-header">
-            <div class="header-container">
+                <div class="brand-icon">
+                    ICT
+                </div>
 
-                <a href="{{ url_for('dashboard.index') }}" class="brand">
-                    <span class="brand-icon">ICT</span>
+                <div class="brand-text">
 
-                    <span class="brand-text">
-                        <strong>IEMS</strong>
-                        <small>ICT Equipment Management</small>
+                    <strong>
+                        IEMS
+                    </strong>
+
+                    <span>
+                        ICT Equipment Management
                     </span>
+
+                </div>
+
+            </a>
+
+
+            <!-- NAVIGATION -->
+
+            <nav class="main-nav">
+
+                <a
+                    href="{{ url_for('dashboard.index') }}"
+                    class="nav-link"
+                >
+                    Dashboard
                 </a>
 
-                <nav class="main-nav" aria-label="Primary navigation">
-                    <a href="{{ url_for('dashboard.index') }}" class="nav-link">
-                        Dashboard
+
+                <a
+                    href="{{ url_for('equipment.index') }}"
+                    class="nav-link"
+                >
+                    Equipment
+                </a>
+
+
+                {% if session.get("role") in [
+                    "Administrator",
+                    "IT Manager",
+                    "IT Officer"
+                ] %}
+
+                    <a
+                        href="{{ url_for('equipment.create') }}"
+                        class="nav-link nav-link-primary"
+                    >
+                        + Add Equipment
                     </a>
 
-                    <a href="{{ url_for('equipment.index') }}" class="nav-link">
-                        Equipment
-                    </a>
-
-                    <a href="{{ url_for('equipment.create') }}" class="nav-link nav-link-primary">
-                        Add Equipment
-                    </a>
-                </nav>
-
-            </div>
-        </header>
-
-        <main class="page-container">
-
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    <div class="flash-container">
-                        {% for category, message in messages %}
-                            <div class="flash-message flash-{{ category }}">
-                                {{ message }}
-                            </div>
-                        {% endfor %}
-                    </div>
                 {% endif %}
-            {% endwith %}
 
-            {% block content %}{% endblock %}
+            </nav>
 
-        </main>
+        </div>
 
-        <footer class="app-footer">
-            <div class="footer-container">
-                <span>IEMS © {{ current_year or 2026 }}</span>
-                <span>ICT Equipment Management System</span>
-            </div>
-        </footer>
+    </header>
 
-    </div>
+
+    <!-- =========================================================
+         MAIN CONTENT
+         ========================================================= -->
+
+    <main class="page-container">
+
+        <!-- FLASH MESSAGES -->
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+
+            {% if messages %}
+
+                <div class="flash-container">
+
+                    {% for category, message in messages %}
+
+                        <div
+                            class="flash-message flash-{{ category }}"
+                        >
+
+                            <span>
+                                {{ message }}
+                            </span>
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            {% endif %}
+
+        {% endwith %}
+
+
+        <!-- PAGE CONTENT -->
+
+        {% block content %}{% endblock %}
+
+    </main>
+
+
+    <!-- =========================================================
+         FOOTER
+         ========================================================= -->
+
+    <footer class="app-footer">
+
+        <div class="footer-container">
+
+            <span>
+                IEMS © {{ current_year or 2026 }}
+            </span>
+
+            <span>
+                ICT Equipment Inventory Management System
+            </span>
+
+        </div>
+
+    </footer>
+
+
 </body>
+
 </html>

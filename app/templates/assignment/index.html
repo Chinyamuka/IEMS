@@ -1,6 +1,9 @@
 {% extends "base.html" %}
 
-{% block title %}Assignment History{% endblock %}
+{% block title %}
+    Assignment History | IEMS
+{% endblock %}
+
 
 {% block content %}
 
@@ -9,19 +12,27 @@
     <div>
 
         <div class="breadcrumb">
+
             <a href="{{ url_for('equipment.index') }}">
                 Equipment
             </a>
 
             <span>/</span>
 
-            <span>Assignment History</span>
+            <span>
+                Assignments
+            </span>
+
         </div>
 
-        <h1>Assignment History</h1>
+
+        <h1>
+            Assignment History
+        </h1>
+
 
         <p>
-            View current and previous equipment assignments.
+            View current and historical equipment assignments.
         </p>
 
     </div>
@@ -41,48 +52,176 @@
 </div>
 
 
-<div class="table-card">
 
-    <div class="table-card-header">
+<!-- =========================================================
+     SUMMARY
+     ========================================================= -->
 
-        <div>
-            <h2>Equipment Assignments</h2>
+<div class="assignment-summary-grid">
 
-            <p>
-                {{ assignments|length }}
-                assignment{% if assignments|length != 1 %}s{% endif %}
-                recorded
-            </p>
-        </div>
+
+    <!-- TOTAL -->
+
+    <div class="assignment-summary-card">
+
+        <span class="assignment-summary-label">
+            Total Assignments
+        </span>
+
+        <strong class="assignment-summary-value">
+            {{ assignments|length }}
+        </strong>
+
+        <span class="assignment-summary-description">
+            Recorded assignment history
+        </span>
 
     </div>
 
 
+
+    <!-- ACTIVE -->
+
+    <div class="assignment-summary-card assignment-summary-active">
+
+        <span class="assignment-summary-label">
+            Active
+        </span>
+
+        <strong class="assignment-summary-value">
+
+            {{
+                assignments
+                |selectattr("is_active")
+                |list
+                |length
+            }}
+
+        </strong>
+
+        <span class="assignment-summary-description">
+            Equipment currently assigned
+        </span>
+
+    </div>
+
+
+
+    <!-- RETURNED -->
+
+    <div class="assignment-summary-card">
+
+        <span class="assignment-summary-label">
+            Returned
+        </span>
+
+        <strong class="assignment-summary-value">
+
+            {{
+                assignments
+                |rejectattr("is_active")
+                |list
+                |length
+            }}
+
+        </strong>
+
+        <span class="assignment-summary-description">
+            Completed assignments
+        </span>
+
+    </div>
+
+
+</div>
+
+
+
+<!-- =========================================================
+     ASSIGNMENT TABLE
+     ========================================================= -->
+
+<div class="table-card">
+
+
+    <!-- HEADER -->
+
+    <div class="table-card-header">
+
+        <div>
+
+            <span class="form-section-label">
+                CUSTODY RECORDS
+            </span>
+
+            <h2>
+                Equipment Assignments
+            </h2>
+
+            <p>
+                {{ assignments|length }}
+                assignment{% if assignments|length != 1 %}s{% endif %}
+                recorded.
+            </p>
+
+        </div>
+
+
+        <a
+            href="{{ url_for('assignment.create') }}"
+            class="btn btn-primary btn-small"
+        >
+            + New Assignment
+        </a>
+
+    </div>
+
+
+
     {% if assignments %}
+
+
+    <!-- =====================================================
+         TABLE
+         ===================================================== -->
 
     <div class="table-responsive">
 
         <table class="data-table">
 
+
             <thead>
 
                 <tr>
 
-                    <th>Equipment</th>
+                    <th>
+                        Equipment
+                    </th>
 
-                    <th>Employee</th>
+                    <th>
+                        Employee
+                    </th>
 
-                    <th>Assigned</th>
+                    <th>
+                        Assigned
+                    </th>
 
-                    <th>Returned</th>
+                    <th>
+                        Returned
+                    </th>
 
-                    <th>Status</th>
+                    <th>
+                        Status
+                    </th>
 
-                    <th>Actions</th>
+                    <th>
+                        Actions
+                    </th>
 
                 </tr>
 
             </thead>
+
 
 
             <tbody>
@@ -91,7 +230,10 @@
 
                 <tr>
 
-                    <!-- EQUIPMENT -->
+
+                    <!-- =====================================
+                         EQUIPMENT
+                         ===================================== -->
 
                     <td>
 
@@ -102,27 +244,39 @@
                             ) }}"
                             class="table-primary-link"
                         >
+
                             {{ assignment.equipment.asset_tag }}
+
                         </a>
+
 
                         <div class="table-secondary-text">
 
-                            {{ assignment.equipment.manufacturer }}
+                            {{ assignment.equipment.manufacturer or "" }}
 
-                            {{ assignment.equipment.model }}
+                            {% if assignment.equipment.manufacturer
+                                and assignment.equipment.model %}
+                                ·
+                            {% endif %}
+
+                            {{ assignment.equipment.model or "" }}
 
                         </div>
 
                     </td>
 
 
-                    <!-- EMPLOYEE -->
+
+                    <!-- =====================================
+                         EMPLOYEE
+                         ===================================== -->
 
                     <td>
 
                         <strong>
                             {{ assignment.user.full_name }}
                         </strong>
+
 
                         <div class="table-secondary-text">
 
@@ -133,34 +287,26 @@
                     </td>
 
 
-                    <!-- ASSIGNED -->
+
+                    <!-- =====================================
+                         ASSIGNED DATE
+                         ===================================== -->
 
                     <td>
 
-                        {{ assignment.assigned_at.strftime(
-                            "%d %b %Y"
-                        ) }}
-
-                        <div class="table-secondary-text">
+                        {% if assignment.assigned_at %}
 
                             {{ assignment.assigned_at.strftime(
-                                "%H:%M"
-                            ) }}
-
-                        </div>
-
-                    </td>
-
-
-                    <!-- RETURNED -->
-
-                    <td>
-
-                        {% if assignment.returned_at %}
-
-                            {{ assignment.returned_at.strftime(
                                 "%d %b %Y"
                             ) }}
+
+                            <div class="table-secondary-text">
+
+                                {{ assignment.assigned_at.strftime(
+                                    "%H:%M"
+                                ) }}
+
+                            </div>
 
                         {% else %}
 
@@ -173,19 +319,58 @@
                     </td>
 
 
-                    <!-- STATUS -->
+
+                    <!-- =====================================
+                         RETURNED DATE
+                         ===================================== -->
+
+                    <td>
+
+                        {% if assignment.returned_at %}
+
+                            {{ assignment.returned_at.strftime(
+                                "%d %b %Y"
+                            ) }}
+
+                            <div class="table-secondary-text">
+
+                                {{ assignment.returned_at.strftime(
+                                    "%H:%M"
+                                ) }}
+
+                            </div>
+
+                        {% else %}
+
+                            <span class="muted-text">
+                                —
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+
+
+                    <!-- =====================================
+                         STATUS
+                         ===================================== -->
 
                     <td>
 
                         {% if assignment.is_active %}
 
-                            <span class="status-badge status-assigned">
+                            <span
+                                class="status-badge status-assigned"
+                            >
                                 Active
                             </span>
 
                         {% else %}
 
-                            <span class="status-badge status-returned">
+                            <span
+                                class="status-badge status-returned"
+                            >
                                 Returned
                             </span>
 
@@ -194,21 +379,56 @@
                     </td>
 
 
-                    <!-- ACTIONS -->
+
+                    <!-- =====================================
+                         ACTIONS
+                         ===================================== -->
 
                     <td>
 
-                        <a
-                            href="{{ url_for(
-                                'equipment.detail',
-                                equipment_id=assignment.equipment.id
-                            ) }}"
-                            class="btn btn-small btn-secondary"
-                        >
-                            View
-                        </a>
+                        <div class="table-actions">
+
+
+                            <!-- VIEW -->
+
+                            <a
+                                href="{{ url_for(
+                                    'equipment.detail',
+                                    equipment_id=assignment.equipment.id
+                                ) }}"
+                                class="btn btn-small btn-secondary"
+                            >
+                                View
+                            </a>
+
+
+                            <!-- RETURN -->
+
+                            {% if assignment.is_active
+                                and session.get("role") in [
+                                    "Administrator",
+                                    "Asset Officer",
+                                    "IT Manager",
+                                    "IT Officer"
+                                ] %}
+
+                                <a
+                                    href="{{ url_for(
+                                        'assignment.return_equipment',
+                                        assignment_id=assignment.id
+                                    ) }}"
+                                    class="btn btn-small btn-danger"
+                                >
+                                    Return
+                                </a>
+
+                            {% endif %}
+
+
+                        </div>
 
                     </td>
+
 
                 </tr>
 
@@ -220,31 +440,44 @@
 
     </div>
 
+
     {% else %}
 
-        <div class="empty-state">
 
-            <div class="empty-state-icon">
-                —
-            </div>
+    <!-- =====================================================
+         EMPTY STATE
+         ===================================================== -->
 
-            <h3>No assignments yet</h3>
+    <div class="assignment-empty-state">
 
-            <p>
-                Equipment assignments will appear here once
-                an ICT asset has been assigned to an employee.
-            </p>
-
-            <a
-                href="{{ url_for('assignment.create') }}"
-                class="btn btn-primary"
-            >
-                Assign Equipment
-            </a>
-
+        <div class="assignment-empty-icon">
+            —
         </div>
 
+
+        <h3>
+            No assignments recorded
+        </h3>
+
+
+        <p>
+            Equipment assignments will appear here after an
+            ICT asset has been assigned to an employee.
+        </p>
+
+
+        <a
+            href="{{ url_for('assignment.create') }}"
+            class="btn btn-primary"
+        >
+            + Assign Equipment
+        </a>
+
+    </div>
+
+
     {% endif %}
+
 
 </div>
 

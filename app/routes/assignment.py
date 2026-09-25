@@ -5,7 +5,7 @@ Handles assigning ICT equipment to users and viewing
 assignment history.
 """
 
-from flask import Blueprint, render_template, redirect, url_for, flash
+from flask import Blueprint, render_template, redirect, url_for, flash, request
 
 from app.extensions import db
 from app.models import Equipment, User, EquipmentAssignment
@@ -183,4 +183,74 @@ def index():
     return render_template(
         "assignment/index.html",
         assignments=assignments
+    )
+@assignment_bp.route("/<int:assignment_id>/return ", methods=["GET", "POST"])
+def return_equipment(assignment_id):
+    """ Return currently assigned equipment
+    GET: Display the equipment assignment form.
+    POST: Process the form submission and return the equipment.
+    """
+    assignment = db.session.get(
+        EquipmentAssignment,
+        assignment_id
+    )
+    # -----------------------------------------------------
+    # CHECK ASSIGNMENT
+    # -----------------------------------------------------
+
+    if not assignment:
+        flash(
+            "The assignment could not be found.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("assignment.index")
+        )
+
+    # -----------------------------------------------------
+    # CHECK WHETHER ALREADY RETURNED
+    # -----------------------------------------------------
+
+    if not assignment.is_active:
+        flash(
+            "This equipment has already been returned.",
+            "warning"
+        )
+
+        return redirect(
+            url_for("assignment.index")
+        )
+
+    # -----------------------------------------------------
+    # PROCESS RETURN
+    # -----------------------------------------------------
+
+    if request.method == "POST":
+        from datetime import datetime
+
+        assignment.returned_at = datetime.utcnow()
+
+        # Return equipment to available inventory.
+        assignment.equipment.status = "In Stock"
+
+        db.session.commit()
+
+        flash(
+            f"{assignment.equipment.asset_tag} has been returned "
+            f"from {assignment.user.full_name}.",
+            "success"
+        )
+
+        return redirect(
+            url_for("assignment.index")
+        )
+
+    # -----------------------------------------------------
+    # SHOW CONFIRMATION
+    # -----------------------------------------------------
+
+    return render_template(
+        "assignment/return.html",
+        assignment=assignment
     )

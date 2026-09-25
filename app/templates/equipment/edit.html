@@ -1,474 +1,511 @@
 {% extends "base.html" %}
 
-
-{% block title %}
-    Edit Equipment — IEMS
-{% endblock %}
+{% block title %}{{ equipment.asset_tag }} | IEMS{% endblock %}
 
 
 {% block content %}
 
-<!-- =====================================================
-     BREADCRUMB
-     ===================================================== -->
-
-<div class="breadcrumb">
-
-    <a href="{{ url_for('dashboard.index') }}">
-        Dashboard
-    </a>
-
-    <span>/</span>
-
-    <a href="{{ url_for('equipment.index') }}">
-        Equipment
-    </a>
-
-    <span>/</span>
-
-    <a
-        href="{{ url_for(
-            'equipment.detail',
-            equipment_id=equipment.id
-        ) }}"
-    >
-        {{ equipment.asset_tag }}
-    </a>
-
-    <span>/</span>
-
-    <span>
-        Edit
-    </span>
-
-</div>
-
-
-<!-- =====================================================
-     PAGE HEADER
-     ===================================================== -->
+<!-- =========================================================
+     HEADER
+     ========================================================= -->
 
 <div class="page-header">
 
-    <div class="page-header-content">
+    <div>
 
-        <h1 class="page-title">
-            Edit Equipment
+        <div class="breadcrumb">
+
+            <a href="{{ url_for('dashboard.index') }}">
+                Dashboard
+            </a>
+
+            <span>/</span>
+
+            <a href="{{ url_for('equipment.index') }}">
+                Equipment
+            </a>
+
+            <span>/</span>
+
+            <span>{{ equipment.asset_tag }}</span>
+
+        </div>
+
+
+        <h1>
+            {{ equipment.manufacturer }}
+            {{ equipment.model }}
         </h1>
 
-        <p class="page-subtitle">
-            Update the information for
-            {{ equipment.asset_tag }}.
+        <p>
+            Asset Tag: <strong>{{ equipment.asset_tag }}</strong>
         </p>
+
+    </div>
+
+
+    <div class="detail-actions">
+
+        <a
+            href="{{ url_for('equipment.edit', id=equipment.id) }}"
+            class="btn btn-primary"
+        >
+            Edit Equipment
+        </a>
+
+        <a
+            href="{{ url_for('equipment.delete', id=equipment.id) }}"
+            class="btn btn-danger"
+        >
+            Delete
+        </a>
 
     </div>
 
 </div>
 
 
-<!-- =====================================================
-     EDIT FORM
-     ===================================================== -->
+<!-- =========================================================
+     EQUIPMENT SUMMARY
+     ========================================================= -->
 
-<div class="card">
+<section class="equipment-summary-card">
 
-    <div class="card-header">
+    <div class="equipment-summary-main">
+
+        <div class="equipment-icon">
+            ICT
+        </div>
+
+
+        <div>
+
+            <span class="summary-label">
+                Current Status
+            </span>
+
+            <span class="status-badge status-{{ equipment.status|lower|replace(' ', '-') }}">
+                {{ equipment.status }}
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <div class="summary-meta">
+
+        <div>
+
+            <span class="summary-label">
+                Condition
+            </span>
+
+            <strong>
+                {{ equipment.condition }}
+            </strong>
+
+        </div>
+
+
+        <div>
+
+            <span class="summary-label">
+                Category
+            </span>
+
+            <strong>
+                {{ equipment.category.name if equipment.category else '—' }}
+            </strong>
+
+        </div>
+
+
+        <div>
+
+            <span class="summary-label">
+                Location
+            </span>
+
+            <strong>
+                {{ equipment.location.name if equipment.location else '—' }}
+            </strong>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     DETAILS GRID
+     ========================================================= -->
+
+<div class="details-grid">
+
+
+    <!-- =====================================================
+         IDENTIFICATION
+         ===================================================== -->
+
+    <section class="detail-card">
+
+        <div class="detail-card-header">
+
+            <h2>
+                Identification
+            </h2>
+
+            <p>
+                Asset identification information.
+            </p>
+
+        </div>
+
+
+        <div class="detail-list">
+
+            <div class="detail-row">
+
+                <span>
+                    Asset Tag
+                </span>
+
+                <strong>
+                    {{ equipment.asset_tag }}
+                </strong>
+
+            </div>
+
+
+            <div class="detail-row">
+
+                <span>
+                    Serial Number
+                </span>
+
+                <strong>
+                    {{ equipment.serial_number or '—' }}
+                </strong>
+
+            </div>
+
+
+            <div class="detail-row">
+
+                <span>
+                    Manufacturer
+                </span>
+
+                <strong>
+                    {{ equipment.manufacturer }}
+                </strong>
+
+            </div>
+
+
+            <div class="detail-row">
+
+                <span>
+                    Model
+                </span>
+
+                <strong>
+                    {{ equipment.model }}
+                </strong>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         CLASSIFICATION
+         ===================================================== -->
+
+    <section class="detail-card">
+
+        <div class="detail-card-header">
+
+            <h2>
+                Classification
+            </h2>
+
+            <p>
+                Inventory classification information.
+            </p>
+
+        </div>
+
+
+        <div class="detail-list">
+
+            <div class="detail-row">
+
+                <span>
+                    Category
+                </span>
+
+                <strong>
+                    {{ equipment.category.name if equipment.category else '—' }}
+                </strong>
+
+            </div>
+
+
+            <div class="detail-row">
+
+                <span>
+                    Location
+                </span>
+
+                <strong>
+                    {{ equipment.location.name if equipment.location else '—' }}
+                </strong>
+
+            </div>
+
+
+            <div class="detail-row">
+
+                <span>
+                    Status
+                </span>
+
+                <strong>
+                    {{ equipment.status }}
+                </strong>
+
+            </div>
+
+
+            <div class="detail-row">
+
+                <span>
+                    Condition
+                </span>
+
+                <strong>
+                    {{ equipment.condition }}
+                </strong>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         PURCHASE INFORMATION
+         ===================================================== -->
+
+    <section class="detail-card">
+
+        <div class="detail-card-header">
+
+            <h2>
+                Purchase Information
+            </h2>
+
+            <p>
+                Financial information for this asset.
+            </p>
+
+        </div>
+
+
+        <div class="detail-list">
+
+            <div class="detail-row">
+
+                <span>
+                    Purchase Date
+                </span>
+
+                <strong>
+                    {{ equipment.purchase_date.strftime('%d %b %Y') if equipment.purchase_date else '—' }}
+                </strong>
+
+            </div>
+
+
+            <div class="detail-row">
+
+                <span>
+                    Purchase Price
+                </span>
+
+                <strong>
+
+                    {% if equipment.purchase_price %}
+
+                        {{ "%.2f"|format(equipment.purchase_price) }}
+
+                    {% else %}
+
+                        —
+
+                    {% endif %}
+
+                </strong>
+
+            </div>
+
+
+            <div class="detail-row">
+
+                <span>
+                    Warranty Expiry
+                </span>
+
+                <strong>
+                    {{ equipment.warranty_expiry.strftime('%d %b %Y') if equipment.warranty_expiry else '—' }}
+                </strong>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         SYSTEM INFORMATION
+         ===================================================== -->
+
+    <section class="detail-card">
+
+        <div class="detail-card-header">
+
+            <h2>
+                System Information
+            </h2>
+
+            <p>
+                Record timestamps maintained by IEMS.
+            </p>
+
+        </div>
+
+
+        <div class="detail-list">
+
+            <div class="detail-row">
+
+                <span>
+                    Record ID
+                </span>
+
+                <strong>
+                    #{{ equipment.id }}
+                </strong>
+
+            </div>
+
+
+            <div class="detail-row">
+
+                <span>
+                    Created
+                </span>
+
+                <strong>
+                    {{ equipment.created_at.strftime('%d %b %Y, %H:%M') if equipment.created_at else '—' }}
+                </strong>
+
+            </div>
+
+
+            <div class="detail-row">
+
+                <span>
+                    Last Updated
+                </span>
+
+                <strong>
+                    {{ equipment.updated_at.strftime('%d %b %Y, %H:%M') if equipment.updated_at else '—' }}
+                </strong>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</div>
+
+
+<!-- =========================================================
+     DESCRIPTION
+     ========================================================= -->
+
+<section class="detail-card description-card">
+
+    <div class="detail-card-header">
 
         <h2>
-            Equipment Information
+            Description
         </h2>
 
         <p>
-            Update the fields below and save your changes.
+            Additional information about this equipment.
         </p>
 
     </div>
 
 
-    <div class="card-body">
+    <div class="description-content">
 
-        <form
-            method="POST"
-            novalidate
+        {% if equipment.description %}
+
+            {{ equipment.description }}
+
+        {% else %}
+
+            <span class="muted-text">
+                No description has been provided for this equipment.
+            </span>
+
+        {% endif %}
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     BOTTOM ACTIONS
+     ========================================================= -->
+
+<div class="detail-bottom-actions">
+
+    <a
+        href="{{ url_for('equipment.index') }}"
+        class="btn btn-secondary"
+    >
+        ← Back to Equipment
+    </a>
+
+
+    <div>
+
+        <a
+            href="{{ url_for('equipment.edit', id=equipment.id) }}"
+            class="btn btn-primary"
         >
-
-            {{ form.hidden_tag() }}
-
-
-            <!-- =========================================
-                 IDENTIFICATION
-                 ========================================= -->
-
-            <div class="form-section">
-
-                <div class="form-section-header">
-
-                    <h3>
-                        Identification
-                    </h3>
-
-                    <p>
-                        Basic asset identification details.
-                    </p>
-
-                </div>
-
-
-                <div class="form-grid">
-
-
-                    <!-- Asset Tag -->
-
-                    <div class="form-group">
-
-                        {{ form.asset_tag.label }}
-
-                        {{ form.asset_tag(
-                            class="form-control"
-                        ) }}
-
-                        {% for error in form.asset_tag.errors %}
-
-                            <span class="error">
-                                {{ error }}
-                            </span>
-
-                        {% endfor %}
-
-                    </div>
-
-
-                    <!-- Serial Number -->
-
-                    <div class="form-group">
-
-                        {{ form.serial_number.label }}
-
-                        {{ form.serial_number(
-                            class="form-control"
-                        ) }}
-
-                        {% for error in form.serial_number.errors %}
-
-                            <span class="error">
-                                {{ error }}
-                            </span>
-
-                        {% endfor %}
-
-                    </div>
-
-
-                    <!-- Manufacturer -->
-
-                    <div class="form-group">
-
-                        {{ form.manufacturer.label }}
-
-                        {{ form.manufacturer(
-                            class="form-control"
-                        ) }}
-
-                        {% for error in form.manufacturer.errors %}
-
-                            <span class="error">
-                                {{ error }}
-                            </span>
-
-                        {% endfor %}
-
-                    </div>
-
-
-                    <!-- Model -->
-
-                    <div class="form-group">
-
-                        {{ form.model.label }}
-
-                        {{ form.model(
-                            class="form-control"
-                        ) }}
-
-                        {% for error in form.model.errors %}
-
-                            <span class="error">
-                                {{ error }}
-                            </span>
-
-                        {% endfor %}
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <!-- =========================================
-                 CLASSIFICATION
-                 ========================================= -->
-
-            <div class="form-section">
-
-                <div class="form-section-header">
-
-                    <h3>
-                        Classification
-                    </h3>
-
-                    <p>
-                        Categorise and locate the equipment.
-                    </p>
-
-                </div>
-
-
-                <div class="form-grid">
-
-
-                    <!-- Category -->
-
-                    <div class="form-group">
-
-                        {{ form.category_id.label }}
-
-                        {{ form.category_id(
-                            class="form-control"
-                        ) }}
-
-                        {% for error in form.category_id.errors %}
-
-                            <span class="error">
-                                {{ error }}
-                            </span>
-
-                        {% endfor %}
-
-                    </div>
-
-
-                    <!-- Location -->
-
-                    <div class="form-group">
-
-                        {{ form.location_id.label }}
-
-                        {{ form.location_id(
-                            class="form-control"
-                        ) }}
-
-                        {% for error in form.location_id.errors %}
-
-                            <span class="error">
-                                {{ error }}
-                            </span>
-
-                        {% endfor %}
-
-                    </div>
-
-
-                    <!-- Status -->
-
-                    <div class="form-group">
-
-                        {{ form.status.label }}
-
-                        {{ form.status(
-                            class="form-control"
-                        ) }}
-
-                        {% for error in form.status.errors %}
-
-                            <span class="error">
-                                {{ error }}
-                            </span>
-
-                        {% endfor %}
-
-                    </div>
-
-
-                    <!-- Condition -->
-
-                    <div class="form-group">
-
-                        {{ form.condition.label }}
-
-                        {{ form.condition(
-                            class="form-control"
-                        ) }}
-
-                        {% for error in form.condition.errors %}
-
-                            <span class="error">
-                                {{ error }}
-                            </span>
-
-                        {% endfor %}
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <!-- =========================================
-                 PURCHASE INFORMATION
-                 ========================================= -->
-
-            <div class="form-section">
-
-                <div class="form-section-header">
-
-                    <h3>
-                        Purchase Information
-                    </h3>
-
-                    <p>
-                        Financial and warranty information.
-                    </p>
-
-                </div>
-
-
-                <div class="form-grid">
-
-
-                    <!-- Purchase Date -->
-
-                    <div class="form-group">
-
-                        {{ form.purchase_date.label }}
-
-                        {{ form.purchase_date(
-                            class="form-control"
-                        ) }}
-
-                        {% for error in form.purchase_date.errors %}
-
-                            <span class="error">
-                                {{ error }}
-                            </span>
-
-                        {% endfor %}
-
-                    </div>
-
-
-                    <!-- Purchase Price -->
-
-                    <div class="form-group">
-
-                        {{ form.purchase_price.label }}
-
-                        {{ form.purchase_price(
-                            class="form-control"
-                        ) }}
-
-                        {% for error in form.purchase_price.errors %}
-
-                            <span class="error">
-                                {{ error }}
-                            </span>
-
-                        {% endfor %}
-
-                    </div>
-
-
-                    <!-- Warranty -->
-
-                    <div class="form-group">
-
-                        {{ form.warranty_expiry.label }}
-
-                        {{ form.warranty_expiry(
-                            class="form-control"
-                        ) }}
-
-                        {% for error in form.warranty_expiry.errors %}
-
-                            <span class="error">
-                                {{ error }}
-                            </span>
-
-                        {% endfor %}
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <!-- =========================================
-                 DESCRIPTION
-                 ========================================= -->
-
-            <div class="form-section">
-
-                <div class="form-section-header">
-
-                    <h3>
-                        Description
-                    </h3>
-
-                    <p>
-                        Additional information about this asset.
-                    </p>
-
-                </div>
-
-
-                <div class="form-group">
-
-                    {{ form.description.label }}
-
-                    {{ form.description(
-                        class="form-control",
-                        rows="5"
-                    ) }}
-
-                    {% for error in form.description.errors %}
-
-                        <span class="error">
-                            {{ error }}
-                        </span>
-
-                    {% endfor %}
-
-                </div>
-
-            </div>
-
-
-            <!-- =========================================
-                 ACTIONS
-                 ========================================= -->
-
-            <div class="form-actions">
-
-                <a
-                    href="{{ url_for(
-                        'equipment.detail',
-                        equipment_id=equipment.id
-                    ) }}"
-                    class="btn btn-secondary"
-                >
-                    Cancel
-                </a>
-
-
-                {{ form.submit(
-                    class="btn btn-primary"
-                ) }}
-
-            </div>
-
-        </form>
+            Edit Equipment
+        </a>
+
+        <a
+            href="{{ url_for('equipment.delete', id=equipment.id) }}"
+            class="btn btn-danger"
+        >
+            Delete Equipment
+        </a>
 
     </div>
 

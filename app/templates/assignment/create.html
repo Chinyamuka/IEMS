@@ -1,12 +1,11 @@
 {% extends "base.html" %}
 
-{% block title %}Assign Equipment{% endblock %}
+{% block title %}
+    Assign Equipment | IEMS
+{% endblock %}
+
 
 {% block content %}
-
-<!-- =========================================================
-     PAGE HEADER
-========================================================= -->
 
 <div class="page-header">
 
@@ -20,17 +19,30 @@
 
             <span>/</span>
 
-            <span>Assign Equipment</span>
+            <span>
+                Assignment
+            </span>
+
+            <span>/</span>
+
+            <span>
+                Assign Equipment
+            </span>
 
         </div>
 
-        <h1>Assign Equipment</h1>
+
+        <h1>
+            Assign Equipment
+        </h1>
+
 
         <p>
-            Assign an ICT asset to an active employee.
+            Assign an available ICT asset to an active employee.
         </p>
 
     </div>
+
 
     <div class="page-actions">
 
@@ -47,23 +59,28 @@
 
 
 <!-- =========================================================
-     ASSIGNMENT FORM CARD
-========================================================= -->
+     ASSIGNMENT FORM
+     ========================================================= -->
 
-<div class="assignment-form-card">
+<div class="form-card">
 
-    <div class="assignment-form-header">
 
-        <div class="assignment-form-icon">
-            ICT
-        </div>
+    <!-- HEADER -->
+
+    <div class="form-card-header">
 
         <div>
 
-            <h2>Equipment Assignment</h2>
+            <span class="form-section-label">
+                EQUIPMENT CUSTODY
+            </span>
+
+            <h2>
+                New Equipment Assignment
+            </h2>
 
             <p>
-                Select the equipment and employee receiving the asset.
+                Select the equipment, employee and assignment date.
             </p>
 
         </div>
@@ -71,10 +88,13 @@
     </div>
 
 
+
+    <!-- FORM -->
+
     <form
         method="POST"
         action="{{ url_for('assignment.create') }}"
-        class="assignment-form"
+        class="form-card-body"
     >
 
         {{ form.hidden_tag() }}
@@ -82,7 +102,7 @@
 
         <!-- =================================================
              EQUIPMENT
-        ================================================== -->
+             ================================================= -->
 
         <div class="form-group">
 
@@ -92,10 +112,6 @@
                 class="form-control"
             ) }}
 
-            <small class="form-help">
-                Only equipment that is currently available will appear.
-            </small>
-
             {% for error in form.equipment_id.errors %}
 
                 <div class="form-error">
@@ -104,12 +120,18 @@
 
             {% endfor %}
 
+            <small class="form-help">
+                Only equipment that does not currently have an
+                active assignment is shown.
+            </small>
+
         </div>
+
 
 
         <!-- =================================================
              EMPLOYEE
-        ================================================== -->
+             ================================================= -->
 
         <div class="form-group">
 
@@ -119,10 +141,6 @@
                 class="form-control"
             ) }}
 
-            <small class="form-help">
-                Select an active employee who will receive this asset.
-            </small>
-
             {% for error in form.user_id.errors %}
 
                 <div class="form-error">
@@ -131,12 +149,17 @@
 
             {% endfor %}
 
+            <small class="form-help">
+                Only active employees are available for assignment.
+            </small>
+
         </div>
+
 
 
         <!-- =================================================
              ASSIGNMENT DATE
-        ================================================== -->
+             ================================================= -->
 
         <div class="form-group">
 
@@ -146,10 +169,6 @@
                 class="form-control"
             ) }}
 
-            <small class="form-help">
-                Specify when the equipment was handed over.
-            </small>
-
             {% for error in form.assigned_at.errors %}
 
                 <div class="form-error">
@@ -158,12 +177,18 @@
 
             {% endfor %}
 
+            <small class="form-help">
+                Enter the date and time the equipment was handed
+                over to the employee.
+            </small>
+
         </div>
+
 
 
         <!-- =================================================
              NOTES
-        ================================================== -->
+             ================================================= -->
 
         <div class="form-group">
 
@@ -172,12 +197,8 @@
             {{ form.notes(
                 class="form-control",
                 rows="5",
-                placeholder="Optional notes about this assignment..."
+                placeholder="Optional notes about the assignment..."
             ) }}
-
-            <small class="form-help">
-                Add any relevant handover or assignment information.
-            </small>
 
             {% for error in form.notes.errors %}
 
@@ -190,24 +211,51 @@
         </div>
 
 
+
+        <!-- =================================================
+             INFORMATION PANEL
+             ================================================= -->
+
+        <div class="assignment-info-panel">
+
+            <div class="assignment-info-title">
+                Assignment information
+            </div>
+
+            <p>
+                Assigning equipment will change its current status
+                to <strong>Assigned</strong>.
+            </p>
+
+            <p>
+                The assignment will remain in the history even
+                after the equipment is returned.
+            </p>
+
+        </div>
+
+
+
         <!-- =================================================
              ACTIONS
-        ================================================== -->
+             ================================================= -->
 
-        <div class="assignment-form-actions">
+        <div class="form-actions">
 
             <a
-                href="{{ url_for('equipment.index') }}"
+                href="{{ url_for('assignment.index') }}"
                 class="btn btn-secondary"
             >
                 Cancel
             </a>
+
 
             {{ form.submit(
                 class="btn btn-primary"
             ) }}
 
         </div>
+
 
     </form>
 
