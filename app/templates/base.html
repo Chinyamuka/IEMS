@@ -35,41 +35,63 @@
 
 
             <!-- NAVIGATION -->
-
             <nav class="main-nav">
 
-                <a
-                    href="{{ url_for('dashboard.index') }}"
-                    class="nav-link"
-                >
-                    Dashboard
-                </a>
+    <!-- Dashboard
+         Every authenticated user can access the dashboard. -->
+    <a
+        href="{{ url_for('dashboard.index') }}"
+        class="nav-link"
+    >
+        Dashboard
+    </a>
 
 
-                <a
-                    href="{{ url_for('equipment.index') }}"
-                    class="nav-link"
-                >
-                    Equipment
-                </a>
+    <!-- Equipment
+         Every authenticated user can view equipment.
+         Creation/editing is protected separately by RBAC. -->
+    <a
+        href="{{ url_for('equipment.index') }}"
+        class="nav-link"
+    >
+        Equipment
+    </a>
 
 
-                {% if session.get("role") in [
-                    "Administrator",
-                    "IT Manager",
-                    "IT Officer"
-                ] %}
+    <!-- Assignment-history can be viewed by authenticated
+         users, while actual assignment/return operations
+         remain protected by RBAC in the backend. -->
+   <a
+    href="{{ url_for('assignment.index') }}"
+    class="nav-link
+        {% if request.endpoint.startswith('assignment.') %}
+            active
+        {% endif %}
+    "
+>
+    Assignment
+</a>
 
-                    <a
-                        href="{{ url_for('equipment.create') }}"
-                        class="nav-link nav-link-primary"
-                    >
-                        + Add Equipment
-                    </a>
 
-                {% endif %}
+    <!-- Add Equipment
+         Only privileged roles see the creation shortcut. -->
+    {% if session.get("role") in [
+        "Administrator",
+        "Asset Officer",
+        "IT Manager",
+        "IT Officer"
+    ] %}
 
-            </nav>
+        <a
+            href="{{ url_for('equipment.create') }}"
+            class="nav-link nav-link-primary"
+        >
+            + Add Equipment
+        </a>
+
+    {% endif %}
+
+</nav>
 
         </div>
 

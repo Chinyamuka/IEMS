@@ -6,7 +6,6 @@ assignment history.
 """
 
 from flask import Blueprint, render_template, redirect, url_for, flash, request
-
 from app.extensions import db
 from app.models import Equipment, User, EquipmentAssignment
 from app.forms.assignment import EquipmentAssignmentForm

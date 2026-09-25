@@ -44,7 +44,7 @@
             href="{{ url_for('assignment.create') }}"
             class="btn btn-primary"
         >
-            + Assign Equipment
+             Assign Equipment
         </a>
 
     </div>
@@ -148,7 +148,7 @@
 
     <div class="table-card-header">
 
-        <div>
+        <div >
 
             <span class="form-section-label">
                 CUSTODY RECORDS
@@ -158,21 +158,13 @@
                 Equipment Assignments
             </h2>
 
-            <p>
+            <p style="margin-bottom: 10px; margin-top: 0; font-weight: bold">
                 {{ assignments|length }}
                 assignment{% if assignments|length != 1 %}s{% endif %}
                 recorded.
             </p>
 
         </div>
-
-
-        <a
-            href="{{ url_for('assignment.create') }}"
-            class="btn btn-primary btn-small"
-        >
-            + New Assignment
-        </a>
 
     </div>
 
