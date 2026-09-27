@@ -1,110 +1,82 @@
-<!DOCTYPE html>
-<html lang="en">
+    if (event.key === "Escape") {
+{% extends "base.html" %}
 
-<head>
+{% block title %}Delete Equipment | IEMS{% endblock %}
 
-    <meta charset="UTF-8">
+{% block content %}
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+<div class="delete-modal-overlay">
 
-    <title>
-        Delete {{ equipment.asset_tag }} - IEMS
-    </title>
+    <div class="delete-modal">
 
-    <link
-        rel="stylesheet"
-        href="{{ url_for(
-            'static',
-            filename='css/style.css'
-        ) }}"
-    >
-
-</head>
-
-
-<body>
-
-    <main class="container">
-
-
-        <div class="delete-box">
-
-            <h1>
-                Delete Equipment
-            </h1>
-
-
-            <p>
-                Are you sure you want to permanently delete
-                this equipment record?
-            </p>
-
-
-            <div class="delete-equipment">
-
-                <strong>
-                    {{ equipment.asset_tag }}
-                </strong>
-
-                <span>
-                    {{ equipment.manufacturer }}
-                    {{ equipment.model }}
-                </span>
-
+        <!-- Modal Header -->
+        <div class="delete-modal-header">
+            <div class="delete-warning-icon">
+                !
             </div>
 
+            <div>
+                <h2>Delete Equipment</h2>
+                <p>This action cannot be undone.</p>
+            </div>
+        </div>
 
-            <p class="warning">
+        <!-- Equipment Information -->
+        <div class="delete-equipment-card">
 
-                ⚠ This action cannot be undone.
+            <div class="delete-equipment-row">
+                <span>Asset Tag</span>
+                <strong>{{ equipment.asset_tag }}</strong>
+            </div>
 
-            </p>
+            <div class="delete-equipment-row">
+                <span>Manufacturer</span>
+                <strong>{{ equipment.manufacturer }}</strong>
+            </div>
 
+            <div class="delete-equipment-row">
+                <span>Model</span>
+                <strong>{{ equipment.model }}</strong>
+            </div>
 
-            <form method="POST">
-
-                <!-- CSRF protection -->
-                {{ csrf_token() }}
-
-
-                <div class="actions">
-
-
-                    <!-- Cancel -->
-
-                    <a
-                        href="{{ url_for(
-                            'equipment.detail',
-                            equipment_id=equipment.id
-                        ) }}"
-                        class="btn secondary"
-                    >
-                        Cancel
-                    </a>
-
-
-                    <!-- Confirm Delete -->
-
-                    <button
-                        type="submit"
-                        class="btn danger"
-                    >
-                        Delete Equipment
-                    </button>
-
-
-                </div>
-
-            </form>
+            <div class="delete-equipment-row">
+                <span>Status</span>
+                <strong>{{ equipment.status }}</strong>
+            </div>
 
         </div>
 
+        <!-- Warning -->
+        <div class="delete-warning-message">
+            Are you sure you want to permanently delete this equipment
+            record?
+        </div>
 
-    </main>
+        <!-- Actions -->
+        <form
+            method="POST"
+            action="{{ url_for('equipment.delete', equipment_id=equipment.id) }}"
+            class="delete-modal-actions"
+        >
 
-</body>
+            <a
+                href="{{ url_for('equipment.detail', equipment_id=equipment.id) }}"
+                class="delete-cancel-btn"
+            >
+                Cancel
+            </a>
 
-</html>
+            <button
+                type="submit"
+                class="delete-confirm-btn"
+            >
+                Delete Equipment
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}

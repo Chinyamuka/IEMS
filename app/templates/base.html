@@ -2,14 +2,34 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
     <title>{% block title %}IEMS{% endblock %}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+
     {% block head_extra %}{% endblock %}
 </head>
+
 <body>
+
+    <!-- =====================================================
+         HEADER
+         ===================================================== -->
+
     <header class="app-header">
+
         <div class="header-container">
+
+            <!-- BRAND -->
+
             <a
                 href="{{ url_for('dashboard.index') }}"
                 class="brand"
@@ -34,79 +54,134 @@
             </a>
 
 
-            <!-- NAVIGATION -->
+            <!-- =================================================
+                 NAVIGATION
+                 ================================================= -->
+
+            {% if session.get("user_id") %}
+
             <nav class="main-nav">
 
-    <!-- Dashboard
-         Every authenticated user can access the dashboard. -->
-    <a
-        href="{{ url_for('dashboard.index') }}"
-        class="nav-link"
-    >
-        Dashboard
-    </a>
+                <!-- Dashboard -->
+
+                <a
+                    href="{{ url_for('dashboard.index') }}"
+                    class="nav-link
+                        {% if request.endpoint and request.endpoint.startswith('dashboard.') %}
+                            active
+                        {% endif %}
+                    "
+                >
+                    Dashboard
+                </a>
 
 
-    <!-- Equipment
-         Every authenticated user can view equipment.
-         Creation/editing is protected separately by RBAC. -->
-    <a
-        href="{{ url_for('equipment.index') }}"
-        class="nav-link"
-    >
-        Equipment
-    </a>
+                <!-- Equipment -->
+
+                <a
+                    href="{{ url_for('equipment.index') }}"
+                    class="nav-link
+                        {% if request.endpoint and request.endpoint.startswith('equipment.') %}
+                            active
+                        {% endif %}
+                    "
+                >
+                    Equipment
+                </a>
 
 
-    <!-- Assignment-history can be viewed by authenticated
-         users, while actual assignment/return operations
-         remain protected by RBAC in the backend. -->
-   <a
-    href="{{ url_for('assignment.index') }}"
-    class="nav-link
-        {% if request.endpoint.startswith('assignment.') %}
-            active
-        {% endif %}
-    "
->
-    Assignment
-</a>
+                <!-- Assignment -->
+
+                <a
+                    href="{{ url_for('assignment.index') }}"
+                    class="nav-link
+                        {% if request.endpoint and request.endpoint.startswith('assignment.') %}
+                            active
+                        {% endif %}
+                    "
+                >
+                    Assignment
+                </a>
 
 
-    <!-- Add Equipment
-         Only privileged roles see the creation shortcut. -->
-    {% if session.get("role") in [
-        "Administrator",
-        "Asset Officer",
-        "IT Manager",
-        "IT Officer"
-    ] %}
+                <!-- Add Equipment
+                     Privileged roles only -->
 
-        <a
-            href="{{ url_for('equipment.create') }}"
-            class="nav-link nav-link-primary"
-        >
-            + Add Equipment
-        </a>
+                {% if session.get("role") in [
+                    "Administrator",
+                    "Asset Officer",
+                    "IT Manager",
+                    "IT Officer"
+                ] %}
 
-    {% endif %}
+                    <a
+                        href="{{ url_for('equipment.create') }}"
+                        class="nav-link nav-link-primary"
+                    >
+                        + Add Equipment
+                    </a>
 
-</nav>
+                {% endif %}
+
+
+                <!-- =================================================
+                     CURRENT USER
+                     ================================================= -->
+
+                <div class="nav-user">
+
+                    <div class="nav-user-info">
+
+                        <strong>
+                            {{ session.get("user_name", "User") }}
+                        </strong>
+
+                        <span>
+                            {{ session.get("role", "Employee") }}
+                        </span>
+
+                    </div>
+
+
+                    <!-- Logout MUST be POST -->
+
+                    <form
+                        method="POST"
+                        action="{{ url_for('auth.logout') }}"
+                        class="logout-form"
+                    >
+
+                        <button
+                            type="submit"
+                            class="nav-link logout-button"
+                        >
+                            Logout
+                        </button>
+
+                    </form>
+
+                </div>
+
+            </nav>
+
+            {% endif %}
 
         </div>
 
     </header>
 
 
-    <!-- =========================================================
+    <!-- =====================================================
          MAIN CONTENT
-         ========================================================= -->
+         ===================================================== -->
 
     <main class="page-container">
 
         <!-- FLASH MESSAGES -->
 
-        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% with messages = get_flashed_messages(
+            with_categories=true
+        ) %}
 
             {% if messages %}
 
@@ -140,9 +215,9 @@
     </main>
 
 
-    <!-- =========================================================
+    <!-- =====================================================
          FOOTER
-         ========================================================= -->
+         ===================================================== -->
 
     <footer class="app-footer">
 

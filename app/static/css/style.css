@@ -2689,4 +2689,417 @@ button:focus-visible {
 
     }
 }
+/* =========================================================
+   USER / LOGOUT NAVIGATION
+   ========================================================= */
 
+.nav-user {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-left: 8px;
+}
+
+
+.nav-user-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    line-height: 1.2;
+}
+
+
+.nav-user-info strong {
+    font-size: 13px;
+    font-weight: 700;
+    color: #111111;
+}
+
+
+.nav-user-info span {
+    margin-top: 3px;
+    font-size: 11px;
+    color: #777777;
+}
+
+
+/* ---------------------------------------------------------
+   LOGOUT FORM
+   --------------------------------------------------------- */
+
+.logout-form {
+    margin: 0;
+    padding: 0;
+}
+
+
+/* ---------------------------------------------------------
+   LOGOUT BUTTON
+   --------------------------------------------------------- */
+
+.logout-button {
+    border: 1px solid #dddddd;
+    background: #ffffff;
+    color: #111111;
+
+    cursor: pointer;
+
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+
+    padding: 10px 16px;
+
+    border-radius: 999px;
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+
+.logout-button:hover {
+    background: #111111;
+    border-color: #111111;
+    color: #ffffff;
+
+    transform: translateY(-1px);
+}
+
+
+/* ---------------------------------------------------------
+   ACTIVE NAVIGATION
+   --------------------------------------------------------- */
+
+.main-nav .nav-link.active {
+    background: #111111;
+    color: #ffffff;
+
+    box-shadow:
+        0 4px 12px rgba(0, 0, 0, 0.10);
+}
+
+
+.main-nav .nav-link.active:hover {
+    background: #111111;
+    color: #ffffff;
+}
+
+/* =========================================================
+   DELETE CONFIRMATION MODAL
+   ========================================================= */
+
+.delete-modal-overlay {
+    position: fixed;
+    inset: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 24px;
+
+    background: rgba(15, 15, 15, 0.42);
+
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+
+    z-index: 9999;
+}
+
+
+/* =========================================================
+   MODAL
+   ========================================================= */
+
+.delete-modal {
+    width: min(520px, 100%);
+
+    background: rgba(255, 255, 255, 0.96);
+
+    border: 1px solid rgba(0, 0, 0, 0.08);
+
+    border-radius: 24px;
+
+    padding: 30px;
+
+    box-shadow:
+        0 30px 80px rgba(0, 0, 0, 0.25),
+        0 8px 24px rgba(0, 0, 0, 0.10);
+
+    animation: deleteModalIn 0.18s ease-out;
+}
+
+
+@keyframes deleteModalIn {
+
+    from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.delete-modal-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    margin-bottom: 24px;
+}
+
+
+.delete-modal-header h2 {
+    margin: 0;
+
+    font-size: 22px;
+    font-weight: 700;
+
+    color: #111;
+}
+
+
+.delete-modal-header p {
+    margin: 5px 0 0;
+
+    font-size: 14px;
+
+    color: #777;
+}
+
+
+/* =========================================================
+   WARNING ICON
+   ========================================================= */
+
+.delete-warning-icon {
+    width: 48px;
+    height: 48px;
+
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: #fff1f1;
+
+    border: 1px solid #ffd2d2;
+
+    color: #dc2626;
+
+    font-size: 22px;
+    font-weight: 800;
+}
+
+
+/* =========================================================
+   EQUIPMENT CARD
+   ========================================================= */
+
+.delete-equipment-card {
+    padding: 18px 20px;
+
+    background: #f7f7f7;
+
+    border: 1px solid #e8e8e8;
+
+    border-radius: 16px;
+
+    margin-bottom: 18px;
+}
+
+
+.delete-equipment-row {
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 20px;
+
+    padding: 9px 0;
+
+    border-bottom: 1px solid #e5e5e5;
+}
+
+
+.delete-equipment-row:last-child {
+    border-bottom: none;
+}
+
+
+.delete-equipment-row span {
+    color: #777;
+
+    font-size: 13px;
+}
+
+
+.delete-equipment-row strong {
+    color: #111;
+
+    font-size: 14px;
+
+    text-align: right;
+}
+
+
+/* =========================================================
+   WARNING MESSAGE
+   ========================================================= */
+
+.delete-warning-message {
+    padding: 14px 16px;
+
+    border-radius: 12px;
+
+    background: #fff7f7;
+
+    border: 1px solid #ffdede;
+
+    color: #8b1e1e;
+
+    font-size: 14px;
+
+    line-height: 1.5;
+
+    margin-bottom: 24px;
+}
+
+
+/* =========================================================
+   ACTION BUTTONS
+   ========================================================= */
+
+.delete-modal-actions {
+    display: flex;
+
+    justify-content: flex-end;
+
+    gap: 12px;
+}
+
+
+/* Cancel */
+
+.delete-cancel-btn {
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    min-height: 44px;
+
+    padding: 0 20px;
+
+    border-radius: 12px;
+
+    background: #f2f2f2;
+
+    border: 1px solid #dedede;
+
+    color: #222;
+
+    text-decoration: none;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+
+.delete-cancel-btn:hover {
+    background: #e9e9e9;
+
+    border-color: #d2d2d2;
+
+    transform: translateY(-1px);
+}
+
+
+/* Delete */
+
+.delete-confirm-btn {
+    min-height: 44px;
+
+    padding: 0 20px;
+
+    border: none;
+
+    border-radius: 12px;
+
+    background: #dc2626;
+
+    color: #fff;
+
+    font-size: 14px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+
+.delete-confirm-btn:hover {
+    background: #b91c1c;
+
+    transform: translateY(-1px);
+
+    box-shadow:
+        0 8px 18px rgba(220, 38, 38, 0.22);
+}
+
+
+.delete-confirm-btn:active {
+    transform: translateY(0);
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+    .delete-modal-overlay {
+        padding: 16px;
+    }
+
+    .delete-modal {
+        padding: 22px;
+
+        border-radius: 20px;
+    }
+
+    .delete-modal-actions {
+        flex-direction: column-reverse;
+    }
+
+    .delete-cancel-btn,
+    .delete-confirm-btn {
+        width: 100%;
+    }
+
+}

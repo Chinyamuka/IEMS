@@ -20,6 +20,10 @@ from app.models.category import Category
 from app.models.location import Location
 from app.models.equipment import Equipment
 from app.auth.decorators import login_required
+from app.utils.permissions import (
+    role_required,
+    role_required
+)
 
 
 # Create the equipment Blueprint.
@@ -34,8 +38,13 @@ equipment_bp = Blueprint(
 
 
 @equipment_bp.route("/new", methods=["GET", "POST"])
-@role_required("ADMIN","INVENTORY_MANAGER")
 @login_required
+@role_required(
+    "Administrator",
+    "Asset Manager"
+    "IT Manager",
+    "IT Officer",
+)
 def create():
     """
     Display the equipment registration form and process
@@ -145,7 +154,12 @@ def detail(equipment_id):
 
 @equipment_bp.route("/<int:equipment_id>/edit", methods=["GET", "POST"])
 @login_required
-@role_required("ADMIN","INVENTORY_MANAGER")
+@role_required(
+"Administrator",
+    "Asset Officer",
+    "IT Manager",
+    "IT Officer",
+)
 def edit(equipment_id):
     """
     Edit an existing equipment record.
@@ -324,7 +338,7 @@ def edit(equipment_id):
 
 @equipment_bp.route("/<int:equipment_id>/delete", methods=["GET", "POST"])
 @login_required
-@role_required("ADMIN")
+@role_required("Administrator")
 def delete(equipment_id):
     """
     Delete an equipment record.
