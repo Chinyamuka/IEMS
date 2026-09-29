@@ -39,6 +39,8 @@ users_bp = Blueprint(
 # EMPLOYEE LIST
 # =========================================================
 
+
+# Main index route
 @users_bp.route("/")
 @login_required
 def index():
