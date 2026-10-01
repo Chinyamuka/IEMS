@@ -1,32 +1,28 @@
 {% extends "base.html" %}
 
-{% block title %}Employees - IEMS{% endblock %}
+{% block title %}
+User Management - IEMS
+{% endblock %}
 
 {% block content %}
 
 <div class="page-header">
 
     <div>
-        <div class="breadcrumb">
-            <a href="{{ url_for('dashboard.index') }}">Dashboard</a>
-            <span>/</span>
-            <span>Employees</span>
-        </div>
-
-        <h1>Employees</h1>
+        <h1>User Management</h1>
 
         <p>
-            Manage employees and their ICT equipment assignments.
+            Manage system users, roles and account access.
         </p>
     </div>
 
     <div class="page-header-actions">
 
         <a
-            href="{{ url_for('users.create') }}"
+            href="#"
             class="btn btn-primary"
         >
-            + Add Employee
+            + Add User
         </a>
 
     </div>
@@ -35,96 +31,284 @@
 
 
 <!-- =====================================================
-     SEARCH
+     USER STATISTICS
      ===================================================== -->
 
-<div class="card search-card">
+<div class="stats-grid">
 
-    <form
-        method="GET"
-        action="{{ url_for('users.index') }}"
-        class="search-form"
-    >
+    <!-- TOTAL USERS -->
 
-        <div class="search-input-wrapper">
+    <div class="stat-card">
 
-            <span class="search-icon">⌕</span>
+        <div class="stat-card-content">
 
-            <input
-                type="search"
-                name="search"
-                value="{{ search }}"
-                placeholder="Search by employee number, name or email..."
-                autocomplete="off"
-            >
+            <div>
+
+                <span class="stat-label">
+                    Total Users
+                </span>
+
+                <div class="stat-value">
+                    {{ users|length }}
+                </div>
+
+                <span class="stat-description">
+                    Registered system users
+                </span>
+
+            </div>
 
         </div>
 
-        <button
-            type="submit"
-            class="btn btn-primary"
-        >
-            Search
-        </button>
+    </div>
 
-        {% if search %}
 
-        <a
-            href="{{ url_for('users.index') }}"
-            class="btn btn-secondary"
-        >
-            Clear
-        </a>
+    <!-- ACTIVE USERS -->
 
-        {% endif %}
+    <div class="stat-card">
 
-    </form>
+        <div class="stat-card-content">
+
+            <div>
+
+                <span class="stat-label">
+                    Active Users
+                </span>
+
+                <div class="stat-value">
+
+                    {{ users|selectattr("is_active")|list|length }}
+
+                </div>
+
+                <span class="stat-description">
+                    Accounts currently active
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- INACTIVE USERS -->
+
+    <div class="stat-card">
+
+        <div class="stat-card-content">
+
+            <div>
+
+                <span class="stat-label">
+                    Inactive Users
+                </span>
+
+                <div class="stat-value">
+
+                    {{ users|rejectattr("is_active")|list|length }}
+
+                </div>
+
+                <span class="stat-description">
+                    Accounts currently disabled
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ADMINISTRATORS -->
+
+    <div class="stat-card">
+
+        <div class="stat-card-content">
+
+            <div>
+
+                <span class="stat-label">
+                    Administrators
+                </span>
+
+                <div class="stat-value">
+
+                    {{
+                        users
+                        |selectattr("role", "equalto", "Administrator")
+                        |list
+                        |length
+                    }}
+
+                </div>
+
+                <span class="stat-description">
+                    Users with administrator access
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
 
 </div>
 
 
 <!-- =====================================================
-     EMPLOYEE TABLE
+     USER MANAGEMENT CARD
      ===================================================== -->
 
-<div class="card table-card">
+<div class="card user-management-card">
+
+    <!-- CARD HEADER -->
 
     <div class="card-header">
 
         <div>
-            <h2>Employee Directory</h2>
+
+            <h2>
+                System Users
+            </h2>
 
             <p>
-                {{ users|length }}
-                employee{% if users|length != 1 %}s{% endif %}
-                found
+                View and manage users registered in IEMS.
             </p>
+
         </div>
 
     </div>
 
 
-    {% if users %}
+    <!-- =================================================
+         FILTER BAR
+         ================================================= -->
 
-    <div class="table-responsive">
+    <div class="user-filter-bar">
 
-        <table class="data-table">
+        <div class="user-search">
+
+            <label for="userSearch">
+                Search
+            </label>
+
+            <input
+                type="text"
+                id="userSearch"
+                placeholder="Search by name or employee number..."
+            >
+
+        </div>
+
+
+        <div class="user-filter">
+
+            <label for="roleFilter">
+                Role
+            </label>
+
+            <select id="roleFilter">
+
+                <option value="">
+                    All Roles
+                </option>
+
+                <option value="Administrator">
+                    Administrator
+                </option>
+
+                <option value="Asset Officer">
+                    Asset Officer
+                </option>
+
+                <option value="IT Manager">
+                    IT Manager
+                </option>
+
+                <option value="IT Officer">
+                    IT Officer
+                </option>
+
+                <option value="Employee">
+                    Employee
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <div class="user-filter">
+
+            <label for="statusFilter">
+                Status
+            </label>
+
+            <select id="statusFilter">
+
+                <option value="">
+                    All Statuses
+                </option>
+
+                <option value="Active">
+                    Active
+                </option>
+
+                <option value="Inactive">
+                    Inactive
+                </option>
+
+            </select>
+
+        </div>
+
+    </div>
+
+
+    <!-- =================================================
+         USER TABLE
+         ================================================= -->
+
+    <div class="table-container">
+
+        <table
+            class="user-table"
+            id="userTable"
+        >
 
             <thead>
 
                 <tr>
 
-                    <th>Employee</th>
+                    <th>
+                        Employee Number
+                    </th>
 
-                    <th>Name</th>
+                    <th>
+                        Name
+                    </th>
 
-                    <th>Department</th>
+                    <th>
+                        Email
+                    </th>
 
-                    <th>Email</th>
+                    <th>
+                        Department
+                    </th>
 
-                    <th>Status</th>
+                    <th>
+                        Role
+                    </th>
 
-                    <th class="text-right">Actions</th>
+                    <th>
+                        Status
+                    </th>
+
+                    <th>
+                        Actions
+                    </th>
 
                 </tr>
 
@@ -135,7 +319,14 @@
 
                 {% for user in users %}
 
-                <tr>
+                <tr
+                    data-name="{{ user.full_name|lower }}"
+                    data-employee="{{ user.employee_number|lower }}"
+                    data-role="{{ user.role }}"
+                    data-status="{% if user.is_active %}Active{% else %}Inactive{% endif %}"
+                >
+
+                    <!-- EMPLOYEE NUMBER -->
 
                     <td>
 
@@ -146,12 +337,16 @@
                     </td>
 
 
+                    <!-- NAME -->
+
                     <td>
 
-                        <div class="person-cell">
+                        <div class="user-name-cell">
 
-                            <div class="avatar">
-                                {{ user.first_name[0]|upper }}{{ user.last_name[0]|upper }}
+                            <div class="user-avatar">
+
+                                {{ user.first_name[:1]|upper }}
+
                             </div>
 
                             <div>
@@ -167,6 +362,17 @@
                     </td>
 
 
+                    <!-- EMAIL -->
+
+                    <td>
+
+                        {{ user.email or "—" }}
+
+                    </td>
+
+
+                    <!-- DEPARTMENT -->
+
                     <td>
 
                         {% if user.department %}
@@ -175,43 +381,39 @@
 
                         {% else %}
 
-                            <span class="muted-text">
-                                Not assigned
-                            </span>
+                            —
 
                         {% endif %}
 
                     </td>
 
+
+                    <!-- ROLE -->
 
                     <td>
 
-                        {% if user.email %}
+                        <span class="role-badge">
 
-                            {{ user.email }}
+                            {{ user.role }}
 
-                        {% else %}
-
-                            <span class="muted-text">
-                                —
-                            </span>
-
-                        {% endif %}
+                        </span>
 
                     </td>
 
+
+                    <!-- STATUS -->
 
                     <td>
 
                         {% if user.is_active %}
 
-                            <span class="status-badge status-active">
+                            <span class="status-badge status-success">
                                 Active
                             </span>
 
                         {% else %}
 
-                            <span class="status-badge status-inactive">
+                            <span class="status-badge status-danger">
                                 Inactive
                             </span>
 
@@ -220,25 +422,49 @@
                     </td>
 
 
-                    <td class="text-right">
+                    <!-- ACTIONS -->
+
+                    <td>
 
                         <div class="table-actions">
 
                             <a
-                                href="{{ url_for('users.detail', user_id=user.id) }}"
-                                class="btn btn-small btn-secondary"
+                                href="#"
+                                class="btn btn-view btn-sm"
                             >
                                 View
                             </a>
 
                             <a
-                                href="{{ url_for('users.edit', user_id=user.id) }}"
-                                class="btn btn-small btn-secondary"
+                                href="#"
+                                class="btn btn-edit btn-sm"
                             >
                                 Edit
                             </a>
 
                         </div>
+
+                    </td>
+
+                </tr>
+
+                {% else %}
+
+                <tr>
+
+                    <td
+                        colspan="7"
+                        class="empty-state"
+                    >
+
+                        <h3>
+                            No users found
+                        </h3>
+
+                        <p>
+                            There are currently no users
+                            registered in IEMS.
+                        </p>
 
                     </td>
 
@@ -252,49 +478,111 @@
 
     </div>
 
-    {% else %}
-
-    <div class="empty-state">
-
-        <div class="empty-state-icon">
-            👥
-        </div>
-
-        <h3>No employees found</h3>
-
-        {% if search %}
-
-            <p>
-                No employees matched
-                <strong>"{{ search }}"</strong>.
-            </p>
-
-            <a
-                href="{{ url_for('users.index') }}"
-                class="btn btn-secondary"
-            >
-                Clear Search
-            </a>
-
-        {% else %}
-
-            <p>
-                Add your first employee to start assigning ICT equipment.
-            </p>
-
-            <a
-                href="{{ url_for('users.create') }}"
-                class="btn btn-primary"
-            >
-                + Add Employee
-            </a>
-
-        {% endif %}
-
-    </div>
-
-    {% endif %}
-
 </div>
+
+
+<!-- =====================================================
+     FILTER JAVASCRIPT
+     ===================================================== -->
+
+<script>
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        const searchInput =
+            document.getElementById("userSearch");
+
+        const roleFilter =
+            document.getElementById("roleFilter");
+
+        const statusFilter =
+            document.getElementById("statusFilter");
+
+        const rows =
+            document.querySelectorAll(
+                "#userTable tbody tr[data-name]"
+            );
+
+
+        function filterUsers() {
+
+            const search =
+                searchInput.value
+                    .toLowerCase()
+                    .trim();
+
+            const role =
+                roleFilter.value;
+
+            const status =
+                statusFilter.value;
+
+
+            rows.forEach(
+                function (row) {
+
+                    const name =
+                        row.dataset.name;
+
+                    const employee =
+                        row.dataset.employee;
+
+                    const rowRole =
+                        row.dataset.role;
+
+                    const rowStatus =
+                        row.dataset.status;
+
+
+                    const matchesSearch =
+                        !search ||
+                        name.includes(search) ||
+                        employee.includes(search);
+
+
+                    const matchesRole =
+                        !role ||
+                        rowRole === role;
+
+
+                    const matchesStatus =
+                        !status ||
+                        rowStatus === status;
+
+
+                    row.style.display =
+                        matchesSearch &&
+                        matchesRole &&
+                        matchesStatus
+                            ? ""
+                            : "none";
+
+                }
+            );
+
+        }
+
+
+        searchInput.addEventListener(
+            "input",
+            filterUsers
+        );
+
+        roleFilter.addEventListener(
+            "change",
+            filterUsers
+        );
+
+        statusFilter.addEventListener(
+            "change",
+            filterUsers
+        );
+
+    }
+);
+
+</script>
 
 {% endblock %}
