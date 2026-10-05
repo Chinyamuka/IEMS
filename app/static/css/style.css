@@ -3103,3 +3103,547 @@ button:focus-visible {
     }
 
 }
+
+.equipment-btn-search{
+    background-color: black;
+    color: white;
+}
+
+/* =========================================================
+   IEMS — SIDEBAR DRAWER
+   ========================================================= */
+
+/* ---------------------------------------------------------
+   MENU TOGGLE
+   --------------------------------------------------------- */
+
+.menu-toggle {
+
+    width: 44px;
+    height: 44px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    gap: 5px;
+
+    border: 1px solid #ddddda;
+    border-radius: 12px;
+
+    background: #ffffff;
+    color: #111111;
+
+    cursor: pointer;
+
+    transition:
+        background 0.18s ease,
+        border-color 0.18s ease,
+        transform 0.18s ease;
+}
+
+.menu-toggle:hover {
+
+    background: #f2f2ef;
+
+    border-color: #cfcfca;
+
+    transform: translateY(-1px);
+}
+
+
+.menu-toggle span {
+
+    width: 18px;
+    height: 2px;
+
+    display: block;
+
+    border-radius: 999px;
+
+    background: #111111;
+
+    transition:
+        transform 0.2s ease,
+        opacity 0.2s ease;
+}
+
+
+/* ---------------------------------------------------------
+   OVERLAY
+   --------------------------------------------------------- */
+
+.drawer-overlay {
+
+    position: fixed;
+
+    inset: 0;
+
+    background: rgba(0, 0, 0, 0.38);
+
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+
+    opacity: 0;
+
+    visibility: hidden;
+
+    pointer-events: none;
+
+    z-index: 9998;
+
+    transition:
+        opacity 0.22s ease,
+        visibility 0.22s ease;
+}
+
+
+.drawer-overlay.is-visible {
+
+    opacity: 1;
+
+    visibility: visible;
+
+    pointer-events: auto;
+}
+
+
+/* ---------------------------------------------------------
+   DRAWER
+   --------------------------------------------------------- */
+
+.side-drawer {
+
+    position: fixed;
+
+    top: 0;
+    left: 0;
+
+    width: min(360px, 88vw);
+
+    height: 100vh;
+
+    display: flex;
+    flex-direction: column;
+
+    background: #fffdf8;
+
+    border-right: 1px solid #deded9;
+
+    box-shadow:
+        20px 0 60px rgba(0, 0, 0, 0.16);
+
+    transform: translateX(-105%);
+
+    visibility: hidden;
+
+    z-index: 9999;
+
+    transition:
+        transform 0.25s ease,
+        visibility 0.25s ease;
+
+    overflow-y: auto;
+}
+
+
+.side-drawer.is-open {
+
+    transform: translateX(0);
+
+    visibility: visible;
+}
+
+
+/* ---------------------------------------------------------
+   DRAWER HEADER
+   --------------------------------------------------------- */
+
+.drawer-header {
+
+    min-height: 82px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 15px;
+
+    padding: 18px 20px;
+
+    border-bottom: 1px solid #e7e7e2;
+}
+
+
+.drawer-brand {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 11px;
+}
+
+
+.drawer-brand .brand-icon {
+
+    width: 40px;
+    height: 40px;
+
+    flex: 0 0 40px;
+
+    border-radius: 11px;
+}
+
+
+.drawer-brand .brand-text {
+
+    display: flex;
+
+    flex-direction: column;
+}
+
+
+.drawer-brand .brand-text strong {
+
+    font-size: 15px;
+}
+
+
+.drawer-brand .brand-text small {
+
+    margin-top: 4px;
+
+    color: #777777;
+
+    font-size: 10px;
+
+    font-weight: 600;
+}
+
+
+/* ---------------------------------------------------------
+   CLOSE BUTTON
+   --------------------------------------------------------- */
+
+.drawer-close {
+
+    width: 38px;
+    height: 38px;
+
+    display: grid;
+    place-items: center;
+
+    border: 1px solid #deded9;
+
+    border-radius: 10px;
+
+    background: #ffffff;
+
+    color: #222222;
+
+    font-size: 25px;
+
+    line-height: 1;
+
+    cursor: pointer;
+
+    transition:
+        background 0.18s ease,
+        border-color 0.18s ease;
+}
+
+
+.drawer-close:hover {
+
+    background: #f0f0ed;
+
+    border-color: #cfcfca;
+}
+
+
+/* ---------------------------------------------------------
+   DRAWER USER
+   --------------------------------------------------------- */
+
+.drawer-user {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+    margin: 18px;
+
+    padding: 14px;
+
+    border: 1px solid #deded9;
+
+    border-radius: 14px;
+
+    background: #f5f5f2;
+}
+
+
+.drawer-user-avatar {
+
+    width: 42px;
+    height: 42px;
+
+    flex: 0 0 42px;
+
+    display: grid;
+    place-items: center;
+
+    border-radius: 50%;
+
+    background: #111111;
+
+    color: #ffffff;
+
+    font-size: 14px;
+
+    font-weight: 800;
+}
+
+
+.drawer-user-info {
+
+    min-width: 0;
+
+    display: flex;
+
+    flex-direction: column;
+}
+
+
+.drawer-user-info strong {
+
+    color: #111111;
+
+    font-size: 13px;
+
+    font-weight: 800;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+}
+
+
+.drawer-user-info span {
+
+    margin-top: 3px;
+
+    color: #777777;
+
+    font-size: 11px;
+}
+
+
+/* ---------------------------------------------------------
+   NAVIGATION
+   --------------------------------------------------------- */
+
+.drawer-navigation {
+
+    flex: 1;
+
+    padding: 4px 14px 20px;
+}
+
+
+.drawer-section-label {
+
+    margin: 18px 10px 7px;
+
+    color: #999994;
+
+    font-size: 9px;
+
+    font-weight: 850;
+
+    letter-spacing: 0.8px;
+
+    text-transform: uppercase;
+}
+
+
+.drawer-link {
+
+    min-height: 42px;
+
+    display: flex;
+
+    align-items: center;
+
+    width: 100%;
+
+    margin: 3px 0;
+
+    padding: 10px 12px;
+
+    border: 1px solid transparent;
+
+    border-radius: 10px;
+
+    background: transparent;
+
+    color: #454545;
+
+    font-size: 12px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+        background 0.18s ease,
+        color 0.18s ease,
+        border-color 0.18s ease,
+        transform 0.18s ease;
+}
+
+
+.drawer-link:hover {
+
+    background: #f0f0ed;
+
+    border-color: #deded9;
+
+    color: #111111;
+
+    transform: translateX(2px);
+}
+
+
+.drawer-link.active {
+
+    background: #111111;
+
+    border-color: #111111;
+
+    color: #ffffff;
+}
+
+
+.drawer-link.active:hover {
+
+    background: #111111;
+
+    color: #ffffff;
+}
+
+
+.drawer-link-primary {
+
+    margin-top: 8px;
+
+    background: #111111;
+
+    border-color: #111111;
+
+    color: #ffffff;
+}
+
+
+.drawer-link-primary:hover {
+
+    background: #292929;
+
+    border-color: #292929;
+
+    color: #ffffff;
+}
+
+
+/* ---------------------------------------------------------
+   DRAWER FOOTER
+   --------------------------------------------------------- */
+
+.drawer-footer {
+
+    padding: 14px;
+
+    border-top: 1px solid #e7e7e2;
+
+    background: #fafaf7;
+}
+
+
+.drawer-logout-form {
+
+    margin: 3px 0;
+
+    padding: 0;
+}
+
+
+.drawer-logout {
+
+    width: 100%;
+
+    min-height: 42px;
+
+    padding: 10px 12px;
+
+    border: 1px solid #deded9;
+
+    border-radius: 10px;
+
+    background: #ffffff;
+
+    color: #dc2626;
+
+    font-family: inherit;
+
+    font-size: 12px;
+
+    font-weight: 800;
+
+    text-align: left;
+
+    cursor: pointer;
+
+    transition:
+        background 0.18s ease,
+        border-color 0.18s ease;
+}
+
+
+.drawer-logout:hover {
+
+    background: #fff1f1;
+
+    border-color: #efcaca;
+}
+
+
+/* ---------------------------------------------------------
+   PREVENT PAGE SCROLL WHEN DRAWER IS OPEN
+   --------------------------------------------------------- */
+
+body.drawer-open {
+
+    overflow: hidden;
+}
+
+
+/* ---------------------------------------------------------
+   MOBILE
+   --------------------------------------------------------- */
+
+@media (max-width: 760px) {
+
+    .menu-toggle {
+
+        width: 42px;
+        height: 42px;
+    }
+
+}
