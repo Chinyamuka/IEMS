@@ -26,7 +26,7 @@
             href="{{ url_for('users.create') }}"
             class="btn btn-primary"
         >
-            + Add Employee
+            Add Employee
         </a>
 
     </div>
@@ -37,7 +37,6 @@
 <!-- =====================================================
      SEARCH
      ===================================================== -->
-
 <div class="card search-card">
 
     <form
@@ -46,23 +45,19 @@
         class="search-form"
     >
 
-        <div class="search-input-wrapper">
-
-            <span class="search-icon">⌕</span>
-
-            <input
-                type="search"
-                name="search"
-                value="{{ search }}"
-                placeholder="Search by employee number, name or email..."
-                autocomplete="off"
-            >
-
-        </div>
+        <input
+            type="search"
+            style="width: 100%; border-radius: 8px; border: 1px solid rgb(0 0 0 / 0.14); padding: 5px"
+            name="search"
+            value="{{ search }}"
+            placeholder="Search by employee number, name or email..."
+            class="search-input"
+            autocomplete="off"
+        >
 
         <button
             type="submit"
-            class="equipment-btn-search"
+            class="btn search-button"
         >
             Search
         </button>
@@ -81,8 +76,6 @@
     </form>
 
 </div>
-
-
 <!-- =====================================================
      EMPLOYEE TABLE
      ===================================================== -->
@@ -226,14 +219,14 @@
 
                             <a
                                 href="{{ url_for('users.detail', user_id=user.id) }}"
-                                class="btn btn-small btn-secondary"
+                                class="btn-action btn-view"
                             >
                                 View
                             </a>
 
                             <a
                                 href="{{ url_for('users.edit', user_id=user.id) }}"
-                                class="btn btn-small btn-secondary"
+                                class="btn-action btn-edit"
                             >
                                 Edit
                             </a>
