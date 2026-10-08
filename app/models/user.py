@@ -16,47 +16,15 @@ class User(db.Model):
     id = db.Column(db.Integer,primary_key=True )
     employee_number = db.Column(  db.String(50),nullable=False, unique=True, index=True )
     first_name = db.Column(db.String(100), nullable=False )
-
-    last_name = db.Column(
-        db.String(100),
-        nullable=False
-    )
-
-    email = db.Column(
-        db.String(150),
-        nullable=True,
-        unique=True
-    )
-
-    phone = db.Column(
-        db.String(50),
-        nullable=True
-    )
-
-    department_id = db.Column(
-        db.Integer,
-        db.ForeignKey("department.id"),
-        nullable=True,
-        index=True
-    )
-
-    # Stores the securely hashed password.
+    last_name = db.Column( db.String(100),  nullable=False )
+    email = db.Column(db.String(150),  nullable=True, unique=True)
+    phone = db.Column(db.String(50),  nullable=True)
+    profile_image = db.Column(db.String(255), nullable=True)
+    department_id = db.Column( db.Integer, db.ForeignKey("department.id"), nullable=True, index=True )
     password_hash = db.Column(db.String(255), nullable=False)
     role = db.Column(db.String(50),nullable=False,default="employee",index=True )
-
-    # Controls whether the account can log in.
-    is_active = db.Column(
-        db.Boolean,
-        nullable=False,
-        default=True
-    )
-
-    # Explicit relationship to Department.
-    department = db.relationship(
-        "Department",
-        back_populates="users"
-    )
-
+    is_active = db.Column( db.Boolean, nullable=False,default=True)
+    department = db.relationship( "Department",back_populates="users" )
 
     def set_password(self, password):
         """
@@ -85,6 +53,7 @@ class User(db.Model):
             self.password_hash,
             password
         )
+
 
 
     @property
