@@ -18,6 +18,7 @@ class Equipment(db.Model):
     serial_number = db.Column(db.String(150),nullable=True,unique=True,index=True)
     manufacturer = db.Column(db.String(100),nullable=False)
     model = db.Column(db.String(150),nullable=False)
+    image_filename = db.Column(db.String(255),nullable=True)
     description = db.Column(db.Text,nullable=True)
     category_id = db.Column(db.Integer,db.ForeignKey("category.id"),nullable=False,index=True)
     location_id = db.Column(db.Integer,db.ForeignKey("location.id"),nullable=True,index=True)
