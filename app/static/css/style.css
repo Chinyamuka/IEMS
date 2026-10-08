@@ -3006,3 +3006,91 @@ body.drawer-open {
     }
 
 }
+/* =========================================================
+   AVATAR — EXTRA LARGE (profile header)
+   ========================================================= */
+
+.avatar-xl {
+    width: 140px;
+    height: 140px;
+    font-size: 44px;
+    font-weight: 800;
+}
+
+
+/* =========================================================
+   PROFILE HEADER (users/detail.html)
+   ========================================================= */
+
+.profile-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+
+    gap: 12px;
+
+    padding: 36px 24px;
+
+    margin-bottom: 28px;
+
+    background: var(--cream);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+}
+
+.profile-header-name {
+    margin: 8px 0 0;
+    color: var(--black);
+    font-size: 28px;
+    font-weight: 850;
+    letter-spacing: -0.6px;
+    line-height: 1.15;
+}
+
+.profile-header-meta {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+.profile-header-status {
+    margin-top: 4px;
+}
+
+.profile-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    margin-top: 16px;
+}
+
+.inline-form {
+    display: inline;
+    margin: 0;
+    padding: 0;
+}
+
+
+@media (max-width: 600px) {
+
+    .profile-header {
+        padding: 26px 18px;
+    }
+
+    .profile-header-name {
+        font-size: 22px;
+    }
+
+    .profile-header-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .profile-header-actions .btn {
+        width: 100%;
+    }
+
+}

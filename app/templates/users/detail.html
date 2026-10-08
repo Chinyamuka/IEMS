@@ -1,45 +1,69 @@
 {% extends "base.html" %}
 
+{% from "_macros.html" import avatar %}
+
 {% block title %}{{ user.full_name }} - IEMS{% endblock %}
 
 {% block content %}
 
-<div class="page-header">
+<div class="breadcrumb">
 
-    <div>
+    <a href="{{ url_for('dashboard.index') }}">Dashboard</a>
+    <span>/</span>
+    <a href="{{ url_for('users.index') }}">Employees</a>
+    <span>/</span>
+    <span>{{ user.employee_number }}</span>
 
-        <div class="breadcrumb">
+</div>
 
-            <a href="{{ url_for('dashboard.index') }}">
-                Dashboard
-            </a>
 
-            <span>/</span>
+{# ---------------------------------------------------------
+   PROFILE HEADER (WhatsApp style)
+   --------------------------------------------------------- #}
 
-            <a href="{{ url_for('users.index') }}">
-                Employees
-            </a>
+<div class="profile-header">
 
-            <span>/</span>
+    {{ avatar(user, "xl") }}
 
-            <span>{{ user.employee_number }}</span>
+    <h1 class="profile-header-name">
+        {{ user.full_name }}
+    </h1>
 
-        </div>
+    <p class="profile-header-meta">
 
-        <h1>{{ user.full_name }}</h1>
+        {{ user.employee_number }}
 
-        <p>
-            Employee profile and equipment assignment information.
-        </p>
+        {% if user.department %}
+            · {{ user.department.name }}
+        {% endif %}
+
+        · {{ user.role }}
+
+    </p>
+
+    <div class="profile-header-status">
+
+        {% if user.is_active %}
+
+            <span class="status-badge status-active">
+                Active
+            </span>
+
+        {% else %}
+
+            <span class="status-badge status-inactive">
+                Inactive
+            </span>
+
+        {% endif %}
 
     </div>
 
-
-    <div class="detail-actions">
+    <div class="profile-header-actions">
 
         <a
             href="{{ url_for('users.edit', user_id=user.id) }}"
-            class="btn btn-secondary"
+            class="btn btn-primary"
         >
             Edit Employee
         </a>
@@ -49,6 +73,7 @@
         <form
             method="POST"
             action="{{ url_for('users.deactivate', user_id=user.id) }}"
+            class="inline-form"
         >
 
             <button
@@ -66,6 +91,7 @@
         <form
             method="POST"
             action="{{ url_for('users.activate', user_id=user.id) }}"
+            class="inline-form"
         >
 
             <button
@@ -84,84 +110,9 @@
 </div>
 
 
-<!-- =====================================================
-     EMPLOYEE SUMMARY
-     ===================================================== -->
-
-<div class="equipment-summary-card">
-
-    <div class="equipment-summary-main">
-
-        <div class="equipment-icon">
-            {{ user.first_name[0]|upper }}{{ user.last_name[0]|upper }}
-        </div>
-
-        <div>
-
-            <span class="summary-label">
-                Employee Number
-            </span>
-
-            <strong>
-                {{ user.employee_number }}
-            </strong>
-
-        </div>
-
-    </div>
-
-
-    <div class="summary-meta">
-
-        <div>
-
-            <span class="summary-label">
-                Department
-            </span>
-
-            <strong>
-
-                {% if user.department %}
-                    {{ user.department.name }}
-                {% else %}
-                    Not assigned
-                {% endif %}
-
-            </strong>
-
-        </div>
-
-
-        <div>
-
-            <span class="summary-label">
-                Status
-            </span>
-
-            {% if user.is_active %}
-
-                <span class="status-badge status-active">
-                    Active
-                </span>
-
-            {% else %}
-
-                <span class="status-badge status-inactive">
-                    Inactive
-                </span>
-
-            {% endif %}
-
-        </div>
-
-    </div>
-
-</div>
-
-
-<!-- =====================================================
-     DETAILS
-     ===================================================== -->
+{# ---------------------------------------------------------
+   DETAILS
+   --------------------------------------------------------- #}
 
 <div class="details-grid">
 
@@ -181,35 +132,18 @@
         <div class="detail-list">
 
             <div class="detail-row">
-
                 <span>Employee Number</span>
-
-                <strong>
-                    {{ user.employee_number }}
-                </strong>
-
+                <strong>{{ user.employee_number }}</strong>
             </div>
 
-
             <div class="detail-row">
-
                 <span>First Name</span>
-
-                <strong>
-                    {{ user.first_name }}
-                </strong>
-
+                <strong>{{ user.first_name }}</strong>
             </div>
 
-
             <div class="detail-row">
-
                 <span>Last Name</span>
-
-                <strong>
-                    {{ user.last_name }}
-                </strong>
-
+                <strong>{{ user.last_name }}</strong>
             </div>
 
         </div>
@@ -233,53 +167,41 @@
         <div class="detail-list">
 
             <div class="detail-row">
-
                 <span>Email</span>
-
                 <strong>
-
                     {% if user.email %}
                         {{ user.email }}
                     {% else %}
                         <span class="muted-text">Not provided</span>
                     {% endif %}
-
                 </strong>
-
             </div>
 
-
             <div class="detail-row">
-
                 <span>Phone</span>
-
                 <strong>
-
                     {% if user.phone %}
                         {{ user.phone }}
                     {% else %}
                         <span class="muted-text">Not provided</span>
                     {% endif %}
-
                 </strong>
-
             </div>
 
-
             <div class="detail-row">
-
                 <span>Department</span>
-
                 <strong>
-
                     {% if user.department %}
                         {{ user.department.name }}
                     {% else %}
                         <span class="muted-text">Not assigned</span>
                     {% endif %}
-
                 </strong>
+            </div>
 
+            <div class="detail-row">
+                <span>Role</span>
+                <strong>{{ user.role }}</strong>
             </div>
 
         </div>
@@ -289,9 +211,9 @@
 </div>
 
 
-<!-- =====================================================
-     ASSIGNMENTS
-     ===================================================== -->
+{# ---------------------------------------------------------
+   ASSIGNMENTS
+   --------------------------------------------------------- #}
 
 <div class="card description-card">
 
@@ -339,62 +261,36 @@
                 <tr>
 
                     <td>
-
-                        <strong>
-                            {{ assignment.equipment.asset_tag }}
-                        </strong>
-
+                        <strong>{{ assignment.equipment.asset_tag }}</strong>
                     </td>
 
-
                     <td>
-
                         {{ assignment.equipment.manufacturer }}
                         {{ assignment.equipment.model }}
-
                     </td>
 
-
                     <td>
-
                         {{ assignment.assigned_at.strftime('%d %b %Y') }}
-
                     </td>
 
-
                     <td>
-
                         {% if assignment.returned_at %}
-
                             {{ assignment.returned_at.strftime('%d %b %Y') }}
-
                         {% else %}
-
-                            <span class="muted-text">
-                                —
-                            </span>
-
+                            <span class="muted-text">—</span>
                         {% endif %}
-
                     </td>
 
-
                     <td>
-
                         {% if assignment.is_active %}
-
                             <span class="status-badge status-active">
                                 Active
                             </span>
-
                         {% else %}
-
                             <span class="status-badge status-inactive">
                                 Returned
                             </span>
-
                         {% endif %}
-
                     </td>
 
                 </tr>
@@ -410,10 +306,6 @@
     {% else %}
 
     <div class="empty-state">
-
-        <div class="empty-state-icon">
-            💻
-        </div>
 
         <h3>No equipment assignments</h3>
 
