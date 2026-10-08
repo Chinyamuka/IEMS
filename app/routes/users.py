@@ -5,14 +5,15 @@ Handles:
 - Employee listing
 - Employee creation
 - Employee details
-- Employee editing
+- Employee editing (incl. profile-photo upload)
 - Employee deactivation
 - Employee reactivation
 
-Authentication and RBAC will be connected to these routes
-as the security layer is implemented.
+Authentication and RBAC are enforced by @login_required.
 """
+
 from app.auth.decorators import login_required
+
 from flask import (
     Blueprint,
     render_template,
@@ -21,8 +22,15 @@ from flask import (
     flash,
     request,
 )
+
 from app.extensions import db
 from app.models import User, Department
+from app.utils.uploads import (
+    save_image,
+    delete_image,
+    ImageUploadError,
+)
+
 
 # =========================================================
 # BLUEPRINT
@@ -39,41 +47,28 @@ users_bp = Blueprint(
 # EMPLOYEE LIST
 # =========================================================
 
-
-# Main index route
 @users_bp.route("/")
 @login_required
 def index():
     """Display all employees with optional search."""
 
     search = request.args.get(
-        "search",
-        "",
-        type=str
+        "search", "", type=str
     ).strip()
 
     query = User.query
 
-    # -----------------------------------------------------
-    # SEARCH
-    # -----------------------------------------------------
-
+    # Search across employee number, name, and email.
     if search:
-
-        search_pattern = f"%{search}%"
-
+        pattern = f"%{search}%"
         query = query.filter(
             db.or_(
-                User.employee_number.ilike(search_pattern),
-                User.first_name.ilike(search_pattern),
-                User.last_name.ilike(search_pattern),
-                User.email.ilike(search_pattern),
+                User.employee_number.ilike(pattern),
+                User.first_name.ilike(pattern),
+                User.last_name.ilike(pattern),
+                User.email.ilike(pattern),
             )
         )
-
-    # -----------------------------------------------------
-    # ORDERING
-    # -----------------------------------------------------
 
     users = query.order_by(
         User.first_name.asc(),
@@ -103,87 +98,38 @@ def create():
     if request.method == "POST":
 
         # -------------------------------------------------
-        # GET FORM DATA
+        # READ FIELDS
         # -------------------------------------------------
 
-        employee_number = request.form.get(
-            "employee_number",
-            ""
-        ).strip()
-
-        first_name = request.form.get(
-            "first_name",
-            ""
-        ).strip()
-
-        last_name = request.form.get(
-            "last_name",
-            ""
-        ).strip()
-
-        email = request.form.get(
-            "email",
-            ""
-        ).strip()
-
-        phone = request.form.get(
-            "phone",
-            ""
-        ).strip()
-
-        department_id = request.form.get(
-            "department_id"
-        )
+        employee_number = request.form.get("employee_number", "").strip()
+        first_name      = request.form.get("first_name", "").strip()
+        last_name       = request.form.get("last_name", "").strip()
+        email           = request.form.get("email", "").strip()
+        phone           = request.form.get("phone", "").strip()
+        department_id   = request.form.get("department_id")
+        password        = request.form.get("password", "")
+        confirm_password= request.form.get("confirm_password", "")
 
         # -------------------------------------------------
-        # GET PASSWORD DATA
-        # -------------------------------------------------
-
-        password = request.form.get(
-            "password",
-            ""
-        )
-
-        confirm_password = request.form.get(
-            "confirm_password",
-            ""
-        )
-
-        # -------------------------------------------------
-        # BASIC VALIDATION
+        # REQUIRED-FIELD VALIDATION
         # -------------------------------------------------
 
         if not employee_number:
-
-            flash(
-                "Employee number is required.",
-                "danger"
-            )
-
+            flash("Employee number is required.", "danger")
             return render_template(
                 "users/create.html",
                 departments=departments
             )
 
         if not first_name:
-
-            flash(
-                "First name is required.",
-                "danger"
-            )
-
+            flash("First name is required.", "danger")
             return render_template(
                 "users/create.html",
                 departments=departments
             )
 
         if not last_name:
-
-            flash(
-                "Last name is required.",
-                "danger"
-            )
-
+            flash("Last name is required.", "danger")
             return render_template(
                 "users/create.html",
                 departments=departments
@@ -194,82 +140,54 @@ def create():
         # -------------------------------------------------
 
         if not password:
-
-            flash(
-                "Password is required.",
-                "danger"
-            )
-
+            flash("Password is required.", "danger")
             return render_template(
                 "users/create.html",
                 departments=departments
             )
 
         if len(password) < 8:
-
             flash(
                 "Password must contain at least 8 characters.",
                 "danger"
             )
-
             return render_template(
                 "users/create.html",
                 departments=departments
             )
 
         if password != confirm_password:
-
-            flash(
-                "Passwords do not match.",
-                "danger"
-            )
-
+            flash("Passwords do not match.", "danger")
             return render_template(
                 "users/create.html",
                 departments=departments
             )
 
         # -------------------------------------------------
-        # DUPLICATE EMPLOYEE NUMBER
+        # DUPLICATE CHECKS
         # -------------------------------------------------
 
-        existing_employee = User.query.filter_by(
+        if User.query.filter_by(
             employee_number=employee_number
-        ).first()
-
-        if existing_employee:
-
+        ).first():
             flash(
                 "That employee number already exists.",
                 "danger"
             )
-
             return render_template(
                 "users/create.html",
                 departments=departments
             )
 
-        # -------------------------------------------------
-        # DUPLICATE EMAIL
-        # -------------------------------------------------
-
-        if email:
-
-            existing_email = User.query.filter_by(
-                email=email
-            ).first()
-
-            if existing_email:
-
-                flash(
-                    "That email address is already in use.",
-                    "danger"
-                )
-
-                return render_template(
-                    "users/create.html",
-                    departments=departments
-                )
+        if email and User.query.filter_by(email=email).first():
+            flash(
+                "That email address is already in use.",
+                "danger"
+            )
+            return render_template(
+                "users/create.html",
+                departments=departments
+            )
 
         # -------------------------------------------------
         # CREATE USER
@@ -282,27 +200,14 @@ def create():
             email=email or None,
             phone=phone or None,
             department_id=(
-                int(department_id)
-                if department_id
-                else None
+                int(department_id) if department_id else None
             ),
             is_active=True
         )
 
-        # -------------------------------------------------
-        # HASH PASSWORD
-        # -------------------------------------------------
-
-        # IMPORTANT:
-        # Never store the plain-text password.
-        #
-        # set_password() uses Werkzeug's secure
-        # password hashing implementation.
+        # Hashing is owned by the model (see User.set_password).
+        # The route never touches password_hash directly.
         user.set_password(password)
-
-        # -------------------------------------------------
-        # SAVE USER
-        # -------------------------------------------------
 
         db.session.add(user)
         db.session.commit()
@@ -313,15 +218,8 @@ def create():
         )
 
         return redirect(
-            url_for(
-                "users.detail",
-                user_id=user.id
-            )
+            url_for("users.detail", user_id=user.id)
         )
-
-    # -----------------------------------------------------
-    # DISPLAY FORM
-    # -----------------------------------------------------
 
     return render_template(
         "users/create.html",
@@ -338,10 +236,7 @@ def create():
 def detail(user_id):
     """Display employee details."""
 
-    user = db.get_or_404(
-        User,
-        user_id
-    )
+    user = db.get_or_404(User, user_id)
 
     return render_template(
         "users/detail.html",
@@ -356,12 +251,19 @@ def detail(user_id):
 @users_bp.route("/<int:user_id>/edit", methods=["GET", "POST"])
 @login_required
 def edit(user_id):
-    """Edit an existing employee."""
+    """
+    Edit an existing employee, with optional profile-photo upload.
 
-    user = db.get_or_404(
-        User,
-        user_id
-    )
+    Ordering matters:
+        save file  ->  assign fields  ->  commit  ->  delete old file
+
+    - If the file is invalid, the DB object is untouched.
+    - If the commit fails, the newly written file is removed.
+    - The previous photo is only deleted after the new filename
+      is safely persisted in the database.
+    """
+
+    user = db.get_or_404(User, user_id)
 
     departments = Department.query.order_by(
         Department.name.asc()
@@ -370,49 +272,25 @@ def edit(user_id):
     if request.method == "POST":
 
         # -------------------------------------------------
-        # GET FORM DATA
+        # READ FIELDS
         # -------------------------------------------------
 
-        employee_number = request.form.get(
-            "employee_number",
-            ""
-        ).strip()
-
-        first_name = request.form.get(
-            "first_name",
-            ""
-        ).strip()
-
-        last_name = request.form.get(
-            "last_name",
-            ""
-        ).strip()
-
-        email = request.form.get(
-            "email",
-            ""
-        ).strip()
-
-        phone = request.form.get(
-            "phone",
-            ""
-        ).strip()
-
-        department_id = request.form.get(
-            "department_id"
-        )
+        employee_number = request.form.get("employee_number", "").strip()
+        first_name      = request.form.get("first_name", "").strip()
+        last_name       = request.form.get("last_name", "").strip()
+        email           = request.form.get("email", "").strip()
+        phone           = request.form.get("phone", "").strip()
+        department_id   = request.form.get("department_id")
 
         # -------------------------------------------------
-        # BASIC VALIDATION
+        # REQUIRED-FIELD VALIDATION
         # -------------------------------------------------
 
         if not employee_number or not first_name or not last_name:
-
             flash(
                 "Employee number, first name and last name are required.",
                 "danger"
             )
-
             return render_template(
                 "users/edit.html",
                 user=user,
@@ -420,21 +298,32 @@ def edit(user_id):
             )
 
         # -------------------------------------------------
-        # CHECK EMPLOYEE NUMBER
+        # DUPLICATE CHECKS (excluding self)
         # -------------------------------------------------
 
-        duplicate_employee = User.query.filter(
+        if User.query.filter(
             User.employee_number == employee_number,
             User.id != user.id
-        ).first()
-
-        if duplicate_employee:
-
+        ).first():
             flash(
-                "That employee number is already assigned to another employee.",
+                "That employee number is already assigned "
+                "to another employee.",
                 "danger"
             )
+            return render_template(
+                "users/edit.html",
+                user=user,
+                departments=departments
+            )
 
+        if email and User.query.filter(
+            User.email == email,
+            User.id != user.id
+        ).first():
+            flash(
+                "That email address is already in use.",
+                "danger"
+            )
             return render_template(
                 "users/edit.html",
                 user=user,
@@ -442,31 +331,37 @@ def edit(user_id):
             )
 
         # -------------------------------------------------
-        # CHECK EMAIL
+        # PROFILE IMAGE
         # -------------------------------------------------
+        #
+        # save_image returns:
+        #   None  -> no file submitted; keep existing photo.
+        #   str   -> new filename; file is already on disk.
+        #
+        # It raises ImageUploadError for invalid uploads.
+        #
+        # We call it BEFORE mutating the user object so that
+        # a bad file never leaves the DB half-updated.
+        #
 
-        if email:
+        new_image_filename = None
+        old_image_filename = user.profile_image
 
-            duplicate_email = User.query.filter(
-                User.email == email,
-                User.id != user.id
-            ).first()
-
-            if duplicate_email:
-
-                flash(
-                    "That email address is already in use.",
-                    "danger"
-                )
-
-                return render_template(
-                    "users/edit.html",
-                    user=user,
-                    departments=departments
-                )
+        try:
+            new_image_filename = save_image(
+                request.files.get("profile_image"),
+                "users"
+            )
+        except ImageUploadError as error:
+            flash(str(error), "danger")
+            return render_template(
+                "users/edit.html",
+                user=user,
+                departments=departments
+            )
 
         # -------------------------------------------------
-        # UPDATE EMPLOYEE
+        # ASSIGN FIELDS
         # -------------------------------------------------
 
         user.employee_number = employee_number
@@ -476,12 +371,52 @@ def edit(user_id):
         user.phone = phone or None
 
         user.department_id = (
-            int(department_id)
-            if department_id
-            else None
+            int(department_id) if department_id else None
         )
 
-        db.session.commit()
+        # Only overwrite the filename if a new file was saved.
+        if new_image_filename is not None:
+            user.profile_image = new_image_filename
+
+        # -------------------------------------------------
+        # COMMIT
+        # -------------------------------------------------
+
+        try:
+            db.session.commit()
+
+        except Exception:
+            db.session.rollback()
+
+            # Commit failed: the new file (if any) is now an
+            # orphan on disk. Remove it so we don't leak.
+            if new_image_filename is not None:
+                delete_image(new_image_filename, "users")
+
+            flash(
+                "Changes could not be saved. Please try again.",
+                "danger"
+            )
+            return render_template(
+                "users/edit.html",
+                user=user,
+                departments=departments
+            )
+
+        # -------------------------------------------------
+        # DELETE OLD IMAGE (AFTER SUCCESSFUL COMMIT)
+        # -------------------------------------------------
+        #
+        # Safe now: the DB points at the new filename.
+        # Only delete if we actually uploaded a new file
+        # AND there was a previous one.
+        #
+
+        if (
+            new_image_filename is not None
+            and old_image_filename is not None
+        ):
+            delete_image(old_image_filename, "users")
 
         flash(
             f"{user.full_name} was updated successfully.",
@@ -489,15 +424,8 @@ def edit(user_id):
         )
 
         return redirect(
-            url_for(
-                "users.detail",
-                user_id=user.id
-            )
+            url_for("users.detail", user_id=user.id)
         )
-
-    # -----------------------------------------------------
-    # DISPLAY EDIT FORM
-    # -----------------------------------------------------
 
     return render_template(
         "users/edit.html",
@@ -519,17 +447,13 @@ def deactivate(user_id):
     """
     Deactivate an employee.
 
-    We deliberately do not delete the employee record.
-    Historical equipment assignments must remain intact.
+    Records are never deleted — historical assignments
+    must remain intact.
     """
 
-    user = db.get_or_404(
-        User,
-        user_id
-    )
+    user = db.get_or_404(User, user_id)
 
     user.is_active = False
-
     db.session.commit()
 
     flash(
@@ -538,10 +462,7 @@ def deactivate(user_id):
     )
 
     return redirect(
-        url_for(
-            "users.detail",
-            user_id=user.id
-        )
+        url_for("users.detail", user_id=user.id)
     )
 
 
@@ -557,22 +478,16 @@ def deactivate(user_id):
 def activate(user_id):
     """Reactivate an employee."""
 
-    user = db.get_or_404(
-        User,
-        user_id
-    )
+    user = db.get_or_404(User, user_id)
 
     user.is_active = True
-
     db.session.commit()
 
     flash(
         f"{user.full_name} has been reactivated.",
         "success"
     )
+
     return redirect(
-        url_for(
-            "users.detail",
-            user_id=user.id
-        )
+        url_for("users.detail", user_id=user.id)
     )

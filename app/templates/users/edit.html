@@ -60,11 +60,134 @@
     </div>
 
 
-    <form method="POST">
+    {#
+        =====================================================
+        MULTIPART FORM
+        =====================================================
+
+        enctype="multipart/form-data" is REQUIRED whenever
+        a <form> contains <input type="file">.
+
+        Without it, the browser sends only the filename as
+        a plain text field, and on the server
+        request.files.get("profile_image") returns None —
+        even though the user clearly selected a file.
+
+        This is the single most common cause of
+        "why isn't my upload working?" in Flask.
+    #}
+    <form
+        method="POST"
+        enctype="multipart/form-data"
+    >
+
+        <!-- =====================================================
+             PROFILE PHOTO
+             ===================================================== -->
 
         <div class="form-section">
 
-            <!-- Employee Number + Department (row) -->
+            <div class="form-section-header">
+
+                <h2>Profile Photo</h2>
+
+                <p>
+                    Optional. A square image works best.
+                </p>
+
+            </div>
+
+
+            <div class="profile-photo-row">
+
+                {#
+                    Current image preview.
+
+                    Two branches:
+                    - user.profile_image is set -> render <img>
+                    - user.profile_image is None -> render initials
+
+                    We build the URL with url_for('static', ...)
+                    rather than hard-coding /static/... so that
+                    if the static prefix is ever changed
+                    (Flask can be configured to serve static
+                    files from a different path), this keeps
+                    working automatically.
+                #}
+                {% if user.profile_image %}
+
+                    <img
+                        src="{{ url_for(
+                            'static',
+                            filename='uploads/users/' ~ user.profile_image
+                        ) }}"
+                        alt="{{ user.full_name }}"
+                        class="profile-photo-preview"
+                    >
+
+                {% else %}
+
+                    <div class="profile-photo-preview profile-photo-initials">
+                        {{ user.first_name[0]|upper }}{{ user.last_name[0]|upper }}
+                    </div>
+
+                {% endif %}
+
+
+                <div class="profile-photo-controls">
+
+                    <label
+                        for="profile_image"
+                        class="form-label"
+                    >
+                        Upload new photo
+                    </label>
+
+                    {#
+                        accept="image/*" is a *hint* to the
+                        operating-system file picker to show
+                        only image files. It is not security
+                        — the server still validates with
+                        Pillow and the extension allowlist.
+                    #}
+                    <input
+                        type="file"
+                        id="profile_image"
+                        name="profile_image"
+                        accept="image/*"
+                        class="form-control form-control-file"
+                    >
+
+                    <small class="form-help">
+                        PNG, JPG, JPEG, GIF or WEBP. Maximum 5 MB.
+                        Leave empty to keep the current photo.
+                    </small>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             EMPLOYEE INFORMATION
+             ===================================================== -->
+
+        <div class="form-section">
+
+            <div class="form-section-header">
+
+                <h2>Employee Information</h2>
+
+                <p>
+                    Organisational and contact details.
+                </p>
+
+            </div>
+
+
+            <!-- Employee Number + Department -->
 
             <div class="form-grid">
 
@@ -121,7 +244,7 @@
             </div>
 
 
-            <!-- First Name + Last Name (row) -->
+            <!-- First Name + Last Name -->
 
             <div class="form-grid">
 
@@ -163,7 +286,7 @@
             </div>
 
 
-            <!-- Email + Phone (row) -->
+            <!-- Email + Phone -->
 
             <div class="form-grid">
 
@@ -207,7 +330,7 @@
 
             <a
                 href="{{ url_for('users.detail', user_id=user.id) }}"
-                class="delete-cancel-btn"
+                class="btn btn-secondary"
             >
                 Cancel
             </a>

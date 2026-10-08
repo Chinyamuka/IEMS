@@ -3005,3 +3005,140 @@ body.drawer-open {
     border-color: var(--black);
     box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.07);
 }
+
+/* =========================================================
+   FILE INPUT
+   =========================================================
+   Native <input type="file"> looks different from every
+   other form field. This brings it in line with
+   .form-control so the profile-photo section matches
+   the rest of the form.
+   ========================================================= */
+
+.form-control-file {
+    /* Slightly more vertical padding than a text input —
+       the browser renders an inner "Choose file" button
+       that needs a bit more room than plain text. */
+    padding: 8px 12px;
+
+    /* Make the whole field clickable, not just the button. */
+    cursor: pointer;
+
+    /* Softer background so the file-selector button
+       stands out as the interactive part. */
+    background: #fafaf7;
+}
+
+.form-control-file::file-selector-button {
+    /* Space between the button and the filename text. */
+    margin-right: 12px;
+
+    padding: 6px 12px;
+
+    border: 1px solid #111111;
+    border-radius: 8px;
+
+    background: #111111;
+    color: #ffffff;
+
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition: background 0.18s ease;
+}
+
+.form-control-file::file-selector-button:hover {
+    background: #292929;
+}
+
+
+/* =========================================================
+   PROFILE PHOTO ROW
+   =========================================================
+   Layout for the Profile Photo section in
+   users/edit.html. Avatar on the left, upload controls
+   on the right. Wraps to a single column on narrow
+   screens (see the media query at the bottom).
+   ========================================================= */
+
+.profile-photo-row {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+
+/* The circular avatar. Used both for <img> (uploaded
+   photo) and for <div> (initials fallback). */
+.profile-photo-preview {
+    width: 96px;
+    height: 96px;
+
+    /* Prevents the avatar from being squeezed if the
+       flex row is tight. */
+    flex-shrink: 0;
+
+    /* Circle shape. */
+    border-radius: 50%;
+    border: 1px solid #deded9;
+
+    /* object-fit: cover crops the image to fill the
+       square without distortion, which is the standard
+       behaviour for profile photos. */
+    object-fit: cover;
+
+    background: #f3f3ef;
+
+    box-shadow:
+        0 6px 18px rgba(0, 0, 0, 0.06);
+}
+
+/* When no photo exists, we render initials inside the
+   same box. This variant inverts the colours to look
+   like the drawer's fallback avatar. */
+.profile-photo-initials {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #111111;
+    color: #ffffff;
+
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+/* Right-hand column: the "Upload new photo" label,
+   the <input type="file">, and the helper text. */
+.profile-photo-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    min-width: 0;
+    flex: 1;
+}
+
+
+/* =========================================================
+   PROFILE PHOTO — SMALL SCREENS
+   =========================================================
+   Below 600px the row stacks vertically and the avatar
+   centres above the controls.
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+    .profile-photo-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .profile-photo-controls {
+        width: 100%;
+    }
+}
