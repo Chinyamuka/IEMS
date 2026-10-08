@@ -12,6 +12,7 @@ from wtforms import (
     SelectField,
     DateField,
     DecimalField,
+    FileField,
     SubmitField,
 )
 
@@ -24,29 +25,29 @@ from wtforms.validators import (
 
 
 class EquipmentForm(FlaskForm):
-    """
-    Form used to create a new equipment record.
-    """
-    asset_tag = StringField("Asset Tag",validators=[ DataRequired(),Length(max=50),], render_kw={
-            "placeholder": "Example: ICT-00001"
-        },
+    """Form used to create a new equipment record."""
+
+    # -----------------------------------------------------
+    # IDENTIFICATION
+    # -----------------------------------------------------
+
+    asset_tag = StringField(
+        "Asset Tag",
+        validators=[
+            DataRequired(),
+            Length(max=50),
+        ],
+        render_kw={"placeholder": "Example: ICT-00001"},
     )
 
-    # Manufacturer's serial number.
     serial_number = StringField(
         "Serial Number",
         validators=[
             Optional(),
             Length(max=150),
         ],
-        render_kw={
-            "placeholder": "Example: ABC123456"
-        },
+        render_kw={"placeholder": "Example: ABC123456"},
     )
-
-    # ---------------------------------------------------------
-    # EQUIPMENT DETAILS
-    # ---------------------------------------------------------
 
     manufacturer = StringField(
         "Manufacturer",
@@ -54,9 +55,7 @@ class EquipmentForm(FlaskForm):
             DataRequired(),
             Length(max=100),
         ],
-        render_kw={
-            "placeholder": "Example: Dell"
-        },
+        render_kw={"placeholder": "Example: Dell"},
     )
 
     model = StringField(
@@ -65,51 +64,45 @@ class EquipmentForm(FlaskForm):
             DataRequired(),
             Length(max=150),
         ],
-        render_kw={
-            "placeholder": "Example: Latitude 5540"
-        },
+        render_kw={"placeholder": "Example: Latitude 5540"},
     )
 
     description = TextAreaField(
         "Description",
-        validators=[
-            Optional(),
-        ],
+        validators=[Optional()],
         render_kw={
             "placeholder": "Additional information about the equipment"
         },
     )
 
-    # ---------------------------------------------------------
-    # CATEGORY
-    # ---------------------------------------------------------
+    # -----------------------------------------------------
+    # IMAGE
+    # -----------------------------------------------------
+    #
+    # Optional. The upload helper (app/utils/uploads.py)
+    # validates the extension and contents with Pillow.
+    # No WTForms validators here — they would duplicate
+    # that logic and produce competing error messages.
+    #
+    image = FileField(
+        "Equipment Photo",
+    )
 
-    # The choices will be populated from the database
-    # inside the route.
+    # -----------------------------------------------------
+    # CLASSIFICATION
+    # -----------------------------------------------------
+
     category_id = SelectField(
         "Category",
         coerce=int,
-        validators=[
-            DataRequired(),
-        ],
+        validators=[DataRequired()],
     )
 
-    # ---------------------------------------------------------
-    # LOCATION
-    # ---------------------------------------------------------
-
-    # The choices will also be loaded from the database.
     location_id = SelectField(
         "Location",
         coerce=int,
-        validators=[
-            Optional(),
-        ],
+        validators=[Optional()],
     )
-
-    # ---------------------------------------------------------
-    # STATUS
-    # ---------------------------------------------------------
 
     status = SelectField(
         "Status",
@@ -121,14 +114,8 @@ class EquipmentForm(FlaskForm):
             ("Retired", "Retired"),
             ("Disposed", "Disposed"),
         ],
-        validators=[
-            DataRequired(),
-        ],
+        validators=[DataRequired()],
     )
-
-    # ---------------------------------------------------------
-    # CONDITION
-    # ---------------------------------------------------------
 
     condition = SelectField(
         "Condition",
@@ -138,44 +125,32 @@ class EquipmentForm(FlaskForm):
             ("Fair", "Fair"),
             ("Poor", "Poor"),
             ("Damaged", "Damaged"),
-
         ],
-        validators=[
-            DataRequired(),
-        ],
+        validators=[DataRequired()],
     )
 
-    # ---------------------------------------------------------
+    # -----------------------------------------------------
     # PROCUREMENT
-    # ---------------------------------------------------------
+    # -----------------------------------------------------
 
     purchase_date = DateField(
         "Purchase Date",
-        validators=[
-            DataRequired()
-        ],
+        validators=[DataRequired()],
     )
 
     purchase_price = DecimalField(
         "Purchase Price",
-        validators=[
-            Optional(),
-            NumberRange(min=0),
-        ],
+        validators=[Optional(), NumberRange(min=0)],
         places=2,
     )
 
     warranty_expiry = DateField(
         "Warranty Expiry",
-        validators=[
-            Optional(),
-        ],
+        validators=[Optional()],
     )
 
-    # ---------------------------------------------------------
-    # FORM SUBMISSION
-    # ---------------------------------------------------------
+    # -----------------------------------------------------
+    # SUBMIT
+    # -----------------------------------------------------
 
-    submit = SubmitField(
-        "Register Equipment"
-    )
+    submit = SubmitField("Register Equipment")  
