@@ -2,7 +2,7 @@
 
 {% from "_macros.html" import avatar %}
 
-{% block title %}{{ user.full_name }} - IEMS{% endblock %}
+{% block title %}Edit {{ user.full_name }} - IEMS{% endblock %}
 
 {% block content %}
 
@@ -12,286 +12,39 @@
 
         <div class="breadcrumb">
 
-            <a href="{{ url_for('dashboard.index') }}">
-                Dashboard
-            </a>
-
+            <a href="{{ url_for('dashboard.index') }}">Dashboard</a>
             <span>/</span>
-
-            <a href="{{ url_for('users.index') }}">
-                Employees
-            </a>
-
+            <a href="{{ url_for('users.index') }}">Employees</a>
             <span>/</span>
-
-            <span>{{ user.employee_number }}</span>
+            <a href="{{ url_for('users.detail', user_id=user.id) }}">
+                {{ user.employee_number }}
+            </a>
+            <span>/</span>
+            <span>Edit</span>
 
         </div>
 
-        <h1>{{ user.full_name }}</h1>
+        <h1>Edit Employee</h1>
 
         <p>
-            Employee profile and equipment assignment information.
+            Update {{ user.full_name }}'s information.
         </p>
 
     </div>
 
-
-    <div class="detail-actions">
-
-        <a
-            href="{{ url_for('users.edit', user_id=user.id) }}"
-            class="btn btn-secondary"
-        >
-            Edit Employee
-        </a>
-
-        {% if user.is_active %}
-
-        <form
-            method="POST"
-            action="{{ url_for('users.deactivate', user_id=user.id) }}"
-        >
-
-            <button
-                type="submit"
-                class="btn btn-danger"
-                onclick="return confirm('Deactivate this employee?')"
-            >
-                Deactivate
-            </button>
-
-        </form>
-
-        {% else %}
-
-        <form
-            method="POST"
-            action="{{ url_for('users.activate', user_id=user.id) }}"
-        >
-
-            <button
-                type="submit"
-                class="btn btn-primary"
-            >
-                Reactivate
-            </button>
-
-        </form>
-
-        {% endif %}
-
-    </div>
-
 </div>
 
 
-<div class="equipment-summary-card">
-
-    <div class="equipment-summary-main">
-
-        {{ avatar(user, "md") }}
-
-        <div>
-
-            <span class="summary-label">
-                Employee Number
-            </span>
-
-            <strong>
-                {{ user.employee_number }}
-            </strong>
-
-        </div>
-
-    </div>
-
-
-    <div class="summary-meta">
-
-        <div>
-
-            <span class="summary-label">
-                Department
-            </span>
-
-            <strong>
-
-                {% if user.department %}
-                    {{ user.department.name }}
-                {% else %}
-                    Not assigned
-                {% endif %}
-
-            </strong>
-
-        </div>
-
-
-        <div>
-
-            <span class="summary-label">
-                Status
-            </span>
-
-            {% if user.is_active %}
-
-                <span class="status-badge status-active">
-                    Active
-                </span>
-
-            {% else %}
-
-                <span class="status-badge status-inactive">
-                    Inactive
-                </span>
-
-            {% endif %}
-
-        </div>
-
-    </div>
-
-</div>
-
-
-<div class="details-grid">
-
-    <div class="detail-card">
-
-        <div class="detail-card-header">
-
-            <h2>Personal Information</h2>
-
-            <p>
-                Employee identification details.
-            </p>
-
-        </div>
-
-
-        <div class="detail-list">
-
-            <div class="detail-row">
-
-                <span>Employee Number</span>
-
-                <strong>
-                    {{ user.employee_number }}
-                </strong>
-
-            </div>
-
-
-            <div class="detail-row">
-
-                <span>First Name</span>
-
-                <strong>
-                    {{ user.first_name }}
-                </strong>
-
-            </div>
-
-
-            <div class="detail-row">
-
-                <span>Last Name</span>
-
-                <strong>
-                    {{ user.last_name }}
-                </strong>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <div class="detail-card">
-
-        <div class="detail-card-header">
-
-            <h2>Contact Information</h2>
-
-            <p>
-                Employee contact details.
-            </p>
-
-        </div>
-
-
-        <div class="detail-list">
-
-            <div class="detail-row">
-
-                <span>Email</span>
-
-                <strong>
-
-                    {% if user.email %}
-                        {{ user.email }}
-                    {% else %}
-                        <span class="muted-text">Not provided</span>
-                    {% endif %}
-
-                </strong>
-
-            </div>
-
-
-            <div class="detail-row">
-
-                <span>Phone</span>
-
-                <strong>
-
-                    {% if user.phone %}
-                        {{ user.phone }}
-                    {% else %}
-                        <span class="muted-text">Not provided</span>
-                    {% endif %}
-
-                </strong>
-
-            </div>
-
-
-            <div class="detail-row">
-
-                <span>Department</span>
-
-                <strong>
-
-                    {% if user.department %}
-                        {{ user.department.name }}
-                    {% else %}
-                        <span class="muted-text">Not assigned</span>
-                    {% endif %}
-
-                </strong>
-
-            </div>
-
-        </div>
-
-    </div>
-
-</div>
-
-
-<div class="card description-card">
+<div class="card form-card">
 
     <div class="card-header">
 
         <div>
 
-            <h2>Equipment Assignments</h2>
+            <h2>Employee Information</h2>
 
             <p>
-                ICT equipment currently or previously assigned
-                to this employee.
+                Update the employee's organisational and contact details.
             </p>
 
         </div>
@@ -299,127 +52,240 @@
     </div>
 
 
-    {% if user.equipment_assignments %}
-
-    <div class="table-responsive">
-
-        <table class="data-table">
-
-            <thead>
-
-                <tr>
-
-                    <th>Asset Tag</th>
-                    <th>Equipment</th>
-                    <th>Assigned</th>
-                    <th>Returned</th>
-                    <th>Status</th>
-
-                </tr>
-
-            </thead>
-
-
-            <tbody>
-
-                {% for assignment in user.equipment_assignments %}
-
-                <tr>
-
-                    <td>
-
-                        <strong>
-                            {{ assignment.equipment.asset_tag }}
-                        </strong>
-
-                    </td>
-
-
-                    <td>
-
-                        {{ assignment.equipment.manufacturer }}
-                        {{ assignment.equipment.model }}
-
-                    </td>
-
-
-                    <td>
-
-                        {{ assignment.assigned_at.strftime('%d %b %Y') }}
-
-                    </td>
-
-
-                    <td>
-
-                        {% if assignment.returned_at %}
-
-                            {{ assignment.returned_at.strftime('%d %b %Y') }}
-
-                        {% else %}
-
-                            <span class="muted-text">
-                                —
-                            </span>
-
-                        {% endif %}
-
-                    </td>
-
-
-                    <td>
-
-                        {% if assignment.is_active %}
-
-                            <span class="status-badge status-active">
-                                Active
-                            </span>
-
-                        {% else %}
-
-                            <span class="status-badge status-inactive">
-                                Returned
-                            </span>
-
-                        {% endif %}
-
-                    </td>
-
-                </tr>
-
-                {% endfor %}
-
-            </tbody>
-
-        </table>
-
-    </div>
-
-    {% else %}
-
-    <div class="empty-state">
-
-        <h3>No equipment assignments</h3>
-
-        <p>
-            This employee currently has no equipment assignment history.
-        </p>
-
-    </div>
-
-    {% endif %}
-
-</div>
-
-
-<div class="detail-bottom-actions">
-
-    <a
-        href="{{ url_for('users.index') }}"
-        class="btn btn-secondary"
+    {#
+        enctype="multipart/form-data" is REQUIRED whenever
+        a <form> contains <input type="file">.
+    #}
+    <form
+        method="POST"
+        enctype="multipart/form-data"
     >
-        ← Back to Employees
-    </a>
+
+        <!-- =====================================================
+             PROFILE PHOTO
+             ===================================================== -->
+
+        <div class="form-section">
+
+            <div class="form-section-header">
+
+                <h2>Profile Photo</h2>
+
+                <p>
+                    Optional. A square image works best.
+                </p>
+
+            </div>
+
+
+            <div class="profile-photo-row">
+
+                {{ avatar(user, "lg") }}
+
+                <div class="profile-photo-controls">
+
+                    <label
+                        for="profile_image"
+                        class="form-label"
+                    >
+                        Upload new photo
+                    </label>
+
+                    <input
+                        type="file"
+                        id="profile_image"
+                        name="profile_image"
+                        accept="image/*"
+                        class="form-control form-control-file"
+                    >
+
+                    <small class="form-help">
+                        PNG, JPG, JPEG, GIF or WEBP. Maximum 5 MB.
+                        Leave empty to keep the current photo.
+                    </small>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             EMPLOYEE INFORMATION
+             ===================================================== -->
+
+        <div class="form-section">
+
+            <div class="form-section-header">
+
+                <h2>Employee Information</h2>
+
+                <p>
+                    Organisational and contact details.
+                </p>
+
+            </div>
+
+
+            <!-- Employee Number + Department -->
+
+            <div class="form-grid">
+
+                <div class="form-group">
+
+                    <label for="employee_number">
+                        Employee Number
+                        <span class="required">*</span>
+                    </label>
+
+                    <input
+                        type="text"
+                        id="employee_number"
+                        name="employee_number"
+                        required
+                        value="{{ request.form.get('employee_number', user.employee_number) }}"
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="department_id">
+                        Department
+                    </label>
+
+                    <select
+                        id="department_id"
+                        name="department_id"
+                    >
+
+                        <option value="">
+                            Select department
+                        </option>
+
+                        {% for department in departments %}
+
+                        <option
+                            value="{{ department.id }}"
+                            {% if request.form.get('department_id', user.department_id|string if user.department_id else '') == department.id|string %}
+                                selected
+                            {% endif %}
+                        >
+                            {{ department.name }}
+                        </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+            </div>
+
+
+            <!-- First Name + Last Name -->
+
+            <div class="form-grid">
+
+                <div class="form-group">
+
+                    <label for="first_name">
+                        First Name
+                        <span class="required">*</span>
+                    </label>
+
+                    <input
+                        type="text"
+                        id="first_name"
+                        name="first_name"
+                        required
+                        value="{{ request.form.get('first_name', user.first_name) }}"
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="last_name">
+                        Last Name
+                        <span class="required">*</span>
+                    </label>
+
+                    <input
+                        type="text"
+                        id="last_name"
+                        name="last_name"
+                        required
+                        value="{{ request.form.get('last_name', user.last_name) }}"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <!-- Email + Phone -->
+
+            <div class="form-grid">
+
+                <div class="form-group">
+
+                    <label for="email">
+                        Email Address
+                    </label>
+
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        value="{{ request.form.get('email', user.email or '') }}"
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="phone">
+                        Phone Number
+                    </label>
+
+                    <input
+                        type="text"
+                        id="phone"
+                        name="phone"
+                        value="{{ request.form.get('phone', user.phone or '') }}"
+                    >
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="form-actions">
+
+            <a
+                href="{{ url_for('users.detail', user_id=user.id) }}"
+                class="btn btn-secondary"
+            >
+                Cancel
+            </a>
+
+            <button
+                type="submit"
+                class="btn btn-primary"
+            >
+                Save Changes
+            </button>
+
+        </div>
+
+    </form>
 
 </div>
 
