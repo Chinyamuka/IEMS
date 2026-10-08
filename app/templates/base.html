@@ -20,9 +20,8 @@
 
 <body>
 
-    <!-- =====================================================
-         HEADER
-         ===================================================== -->
+    {% from "_macros.html" import avatar %}
+
 
     <header class="app-header">
 
@@ -54,10 +53,6 @@
 
             {% if session.get("user_id") %}
 
-            <!-- =================================================
-                 MENU BUTTON
-                 ================================================= -->
-
             <button
                 type="button"
                 class="menu-toggle"
@@ -80,10 +75,6 @@
 
     {% if session.get("user_id") %}
 
-    <!-- =================================================
-         DRAWER OVERLAY
-         ================================================= -->
-
     <div
         class="drawer-overlay"
         id="drawerOverlay"
@@ -91,17 +82,11 @@
     ></div>
 
 
-    <!-- =================================================
-         SIDE NAVIGATION DRAWER
-         ================================================= -->
-
     <aside
         class="side-drawer"
         id="sideDrawer"
         aria-hidden="true"
     >
-
-        <!-- Drawer Header -->
 
         <div class="drawer-header">
 
@@ -138,24 +123,18 @@
         </div>
 
 
-        <!-- =================================================
-             CURRENT USER
-             ================================================= -->
-
         <div class="drawer-user">
 
-            <div class="drawer-user-avatar">
-                {{ session.get("user_name", "User")[0]|upper }}
-            </div>
+            {{ avatar(current_user, "sm") }}
 
             <div class="drawer-user-info">
 
                 <strong>
-                    {{ session.get("user_name", "User") }}
+                    {{ current_user.full_name if current_user else "User" }}
                 </strong>
 
                 <span>
-                    {{ session.get("role", "Employee") }}
+                    {{ current_user.role if current_user else "Employee" }}
                 </span>
 
             </div>
@@ -163,18 +142,12 @@
         </div>
 
 
-        <!-- =================================================
-             MAIN NAVIGATION
-             ================================================= -->
-
         <nav class="drawer-navigation">
 
             <p class="drawer-section-label">
                 MAIN
             </p>
 
-
-            <!-- Dashboard -->
 
             <a
                 href="{{ url_for('dashboard.index') }}"
@@ -190,8 +163,6 @@
             </a>
 
 
-            <!-- Equipment -->
-
             <a
                 href="{{ url_for('equipment.index') }}"
                 class="drawer-link
@@ -206,8 +177,6 @@
             </a>
 
 
-            <!-- Assignments -->
-
             <a
                 href="{{ url_for('assignment.index') }}"
                 class="drawer-link
@@ -221,8 +190,6 @@
                 </span>
             </a>
 
-
-            <!-- Add Equipment -->
 
             {% if session.get("role") in [
                 "Administrator",
@@ -243,18 +210,12 @@
             {% endif %}
 
 
-            <!-- =================================================
-                 ADMINISTRATION
-                 ================================================= -->
-
             {% if session.get("role") == "Administrator" %}
 
                 <p class="drawer-section-label">
                     ADMINISTRATION
                 </p>
 
-
-                <!-- User Management -->
 
                 <a
                     href="{{ url_for('users.index') }}"
@@ -274,10 +235,6 @@
         </nav>
 
 
-        <!-- =================================================
-             DRAWER FOOTER
-             ================================================= -->
-
         <div class="drawer-footer">
 
             <a
@@ -287,8 +244,6 @@
                 Profile
             </a>
 
-
-            <!-- Logout MUST remain POST -->
 
             <form
                 method="POST"
@@ -312,13 +267,7 @@
     {% endif %}
 
 
-    <!-- =====================================================
-         MAIN CONTENT
-         ===================================================== -->
-
     <main class="page-container">
-
-        <!-- FLASH MESSAGES -->
 
         {% with messages = get_flashed_messages(
             with_categories=true
@@ -349,16 +298,10 @@
         {% endwith %}
 
 
-        <!-- PAGE CONTENT -->
-
         {% block content %}{% endblock %}
 
     </main>
 
-
-    <!-- =====================================================
-         FOOTER
-         ===================================================== -->
 
     <footer class="app-footer">
 
@@ -376,10 +319,6 @@
 
     </footer>
 
-
-    <!-- =====================================================
-         DRAWER JAVASCRIPT
-         ===================================================== -->
 
     <script>
     document.addEventListener("DOMContentLoaded", function () {

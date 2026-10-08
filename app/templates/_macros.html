@@ -1,0 +1,38 @@
+{#
+    Shared Jinja macros. Import in any template:
+
+        {% from "_macros.html" import avatar %}
+#}
+
+
+{#
+    avatar(user, size)
+    ------------------
+    Renders a user's photo as <img>, or initials as <div>
+    if no photo is set.
+
+    size: "sm" (32px), "md" (56px), "lg" (96px)
+#}
+
+{% macro avatar(user, size="md") %}
+
+    {% if user and user.profile_image %}
+
+        <img
+            src="{{ url_for(
+                'static',
+                filename='uploads/users/' ~ user.profile_image
+            ) }}"
+            alt="{{ user.full_name }}"
+            class="avatar avatar-{{ size }}"
+        >
+
+    {% elif user %}
+
+        <div class="avatar avatar-{{ size }} avatar-initials">
+            {{ user.first_name[0]|upper }}{{ user.last_name[0]|upper }}
+        </div>
+
+    {% endif %}
+
+{% endmacro %}

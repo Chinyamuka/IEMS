@@ -11,3 +11,10 @@ __pycache__/
 .idea/
 .DS_Store
 Thumbs.db
+backend_dump.txt
+frontend_dump.txt
+app/static/uploads/users/*
+!app/static/uploads/users/.gitkeep
+app/static/uploads/equipment/*
+!app/static/uploads/equipment/.gitkeep
+

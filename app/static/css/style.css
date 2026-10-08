@@ -1,7 +1,6 @@
 /* =========================================================
    IEMS — MODERN BLACK & WHITE UI
    Clean administrative interface
-   No gradients, no decorative colors, no icons required.
    ========================================================= */
 
 :root {
@@ -595,11 +594,26 @@ button:focus-visible {
 }
 
 .search-input {
+    flex: 1;
+    min-height: 42px;
+    padding: 10px 13px;
 
+    border: 1px solid #cfcfc9;
+    border-radius: 10px;
+
+    background: var(--white);
+    color: var(--black);
+
+    outline: none;
+    font-size: 13px;
 
     transition:
         border-color var(--transition),
         box-shadow var(--transition);
+}
+
+.search-input::placeholder {
+    color: #9a9a94;
 }
 
 .search-input:focus {
@@ -685,6 +699,16 @@ button:focus-visible {
 }
 
 /* =========================================================
+   PERSON CELL (list rows with avatar + name)
+   ========================================================= */
+
+.person-cell {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+}
+
+/* =========================================================
    STATUS BADGES
    ========================================================= */
 
@@ -734,6 +758,12 @@ button:focus-visible {
     color: #454545;
 }
 
+.status-inactive {
+    background: #eeeeeb;
+    color: #454545;
+    border-color: #d8d8d3;
+}
+
 /* =========================================================
    FORMS
    ========================================================= */
@@ -752,11 +782,21 @@ button:focus-visible {
     border-bottom: 0;
 }
 
-.form-section-title {
-    margin: 0 0 18px;
+.form-section-header {
+    margin-bottom: 18px;
+}
+
+.form-section-header h2 {
+    margin: 0;
     color: var(--black);
     font-size: 16px;
     font-weight: 850;
+}
+
+.form-section-header p {
+    margin: 5px 0 0;
+    color: var(--text-muted);
+    font-size: 12px;
 }
 
 .form-grid {
@@ -771,7 +811,8 @@ button:focus-visible {
     gap: 6px;
 }
 
-.form-group.full-width {
+.form-group.full-width,
+.form-group-full {
     grid-column: 1 / -1;
 }
 
@@ -1540,28 +1581,6 @@ button:focus-visible {
     text-decoration: underline;
 }
 
-.action-link {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 32px;
-    padding: 6px 10px;
-    border: 1px solid #d7d7d2;
-    border-radius: 8px;
-    background: #ffffff;
-    color: #1d4ed8;
-    font-size: 11px;
-    font-weight: 800;
-    transition: all var(--transition);
-}
-
-.action-link:hover {
-    background: #eff6ff;
-    border-color: #bfdbfe;
-    color: #1e40af;
-    transform: translateY(-1px);
-}
-
 .status-badge {
     display: inline-flex;
     align-items: center;
@@ -1625,14 +1644,6 @@ button:focus-visible {
     font-size: 13px;
 }
 
-.pagination {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    margin-top: 22px;
-}
-
 .pagination-link {
     display: inline-flex;
     align-items: center;
@@ -1662,21 +1673,26 @@ button:focus-visible {
     cursor: not-allowed;
 }
 
-.btn-danger {
-    background: #dc2626;
-    border-color: #dc2626;
-    color: #ffffff;
+.action-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 32px;
+    padding: 6px 10px;
+    border: 1px solid #d7d7d2;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #1d4ed8;
+    font-size: 11px;
+    font-weight: 800;
+    transition: all var(--transition);
 }
 
-.btn-danger:hover {
-    background: #b91c1c;
-    border-color: #b91c1c;
-    color: #ffffff;
-}
-
-.action-link.view-link,
-.view-link {
-    color: #2563eb;
+.action-link:hover {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+    color: #1e40af;
+    transform: translateY(-1px);
 }
 
 @media (max-width: 800px) {
@@ -1948,22 +1964,6 @@ button:focus-visible {
     text-decoration: underline;
 }
 
-.status-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 24px;
-    padding: 4px 9px;
-    border: 1px solid #dededb;
-    border-radius: 999px;
-    background: #f4f4f1;
-    color: #444444;
-    font-size: 10px;
-    font-weight: 700;
-    line-height: 1;
-    white-space: nowrap;
-}
-
 .status-in-stock {
     border-color: #cdebd8;
     background: #eefaf2;
@@ -1992,25 +1992,6 @@ button:focus-visible {
     min-height: 30px;
     padding: 6px 11px;
     font-size: 11px;
-}
-
-.empty-state {
-    padding: 35px 24px;
-    color: #8a8a86;
-    font-size: 13px;
-    text-align: center;
-}
-
-.empty-state h3 {
-    margin: 0 0 7px;
-    color: #333333;
-    font-size: 15px;
-}
-
-.empty-state p {
-    margin: 0 0 18px;
-    color: #888883;
-    font-size: 12px;
 }
 
 .dashboard-empty-state {
@@ -2123,7 +2104,7 @@ button:focus-visible {
 }
 
 .assignment-info-panel {
-    padding: 40px;
+    padding: 20px;
     background: #f2f2ee;
     border: 1px solid #deded9;
     border-radius: 10px;
@@ -2145,42 +2126,18 @@ button:focus-visible {
 
 .form-section-label {
     display: block;
-    padding: 20px;
+    padding: 0;
+    color: #777770;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .06em;
+    text-transform: uppercase;
 }
 
 .status-returned {
     background: #eeeeeb;
     border-color: #d1d1cc;
     color: #555550;
-}
-
-.btn-danger {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 40px;
-    padding: 0 17px;
-    border: 1px solid #dc2626;
-    border-radius: 9px;
-    background: #dc2626;
-    color: #ffffff;
-    font-size: 13px;
-    font-weight: 750;
-    text-decoration: none;
-    cursor: pointer;
-    transition:
-        background .18s ease,
-        border-color .18s ease,
-        transform .18s ease,
-        box-shadow .18s ease;
-}
-
-.btn-danger:hover {
-    background: #b91c1c;
-    border-color: #b91c1c;
-    color: #ffffff;
-    transform: translateY(-1px);
-    box-shadow: 0 5px 14px rgba(220, 38, 38, .18);
 }
 
 .return-card {
@@ -2305,10 +2262,6 @@ button:focus-visible {
     .return-form {
         padding-left: 18px;
         padding-right: 18px;
-    }
-
-    .table-actions {
-        justify-content: flex-start;
     }
 }
 
@@ -2740,19 +2693,6 @@ button:focus-visible {
     background: #f5f5f2;
 }
 
-.drawer-user-avatar {
-    width: 42px;
-    height: 42px;
-    flex: 0 0 42px;
-    display: grid;
-    place-items: center;
-    border-radius: 50%;
-    background: #111111;
-    color: #ffffff;
-    font-size: 14px;
-    font-weight: 800;
-}
-
 .drawer-user-info {
     min-width: 0;
     display: flex;
@@ -2886,7 +2826,7 @@ body.drawer-open {
 }
 
 /* =========================================================
-   IEMS — SHARED TABLE ACTION BUTTONS
+   SHARED TABLE ACTION BUTTONS
    Reusable across Equipment, Assignments, Users, etc.
    ========================================================= */
 
@@ -2921,11 +2861,9 @@ body.drawer-open {
     transform: translateY(-1px);
 }
 
-/* VIEW — BLUE */
-
 .btn-action.btn-view {
     background: #0357c3;
-    color: white;
+    color: #ffffff;
 }
 
 .btn-action.btn-view:hover {
@@ -2933,11 +2871,9 @@ body.drawer-open {
     color: #ffffff;
 }
 
-/* EDIT — AMBER */
-
 .btn-action.btn-edit {
     background: #d14900;
-    color: white;
+    color: #ffffff;
 }
 
 .btn-action.btn-edit:hover {
@@ -2945,94 +2881,78 @@ body.drawer-open {
     color: #ffffff;
 }
 
-/* RETURN / DESTRUCTIVE — RED */
-
 .btn-action.btn-return {
     background: #f10000;
-    color: white;
+    color: #ffffff;
 }
 
 .btn-action.btn-return:hover {
     background: #bd0a0a;
     color: #ffffff;
-
 }
 
 /* =========================================================
-   SEARCH INPUT WITH ICON
+   AVATAR
+   Used by the avatar() macro in _macros.html.
+   Sizes: sm (32), md (56), lg (96).
    ========================================================= */
 
-.search-input-wrapper {
-    position: relative;
-    flex: 1;
-    min-width: 0;
-    display: flex;
+.avatar {
+    display: inline-flex;
     align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    border-radius: 50%;
+    border: 1px solid #deded9;
+
+    object-fit: cover;
+
+    background: #f3f3ef;
+    color: #111111;
+
+    font-weight: 800;
+    letter-spacing: 0.5px;
+
+    overflow: hidden;
 }
 
-.search-input-wrapper .search-icon {
-    position: absolute;
-    left: 13px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #999999;
-    font-size: 16px;
-    line-height: 1;
-    pointer-events: none;
+.avatar-sm {
+    width: 32px;
+    height: 32px;
+    font-size: 12px;
 }
 
-.search-input-wrapper input {
-    width: 100%;
-    min-height: 42px;
-    padding: 10px 13px 10px 36px;
-
-    border: 1px solid #cfcfc9;
-    border-radius: 10px;
-
-    background: var(--white);
-    color: var(--black);
-
-    outline: none;
-    font-size: 13px;
-    font-family: inherit;
-
-    transition:
-        border-color var(--transition),
-        box-shadow var(--transition);
+.avatar-md {
+    width: 56px;
+    height: 56px;
+    font-size: 20px;
 }
 
-.search-input-wrapper input:focus {
-    border-color: var(--black);
-    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.07);
+.avatar-lg {
+    width: 96px;
+    height: 96px;
+    font-size: 30px;
+}
+
+.avatar-initials {
+    background: #111111;
+    color: #ffffff;
 }
 
 /* =========================================================
    FILE INPUT
-   =========================================================
-   Native <input type="file"> looks different from every
-   other form field. This brings it in line with
-   .form-control so the profile-photo section matches
-   the rest of the form.
    ========================================================= */
 
 .form-control-file {
-    /* Slightly more vertical padding than a text input —
-       the browser renders an inner "Choose file" button
-       that needs a bit more room than plain text. */
     padding: 8px 12px;
-
-    /* Make the whole field clickable, not just the button. */
     cursor: pointer;
-
-    /* Softer background so the file-selector button
-       stands out as the interactive part. */
     background: #fafaf7;
 }
 
 .form-control-file::file-selector-button {
-    /* Space between the button and the filename text. */
     margin-right: 12px;
-
     padding: 6px 12px;
 
     border: 1px solid #111111;
@@ -3054,14 +2974,8 @@ body.drawer-open {
     background: #292929;
 }
 
-
 /* =========================================================
-   PROFILE PHOTO ROW
-   =========================================================
-   Layout for the Profile Photo section in
-   users/edit.html. Avatar on the left, upload controls
-   on the right. Wraps to a single column on narrow
-   screens (see the media query at the bottom).
+   PROFILE PHOTO SECTION (users/edit.html)
    ========================================================= */
 
 .profile-photo-row {
@@ -3071,49 +2985,6 @@ body.drawer-open {
     flex-wrap: wrap;
 }
 
-/* The circular avatar. Used both for <img> (uploaded
-   photo) and for <div> (initials fallback). */
-.profile-photo-preview {
-    width: 96px;
-    height: 96px;
-
-    /* Prevents the avatar from being squeezed if the
-       flex row is tight. */
-    flex-shrink: 0;
-
-    /* Circle shape. */
-    border-radius: 50%;
-    border: 1px solid #deded9;
-
-    /* object-fit: cover crops the image to fill the
-       square without distortion, which is the standard
-       behaviour for profile photos. */
-    object-fit: cover;
-
-    background: #f3f3ef;
-
-    box-shadow:
-        0 6px 18px rgba(0, 0, 0, 0.06);
-}
-
-/* When no photo exists, we render initials inside the
-   same box. This variant inverts the colours to look
-   like the drawer's fallback avatar. */
-.profile-photo-initials {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    background: #111111;
-    color: #ffffff;
-
-    font-size: 30px;
-    font-weight: 800;
-    letter-spacing: 1px;
-}
-
-/* Right-hand column: the "Upload new photo" label,
-   the <input type="file">, and the helper text. */
 .profile-photo-controls {
     display: flex;
     flex-direction: column;
@@ -3122,14 +2993,6 @@ body.drawer-open {
     min-width: 0;
     flex: 1;
 }
-
-
-/* =========================================================
-   PROFILE PHOTO — SMALL SCREENS
-   =========================================================
-   Below 600px the row stacks vertically and the avatar
-   centres above the controls.
-   ========================================================= */
 
 @media (max-width: 600px) {
 
@@ -3141,4 +3004,5 @@ body.drawer-open {
     .profile-photo-controls {
         width: 100%;
     }
+
 }
