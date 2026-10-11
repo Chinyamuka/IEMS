@@ -1,8 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}
-    Assignment History | IEMS
-{% endblock %}
+{% block title %}Assignment History | IEMS{% endblock %}
 
 
 {% block content %}
@@ -19,17 +17,11 @@
 
             <span>/</span>
 
-            <span>
-                Assignments
-            </span>
+            <span>Assignments</span>
 
         </div>
 
-
-        <h1>
-            Assignment History
-        </h1>
-
+        <h1>Assignment History</h1>
 
         <p>
             View current and historical equipment assignments.
@@ -62,9 +54,6 @@
 
 <div class="assignment-summary-grid">
 
-
-    <!-- TOTAL -->
-
     <div class="assignment-summary-card">
 
         <span class="assignment-summary-label">
@@ -82,9 +71,6 @@
     </div>
 
 
-
-    <!-- ACTIVE -->
-
     <div class="assignment-summary-card assignment-summary-active">
 
         <span class="assignment-summary-label">
@@ -92,14 +78,7 @@
         </span>
 
         <strong class="assignment-summary-value">
-
-            {{
-                assignments
-                |selectattr("is_active")
-                |list
-                |length
-            }}
-
+            {{ assignments|selectattr("is_active")|list|length }}
         </strong>
 
         <span class="assignment-summary-description">
@@ -109,9 +88,6 @@
     </div>
 
 
-
-    <!-- RETURNED -->
-
     <div class="assignment-summary-card">
 
         <span class="assignment-summary-label">
@@ -119,14 +95,7 @@
         </span>
 
         <strong class="assignment-summary-value">
-
-            {{
-                assignments
-                |rejectattr("is_active")
-                |list
-                |length
-            }}
-
+            {{ assignments|rejectattr("is_active")|list|length }}
         </strong>
 
         <span class="assignment-summary-description">
@@ -135,9 +104,7 @@
 
     </div>
 
-
 </div>
-
 
 
 <!-- =========================================================
@@ -145,9 +112,6 @@
      ========================================================= -->
 
 <div class="table-card">
-
-
-    <!-- HEADER -->
 
     <div class="table-card-header">
 
@@ -161,13 +125,7 @@
                 Equipment Assignments
             </h2>
 
-            <p
-                style="
-                    margin-bottom: 10px;
-                    margin-top: 0;
-                    font-weight: bold;
-                "
-            >
+            <p style="margin-bottom: 10px; margin-top: 0; font-weight: bold;">
                 {{ assignments|length }}
                 assignment{% if assignments|length != 1 %}s{% endif %}
                 recorded.
@@ -178,13 +136,7 @@
     </div>
 
 
-
     {% if assignments %}
-
-
-    <!-- =====================================================
-         TABLE
-         ===================================================== -->
 
     <div class="table-responsive">
 
@@ -194,29 +146,12 @@
 
                 <tr>
 
-                    <th>
-                        Equipment
-                    </th>
-
-                    <th>
-                        Employee
-                    </th>
-
-                    <th>
-                        Assigned
-                    </th>
-
-                    <th>
-                        Returned
-                    </th>
-
-                    <th>
-                        Status
-                    </th>
-
-                    <th>
-                        Actions
-                    </th>
+                    <th>Equipment</th>
+                    <th>Employee</th>
+                    <th>Assigned</th>
+                    <th>Returned</th>
+                    <th>Status</th>
+                    <th>Actions</th>
 
                 </tr>
 
@@ -228,7 +163,6 @@
                 {% for assignment in assignments %}
 
                 <tr>
-
 
                     <!-- =====================================
                          EQUIPMENT
@@ -243,11 +177,8 @@
                             ) }}"
                             class="table-primary-link"
                         >
-
                             {{ assignment.equipment.asset_tag }}
-
                         </a>
-
 
                         <div class="table-secondary-text">
 
@@ -265,7 +196,6 @@
                     </td>
 
 
-
                     <!-- =====================================
                          EMPLOYEE
                          ===================================== -->
@@ -277,13 +207,10 @@
                         </strong>
 
                         <div class="table-secondary-text">
-
                             {{ assignment.user.employee_number }}
-
                         </div>
 
                     </td>
-
 
 
                     <!-- =====================================
@@ -294,28 +221,19 @@
 
                         {% if assignment.assigned_at %}
 
-                            {{ assignment.assigned_at.strftime(
-                                "%d %b %Y"
-                            ) }}
+                            {{ assignment.assigned_at.strftime("%d %b %Y") }}
 
                             <div class="table-secondary-text">
-
-                                {{ assignment.assigned_at.strftime(
-                                    "%H:%M"
-                                ) }}
-
+                                {{ assignment.assigned_at.strftime("%H:%M") }}
                             </div>
 
                         {% else %}
 
-                            <span class="muted-text">
-                                —
-                            </span>
+                            <span class="muted-text">—</span>
 
                         {% endif %}
 
                     </td>
-
 
 
                     <!-- =====================================
@@ -326,28 +244,19 @@
 
                         {% if assignment.returned_at %}
 
-                            {{ assignment.returned_at.strftime(
-                                "%d %b %Y"
-                            ) }}
+                            {{ assignment.returned_at.strftime("%d %b %Y") }}
 
                             <div class="table-secondary-text">
-
-                                {{ assignment.returned_at.strftime(
-                                    "%H:%M"
-                                ) }}
-
+                                {{ assignment.returned_at.strftime("%H:%M") }}
                             </div>
 
                         {% else %}
 
-                            <span class="muted-text">
-                                —
-                            </span>
+                            <span class="muted-text">—</span>
 
                         {% endif %}
 
                     </td>
-
 
 
                     <!-- =====================================
@@ -358,24 +267,19 @@
 
                         {% if assignment.is_active %}
 
-                            <span
-                                class="status-badge status-assigned"
-                            >
+                            <span class="status-badge status-assigned">
                                 Active
                             </span>
 
                         {% else %}
 
-                            <span
-                                class="status-badge status-returned"
-                            >
+                            <span class="status-badge status-returned">
                                 Returned
                             </span>
 
                         {% endif %}
 
                     </td>
-
 
 
                     <!-- =====================================
@@ -385,7 +289,6 @@
                     <td>
 
                         <div class="table-actions">
-
 
                             <!-- VIEW -->
 
@@ -404,23 +307,47 @@
 
                             {% if assignment.is_active and can_manage %}
 
-                                <a
-                                    href="{{ url_for(
+                                {#
+                                    Return is a state-changing
+                                    action, so it must be a
+                                    POST. The confirmation
+                                    dialog is handled by the
+                                    browser via confirm() on
+                                    the button, matching the
+                                    equipment delete and user
+                                    deactivate patterns.
+
+                                    Note: CSRF protection is
+                                    not enabled app-wide.
+                                    When CSRFProtect is on,
+                                    add {{ csrf_token() }} as
+                                    a hidden input here.
+                                #}
+
+                                <form
+                                    method="POST"
+                                    action="{{ url_for(
                                         'assignment.return_equipment',
                                         assignment_id=assignment.id
                                     ) }}"
-                                    class="btn-action btn-return"
+                                    class="inline-form"
                                 >
-                                    Return
-                                </a>
+
+                                    <button
+                                        type="submit"
+                                        class="btn-action btn-return"
+                                        onclick="return confirm('Return this equipment?')"
+                                    >
+                                        Return
+                                    </button>
+
+                                </form>
 
                             {% endif %}
-
 
                         </div>
 
                     </td>
-
 
                 </tr>
 
@@ -432,13 +359,7 @@
 
     </div>
 
-
     {% else %}
-
-
-    <!-- =====================================================
-         EMPTY STATE
-         ===================================================== -->
 
     <div class="assignment-empty-state">
 
@@ -446,17 +367,12 @@
             —
         </div>
 
-
-        <h3>
-            No assignments recorded
-        </h3>
-
+        <h3>No assignments recorded</h3>
 
         <p>
             Equipment assignments will appear here after an
             ICT asset has been assigned to an employee.
         </p>
-
 
         {% if can_manage %}
 
@@ -471,9 +387,7 @@
 
     </div>
 
-
     {% endif %}
-
 
 </div>
 
