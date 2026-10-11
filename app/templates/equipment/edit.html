@@ -1,17 +1,11 @@
 {% extends "base.html" %}
 
+{% from "_macros.html" import equipment_image %}
+
 {% block title %}Edit Equipment | IEMS{% endblock %}
 
+
 {% block content %}
-
-{# =====================================================
-   PAGE HEADER
-
-   Note: we do NOT wrap this in .page-container.
-   base.html already provides that wrapper around
-   {% block content %}. Nesting it again would add a
-   second 34px padding + shrink the width by 96px.
-   ===================================================== #}
 
 <div class="page-header">
 
@@ -49,15 +43,15 @@
 
 <div class="form-card">
 
+    {#
+        enctype="multipart/form-data" is REQUIRED whenever
+        a <form> contains <input type="file">.
+    #}
     <form
         method="POST"
-        action="{{ url_for(
-            'equipment.edit',
-            equipment_id=equipment.id
-        ) }}"
+        enctype="multipart/form-data"
     >
 
-        {# CSRF token + hidden fields from the WTForm #}
         {{ form.hidden_tag() }}
 
 
@@ -93,9 +87,7 @@
                     ) }}
 
                     {% for error in form.asset_tag.errors %}
-                        <span class="form-error">
-                            {{ error }}
-                        </span>
+                        <span class="form-error">{{ error }}</span>
                     {% endfor %}
 
                 </div>
@@ -111,9 +103,7 @@
                     ) }}
 
                     {% for error in form.serial_number.errors %}
-                        <span class="form-error">
-                            {{ error }}
-                        </span>
+                        <span class="form-error">{{ error }}</span>
                     {% endfor %}
 
                 </div>
@@ -154,9 +144,7 @@
                     ) }}
 
                     {% for error in form.manufacturer.errors %}
-                        <span class="form-error">
-                            {{ error }}
-                        </span>
+                        <span class="form-error">{{ error }}</span>
                     {% endfor %}
 
                 </div>
@@ -172,9 +160,7 @@
                     ) }}
 
                     {% for error in form.model.errors %}
-                        <span class="form-error">
-                            {{ error }}
-                        </span>
+                        <span class="form-error">{{ error }}</span>
                     {% endfor %}
 
                 </div>
@@ -191,10 +177,57 @@
                     ) }}
 
                     {% for error in form.description.errors %}
-                        <span class="form-error">
-                            {{ error }}
-                        </span>
+                        <span class="form-error">{{ error }}</span>
                     {% endfor %}
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ========================================= -->
+        <!-- EQUIPMENT PHOTO -->
+        <!-- ========================================= -->
+
+        <section class="form-section">
+
+            <div class="form-section-header">
+
+                <div>
+                    <h2>Equipment Photo</h2>
+
+                    <p>
+                        Optional. Leave empty to keep the current photo.
+                    </p>
+                </div>
+
+            </div>
+
+
+            <div class="profile-photo-row">
+
+                {{ equipment_image(equipment, "md") }}
+
+                <div class="profile-photo-controls">
+
+                    <label
+                        for="image"
+                        class="form-label"
+                    >
+                        Upload new photo
+                    </label>
+
+                    {{ form.image(
+                        class="form-control form-control-file",
+                        accept="image/*"
+                    ) }}
+
+                    <small class="form-help">
+                        PNG, JPG, JPEG, GIF or WEBP. Maximum 5 MB.
+                        Leave empty to keep the current photo.
+                    </small>
 
                 </div>
 
@@ -228,14 +261,10 @@
 
                     {{ form.category_id.label }}
 
-                    {{ form.category_id(
-                        class="form-control"
-                    ) }}
+                    {{ form.category_id(class="form-control") }}
 
                     {% for error in form.category_id.errors %}
-                        <span class="form-error">
-                            {{ error }}
-                        </span>
+                        <span class="form-error">{{ error }}</span>
                     {% endfor %}
 
                 </div>
@@ -245,14 +274,10 @@
 
                     {{ form.location_id.label }}
 
-                    {{ form.location_id(
-                        class="form-control"
-                    ) }}
+                    {{ form.location_id(class="form-control") }}
 
                     {% for error in form.location_id.errors %}
-                        <span class="form-error">
-                            {{ error }}
-                        </span>
+                        <span class="form-error">{{ error }}</span>
                     {% endfor %}
 
                 </div>
@@ -262,14 +287,10 @@
 
                     {{ form.status.label }}
 
-                    {{ form.status(
-                        class="form-control"
-                    ) }}
+                    {{ form.status(class="form-control") }}
 
                     {% for error in form.status.errors %}
-                        <span class="form-error">
-                            {{ error }}
-                        </span>
+                        <span class="form-error">{{ error }}</span>
                     {% endfor %}
 
                 </div>
@@ -279,14 +300,10 @@
 
                     {{ form.condition.label }}
 
-                    {{ form.condition(
-                        class="form-control"
-                    ) }}
+                    {{ form.condition(class="form-control") }}
 
                     {% for error in form.condition.errors %}
-                        <span class="form-error">
-                            {{ error }}
-                        </span>
+                        <span class="form-error">{{ error }}</span>
                     {% endfor %}
 
                 </div>
@@ -321,14 +338,10 @@
 
                     {{ form.purchase_date.label }}
 
-                    {{ form.purchase_date(
-                        class="form-control"
-                    ) }}
+                    {{ form.purchase_date(class="form-control") }}
 
                     {% for error in form.purchase_date.errors %}
-                        <span class="form-error">
-                            {{ error }}
-                        </span>
+                        <span class="form-error">{{ error }}</span>
                     {% endfor %}
 
                 </div>
@@ -344,9 +357,7 @@
                     ) }}
 
                     {% for error in form.purchase_price.errors %}
-                        <span class="form-error">
-                            {{ error }}
-                        </span>
+                        <span class="form-error">{{ error }}</span>
                     {% endfor %}
 
                 </div>
@@ -356,14 +367,10 @@
 
                     {{ form.warranty_expiry.label }}
 
-                    {{ form.warranty_expiry(
-                        class="form-control"
-                    ) }}
+                    {{ form.warranty_expiry(class="form-control") }}
 
                     {% for error in form.warranty_expiry.errors %}
-                        <span class="form-error">
-                            {{ error }}
-                        </span>
+                        <span class="form-error">{{ error }}</span>
                     {% endfor %}
 
                 </div>
@@ -388,7 +395,6 @@
             >
                 Cancel
             </a>
-
 
             <button
                 type="submit"

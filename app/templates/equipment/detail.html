@@ -1,10 +1,8 @@
-
 {% extends "base.html" %}
 
+{% from "_macros.html" import equipment_image %}
 
-{% block title %}
-    {{ equipment.asset_tag }} — IEMS
-{% endblock %}
+{% block title %}{{ equipment.asset_tag }} — IEMS{% endblock %}
 
 
 {% block content %}
@@ -23,16 +21,11 @@
                 Equipment
             </a>
 
-            <span>
-                /
-            </span>
+            <span>/</span>
 
-            <span>
-                {{ equipment.asset_tag }}
-            </span>
+            <span>{{ equipment.asset_tag }}</span>
 
         </div>
-
 
         <h1>
             {{ equipment.manufacturer }}
@@ -46,8 +39,6 @@
     </div>
 
 
-    <!-- Header actions -->
-
     <div class="detail-actions">
 
         <a
@@ -59,7 +50,6 @@
         >
             Edit Equipment
         </a>
-
 
         <a
             href="{{ url_for(
@@ -77,17 +67,14 @@
 
 
 <!-- =====================================================
-     STATUS SUMMARY
+     SUMMARY
      ===================================================== -->
 
 <section class="equipment-summary-card">
 
     <div class="equipment-summary-main">
 
-        <div class="equipment-icon">
-            ICT
-        </div>
-
+        {{ equipment_image(equipment, "md") }}
 
         <div>
 
@@ -172,15 +159,26 @@
 
 
 <!-- =====================================================
-     INFORMATION GRID
+     HERO PHOTO (only if a photo exists)
+     ===================================================== -->
+
+{% if equipment.image_filename %}
+
+<section class="equipment-photo-hero">
+
+    {{ equipment_image(equipment, "lg") }}
+
+</section>
+
+{% endif %}
+
+
+<!-- =====================================================
+     DETAILS GRID
      ===================================================== -->
 
 <div class="details-grid">
 
-
-    <!-- =================================================
-         IDENTIFICATION
-         ================================================= -->
 
     <section class="detail-card">
 
@@ -188,9 +186,7 @@
 
             <div>
 
-                <h2>
-                    Identification
-                </h2>
+                <h2>Identification</h2>
 
                 <p>
                     Asset identification information.
@@ -204,64 +200,29 @@
         <div class="detail-list">
 
             <div class="detail-row">
-
-                <span>
-                    Asset Tag
-                </span>
-
-                <strong>
-                    {{ equipment.asset_tag }}
-                </strong>
-
+                <span>Asset Tag</span>
+                <strong>{{ equipment.asset_tag }}</strong>
             </div>
 
-
             <div class="detail-row">
-
-                <span>
-                    Serial Number
-                </span>
-
+                <span>Serial Number</span>
                 <strong>
-
                     {% if equipment.serial_number %}
-
                         {{ equipment.serial_number }}
-
                     {% else %}
-
                         —
-
                     {% endif %}
-
                 </strong>
-
             </div>
 
-
             <div class="detail-row">
-
-                <span>
-                    Manufacturer
-                </span>
-
-                <strong>
-                    {{ equipment.manufacturer }}
-                </strong>
-
+                <span>Manufacturer</span>
+                <strong>{{ equipment.manufacturer }}</strong>
             </div>
 
-
             <div class="detail-row">
-
-                <span>
-                    Model
-                </span>
-
-                <strong>
-                    {{ equipment.model }}
-                </strong>
-
+                <span>Model</span>
+                <strong>{{ equipment.model }}</strong>
             </div>
 
         </div>
@@ -269,19 +230,13 @@
     </section>
 
 
-    <!-- =================================================
-         CLASSIFICATION
-         ================================================= -->
-
     <section class="detail-card">
 
         <div class="detail-card-header">
 
             <div>
 
-                <h2>
-                    Classification
-                </h2>
+                <h2>Classification</h2>
 
                 <p>
                     Inventory classification information.
@@ -295,74 +250,35 @@
         <div class="detail-list">
 
             <div class="detail-row">
-
-                <span>
-                    Category
-                </span>
-
+                <span>Category</span>
                 <strong>
-
                     {% if equipment.category %}
-
                         {{ equipment.category.name }}
-
                     {% else %}
-
                         —
-
                     {% endif %}
-
                 </strong>
-
             </div>
 
-
             <div class="detail-row">
-
-                <span>
-                    Location
-                </span>
-
+                <span>Location</span>
                 <strong>
-
                     {% if equipment.location %}
-
                         {{ equipment.location.name }}
-
                     {% else %}
-
                         Not assigned
-
                     {% endif %}
-
                 </strong>
-
             </div>
 
-
             <div class="detail-row">
-
-                <span>
-                    Status
-                </span>
-
-                <strong>
-                    {{ equipment.status }}
-                </strong>
-
+                <span>Status</span>
+                <strong>{{ equipment.status }}</strong>
             </div>
 
-
             <div class="detail-row">
-
-                <span>
-                    Condition
-                </span>
-
-                <strong>
-                    {{ equipment.condition }}
-                </strong>
-
+                <span>Condition</span>
+                <strong>{{ equipment.condition }}</strong>
             </div>
 
         </div>
@@ -370,19 +286,13 @@
     </section>
 
 
-    <!-- =================================================
-         PURCHASE INFORMATION
-         ================================================= -->
-
     <section class="detail-card">
 
         <div class="detail-card-header">
 
             <div>
 
-                <h2>
-                    Purchase Information
-                </h2>
+                <h2>Purchase Information</h2>
 
                 <p>
                     Financial information for this asset.
@@ -396,71 +306,36 @@
         <div class="detail-list">
 
             <div class="detail-row">
-
-                <span>
-                    Purchase Date
-                </span>
-
+                <span>Purchase Date</span>
                 <strong>
-
                     {% if equipment.purchase_date %}
-
                         {{ equipment.purchase_date.strftime('%d %b %Y') }}
-
                     {% else %}
-
                         —
-
                     {% endif %}
-
                 </strong>
-
             </div>
 
-
             <div class="detail-row">
-
-                <span>
-                    Purchase Price
-                </span>
-
+                <span>Purchase Price</span>
                 <strong>
-
                     {% if equipment.purchase_price is not none %}
-
                         {{ "%.2f"|format(equipment.purchase_price) }}
-
                     {% else %}
-
                         —
-
                     {% endif %}
-
                 </strong>
-
             </div>
 
-
             <div class="detail-row">
-
-                <span>
-                    Warranty Expiry
-                </span>
-
+                <span>Warranty Expiry</span>
                 <strong>
-
                     {% if equipment.warranty_expiry %}
-
                         {{ equipment.warranty_expiry.strftime('%d %b %Y') }}
-
                     {% else %}
-
                         —
-
                     {% endif %}
-
                 </strong>
-
             </div>
 
         </div>
@@ -468,19 +343,13 @@
     </section>
 
 
-    <!-- =================================================
-         SYSTEM INFORMATION
-         ================================================= -->
-
     <section class="detail-card">
 
         <div class="detail-card-header">
 
             <div>
 
-                <h2>
-                    System Information
-                </h2>
+                <h2>System Information</h2>
 
                 <p>
                     Record timestamps maintained by IEMS.
@@ -494,65 +363,30 @@
         <div class="detail-list">
 
             <div class="detail-row">
-
-                <span>
-                    Record ID
-                </span>
-
-                <strong>
-                    #{{ equipment.id }}
-                </strong>
-
+                <span>Record ID</span>
+                <strong>#{{ equipment.id }}</strong>
             </div>
 
-
             <div class="detail-row">
-
-                <span>
-                    Created
-                </span>
-
+                <span>Created</span>
                 <strong>
-
                     {% if equipment.created_at %}
-
-                        {{ equipment.created_at.strftime(
-                            '%d %b %Y, %H:%M'
-                        ) }}
-
+                        {{ equipment.created_at.strftime('%d %b %Y, %H:%M') }}
                     {% else %}
-
                         —
-
                     {% endif %}
-
                 </strong>
-
             </div>
 
-
             <div class="detail-row">
-
-                <span>
-                    Last Updated
-                </span>
-
+                <span>Last Updated</span>
                 <strong>
-
                     {% if equipment.updated_at %}
-
-                        {{ equipment.updated_at.strftime(
-                            '%d %b %Y, %H:%M'
-                        ) }}
-
+                        {{ equipment.updated_at.strftime('%d %b %Y, %H:%M') }}
                     {% else %}
-
                         —
-
                     {% endif %}
-
                 </strong>
-
             </div>
 
         </div>
@@ -572,9 +406,7 @@
 
         <div>
 
-            <h2>
-                Description
-            </h2>
+            <h2>Description</h2>
 
             <p>
                 Additional information about the equipment.
@@ -629,7 +461,6 @@
         >
             Edit Equipment
         </a>
-
 
         <a
             href="{{ url_for(

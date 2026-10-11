@@ -1,18 +1,17 @@
 {#
     Shared Jinja macros. Import in any template:
 
-        {% from "_macros.html" import avatar %}
+        {% from "_macros.html" import avatar, equipment_image %}
 #}
 
 
-{#
-    avatar(user, size)
-    ------------------
-    Renders a user's photo as <img>, or initials as <div>
-    if no photo is set.
+{# ---------------------------------------------------------
+   AVATAR
+   ---------------------------------------------------------
+   User profile photo (circular), or initials fallback.
 
-    size: "sm" (32px), "md" (56px), "lg" (96px)
-#}
+   Sizes: sm (32px), md (56px), lg (96px)
+   --------------------------------------------------------- #}
 
 {% macro avatar(user, size="md") %}
 
@@ -31,6 +30,43 @@
 
         <div class="avatar avatar-{{ size }} avatar-initials">
             {{ user.first_name[0]|upper }}{{ user.last_name[0]|upper }}
+        </div>
+
+    {% endif %}
+
+{% endmacro %}
+
+
+{# ---------------------------------------------------------
+   EQUIPMENT IMAGE
+   ---------------------------------------------------------
+   Equipment photo (rounded rectangle), or a generic
+   ICT fallback when no photo is set.
+
+   Rounded rectangle, not a circle: a laptop or printer
+   photo looks wrong clipped to a circle. Circles are
+   reserved for people.
+
+   Sizes: sm (48px), md (96px), lg (200px)
+   --------------------------------------------------------- #}
+
+{% macro equipment_image(equipment, size="md") %}
+
+    {% if equipment and equipment.image_filename %}
+
+        <img
+            src="{{ url_for(
+                'static',
+                filename='uploads/equipment/' ~ equipment.image_filename
+            ) }}"
+            alt="{{ equipment.asset_tag }}"
+            class="equipment-image equipment-image-{{ size }}"
+        >
+
+    {% else %}
+
+        <div class="equipment-image equipment-image-{{ size }} equipment-image-fallback">
+            ICT
         </div>
 
     {% endif %}

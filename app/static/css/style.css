@@ -3094,3 +3094,79 @@ body.drawer-open {
     }
 
 }
+
+/* =========================================================
+   EQUIPMENT IMAGE
+   Used by the equipment_image() macro in _macros.html.
+   Sizes: sm (48), md (96), lg (200).
+   ========================================================= */
+
+.equipment-image {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    border-radius: 12px;
+    border: 1px solid #deded9;
+
+    background: #f3f3ef;
+    color: #777777;
+
+    object-fit: cover;
+
+    overflow: hidden;
+
+    font-weight: 800;
+    letter-spacing: 0.5px;
+}
+
+.equipment-image-sm {
+    width: 48px;
+    height: 48px;
+    font-size: 11px;
+}
+
+.equipment-image-md {
+    width: 96px;
+    height: 96px;
+    font-size: 14px;
+}
+
+.equipment-image-lg {
+    width: 200px;
+    height: 200px;
+    font-size: 20px;
+}
+
+.equipment-image-fallback {
+    background: #efefec;
+    color: #999999;
+}
+/* =========================================================
+   EQUIPMENT PHOTO HERO
+   Large centered photo below the summary card on
+   equipment/detail.html. Only rendered when a photo exists.
+   ========================================================= */
+
+.equipment-photo-hero {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    padding: 24px;
+    margin-bottom: 22px;
+
+    background: var(--cream);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+}
+
+.equipment-photo-hero img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
