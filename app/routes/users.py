@@ -21,6 +21,7 @@ from flask import (
     url_for,
     flash,
     request,
+    g,
 )
 
 from app.extensions import db
@@ -58,7 +59,6 @@ def index():
 
     query = User.query
 
-    # Search across employee number, name, and email.
     if search:
         pattern = f"%{search}%"
         query = query.filter(
@@ -97,10 +97,6 @@ def create():
 
     if request.method == "POST":
 
-        # -------------------------------------------------
-        # READ FIELDS
-        # -------------------------------------------------
-
         employee_number = request.form.get("employee_number", "").strip()
         first_name      = request.form.get("first_name", "").strip()
         last_name       = request.form.get("last_name", "").strip()
@@ -109,10 +105,6 @@ def create():
         department_id   = request.form.get("department_id")
         password        = request.form.get("password", "")
         confirm_password= request.form.get("confirm_password", "")
-
-        # -------------------------------------------------
-        # REQUIRED-FIELD VALIDATION
-        # -------------------------------------------------
 
         if not employee_number:
             flash("Employee number is required.", "danger")
@@ -134,10 +126,6 @@ def create():
                 "users/create.html",
                 departments=departments
             )
-
-        # -------------------------------------------------
-        # PASSWORD VALIDATION
-        # -------------------------------------------------
 
         if not password:
             flash("Password is required.", "danger")
@@ -163,10 +151,6 @@ def create():
                 departments=departments
             )
 
-        # -------------------------------------------------
-        # DUPLICATE CHECKS
-        # -------------------------------------------------
-
         if User.query.filter_by(
             employee_number=employee_number
         ).first():
@@ -189,10 +173,6 @@ def create():
                 departments=departments
             )
 
-        # -------------------------------------------------
-        # CREATE USER
-        # -------------------------------------------------
-
         user = User(
             employee_number=employee_number,
             first_name=first_name,
@@ -205,8 +185,6 @@ def create():
             is_active=True
         )
 
-        # Hashing is owned by the model (see User.set_password).
-        # The route never touches password_hash directly.
         user.set_password(password)
 
         db.session.add(user)
@@ -252,15 +230,11 @@ def detail(user_id):
 @login_required
 def edit(user_id):
     """
-    Edit an existing employee, with optional profile-photo upload.
+    Edit an existing employee, with optional profile-photo
+    upload.
 
     Ordering matters:
         save file  ->  assign fields  ->  commit  ->  delete old file
-
-    - If the file is invalid, the DB object is untouched.
-    - If the commit fails, the newly written file is removed.
-    - The previous photo is only deleted after the new filename
-      is safely persisted in the database.
     """
 
     user = db.get_or_404(User, user_id)
@@ -271,20 +245,12 @@ def edit(user_id):
 
     if request.method == "POST":
 
-        # -------------------------------------------------
-        # READ FIELDS
-        # -------------------------------------------------
-
         employee_number = request.form.get("employee_number", "").strip()
         first_name      = request.form.get("first_name", "").strip()
         last_name       = request.form.get("last_name", "").strip()
         email           = request.form.get("email", "").strip()
         phone           = request.form.get("phone", "").strip()
         department_id   = request.form.get("department_id")
-
-        # -------------------------------------------------
-        # REQUIRED-FIELD VALIDATION
-        # -------------------------------------------------
 
         if not employee_number or not first_name or not last_name:
             flash(
@@ -296,10 +262,6 @@ def edit(user_id):
                 user=user,
                 departments=departments
             )
-
-        # -------------------------------------------------
-        # DUPLICATE CHECKS (excluding self)
-        # -------------------------------------------------
 
         if User.query.filter(
             User.employee_number == employee_number,
@@ -330,20 +292,6 @@ def edit(user_id):
                 departments=departments
             )
 
-        # -------------------------------------------------
-        # PROFILE IMAGE
-        # -------------------------------------------------
-        #
-        # save_image returns:
-        #   None  -> no file submitted; keep existing photo.
-        #   str   -> new filename; file is already on disk.
-        #
-        # It raises ImageUploadError for invalid uploads.
-        #
-        # We call it BEFORE mutating the user object so that
-        # a bad file never leaves the DB half-updated.
-        #
-
         new_image_filename = None
         old_image_filename = user.profile_image
 
@@ -360,10 +308,6 @@ def edit(user_id):
                 departments=departments
             )
 
-        # -------------------------------------------------
-        # ASSIGN FIELDS
-        # -------------------------------------------------
-
         user.employee_number = employee_number
         user.first_name = first_name
         user.last_name = last_name
@@ -374,13 +318,8 @@ def edit(user_id):
             int(department_id) if department_id else None
         )
 
-        # Only overwrite the filename if a new file was saved.
         if new_image_filename is not None:
             user.profile_image = new_image_filename
-
-        # -------------------------------------------------
-        # COMMIT
-        # -------------------------------------------------
 
         try:
             db.session.commit()
@@ -388,8 +327,6 @@ def edit(user_id):
         except Exception:
             db.session.rollback()
 
-            # Commit failed: the new file (if any) is now an
-            # orphan on disk. Remove it so we don't leak.
             if new_image_filename is not None:
                 delete_image(new_image_filename, "users")
 
@@ -402,15 +339,6 @@ def edit(user_id):
                 user=user,
                 departments=departments
             )
-
-        # -------------------------------------------------
-        # DELETE OLD IMAGE (AFTER SUCCESSFUL COMMIT)
-        # -------------------------------------------------
-        #
-        # Safe now: the DB points at the new filename.
-        # Only delete if we actually uploaded a new file
-        # AND there was a previous one.
-        #
 
         if (
             new_image_filename is not None
@@ -449,9 +377,62 @@ def deactivate(user_id):
 
     Records are never deleted — historical assignments
     must remain intact.
+
+    Two guards prevent Administrator lockout:
+
+    1. An admin cannot deactivate their own account.
+       Doing so would immediately invalidate their own
+       session (load_current_user clears it on the next
+       request) and lock them out.
+
+    2. An admin cannot deactivate the last active
+       Administrator. If they could, the system would be
+       left with nobody able to administer it, and
+       recovery would require direct database access.
     """
 
     user = db.get_or_404(User, user_id)
+
+    # -----------------------------------------------------
+    # GUARD 1 — CANNOT DEACTIVATE SELF
+    # -----------------------------------------------------
+
+    if g.current_user is not None and user.id == g.current_user.id:
+        flash(
+            "You cannot deactivate your own account.",
+            "warning"
+        )
+        return redirect(
+            url_for("users.detail", user_id=user.id)
+        )
+
+    # -----------------------------------------------------
+    # GUARD 2 — CANNOT DEACTIVATE THE LAST ADMIN
+    # -----------------------------------------------------
+    #
+    # Only relevant if the target is an Administrator.
+    # Non-admin accounts can be deactivated freely.
+
+    if user.role == "Administrator":
+
+        active_admin_count = User.query.filter_by(
+            role="Administrator",
+            is_active=True,
+        ).count()
+
+        if active_admin_count <= 1:
+            flash(
+                "You cannot deactivate the last active "
+                "Administrator.",
+                "warning"
+            )
+            return redirect(
+                url_for("users.detail", user_id=user.id)
+            )
+
+    # -----------------------------------------------------
+    # DEACTIVATE
+    # -----------------------------------------------------
 
     user.is_active = False
     db.session.commit()
