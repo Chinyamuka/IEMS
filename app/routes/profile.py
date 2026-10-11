@@ -67,16 +67,10 @@ def edit():
     """
     Edit the current user's name, email, phone and photo.
 
-    Deliberately does NOT allow editing:
-
-        - employee_number   (issued by HR)
-        - department_id     (organisational)
-        - role              (RBAC)
-        - is_active         (admin-only)
-        - password          (own page: /profile/change-password)
-
-    Ordering of the image operation mirrors users.edit:
-        save file  ->  assign fields  ->  commit  ->  delete old file
+    Deliberately does NOT allow editing employee_number,
+    department_id, role or is_active. Those are HR or
+    RBAC concerns and remain editable only by an
+    Administrator through /users/<id>/edit.
     """
 
     user = g.current_user
@@ -88,10 +82,6 @@ def edit():
         email      = request.form.get("email", "").strip()
         phone      = request.form.get("phone", "").strip()
 
-        # -------------------------------------------------
-        # REQUIRED FIELDS
-        # -------------------------------------------------
-
         if not first_name or not last_name:
             flash(
                 "First name and last name are required.",
@@ -101,10 +91,6 @@ def edit():
                 "profile/edit.html",
                 user=user,
             )
-
-        # -------------------------------------------------
-        # EMAIL UNIQUENESS
-        # -------------------------------------------------
 
         if email:
             duplicate_email = User.query.filter(
@@ -122,10 +108,6 @@ def edit():
                     user=user,
                 )
 
-        # -------------------------------------------------
-        # PROFILE IMAGE
-        # -------------------------------------------------
-
         new_image_filename = None
         old_image_filename = user.profile_image
 
@@ -141,10 +123,6 @@ def edit():
                 user=user,
             )
 
-        # -------------------------------------------------
-        # ASSIGN FIELDS
-        # -------------------------------------------------
-
         user.first_name = first_name
         user.last_name = last_name
         user.email = email or None
@@ -152,10 +130,6 @@ def edit():
 
         if new_image_filename is not None:
             user.profile_image = new_image_filename
-
-        # -------------------------------------------------
-        # COMMIT
-        # -------------------------------------------------
 
         try:
             db.session.commit()
@@ -174,10 +148,6 @@ def edit():
                 "profile/edit.html",
                 user=user,
             )
-
-        # -------------------------------------------------
-        # DELETE OLD IMAGE (after successful commit)
-        # -------------------------------------------------
 
         if (
             new_image_filename is not None
@@ -208,9 +178,126 @@ def change_password():
     """
     Change the current user's password.
 
-    Full implementation lands in commit B4.
+    Requires the current password so that a hijacked
+    session cannot silently rotate the credential and
+    lock the real owner out.
+
+    Validation order:
+        1. All three fields present
+        2. New password length >= 8
+        3. New password equals confirmation
+        4. New password differs from current
+        5. Current password matches the stored hash
     """
+
+    user = g.current_user
+
+    if request.method == "POST":
+
+        current_password = request.form.get("current_password", "")
+        new_password     = request.form.get("new_password", "")
+        confirm_password = request.form.get("confirm_password", "")
+
+        # -------------------------------------------------
+        # 1. ALL FIELDS PRESENT
+        # -------------------------------------------------
+
+        if not current_password or not new_password or not confirm_password:
+            flash(
+                "All three fields are required.",
+                "danger",
+            )
+            return render_template(
+                "profile/change_password.html",
+                user=user,
+            )
+
+        # -------------------------------------------------
+        # 2. MINIMUM LENGTH
+        # -------------------------------------------------
+
+        if len(new_password) < 8:
+            flash(
+                "The new password must be at least 8 characters.",
+                "danger",
+            )
+            return render_template(
+                "profile/change_password.html",
+                user=user,
+            )
+
+        # -------------------------------------------------
+        # 3. CONFIRMATION MATCH
+        # -------------------------------------------------
+
+        if new_password != confirm_password:
+            flash(
+                "The new passwords do not match.",
+                "danger",
+            )
+            return render_template(
+                "profile/change_password.html",
+                user=user,
+            )
+
+        # -------------------------------------------------
+        # 4. DIFFERENT FROM CURRENT
+        # -------------------------------------------------
+
+        if new_password == current_password:
+            flash(
+                "The new password must be different "
+                "from the current password.",
+                "danger",
+            )
+            return render_template(
+                "profile/change_password.html",
+                user=user,
+            )
+
+        # -------------------------------------------------
+        # 5. CURRENT PASSWORD CORRECT
+        # -------------------------------------------------
+
+        if not user.check_password(current_password):
+            flash(
+                "Your current password is incorrect.",
+                "danger",
+            )
+            return render_template(
+                "profile/change_password.html",
+                user=user,
+            )
+
+        # -------------------------------------------------
+        # UPDATE
+        # -------------------------------------------------
+
+        user.set_password(new_password)
+
+        try:
+            db.session.commit()
+
+        except Exception:
+            db.session.rollback()
+            flash(
+                "Your password could not be changed. "
+                "Please try again.",
+                "danger",
+            )
+            return render_template(
+                "profile/change_password.html",
+                user=user,
+            )
+
+        flash(
+            "Your password was changed successfully.",
+            "success",
+        )
+
+        return redirect(url_for("profile.index"))
+
     return render_template(
         "profile/change_password.html",
-        user=g.current_user,
+        user=user,
     )
