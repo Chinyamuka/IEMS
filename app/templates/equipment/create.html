@@ -5,10 +5,6 @@
 
 {% block content %}
 
-<!-- =========================================================
-     PAGE HEADER
-     ========================================================= -->
-
 <div class="page-header">
 
     <div>
@@ -42,13 +38,19 @@
 </div>
 
 
-<!-- =========================================================
-     FORM CARD
-     ========================================================= -->
-
 <section class="form-card">
 
-    <form method="POST">
+    {#
+        enctype="multipart/form-data" is REQUIRED whenever
+        a <form> contains <input type="file">.
+    #}
+    <form
+        method="POST"
+        enctype="multipart/form-data"
+    >
+
+        {{ form.hidden_tag() }}
+
 
         <!-- =====================================================
              IDENTIFICATION
@@ -58,9 +60,7 @@
 
             <div class="form-section-header">
 
-                <h2>
-                    Identification
-                </h2>
+                <h2>Identification</h2>
 
                 <p>
                     Basic identification information for the asset.
@@ -84,6 +84,7 @@
                         name="asset_tag"
                         required
                         placeholder="e.g. ICT-00010"
+                        value="{{ request.form.get('asset_tag', '') }}"
                     >
 
                 </div>
@@ -100,6 +101,7 @@
                         id="serial_number"
                         name="serial_number"
                         placeholder="Enter serial number"
+                        value="{{ request.form.get('serial_number', '') }}"
                     >
 
                 </div>
@@ -118,6 +120,7 @@
                         name="manufacturer"
                         required
                         placeholder="e.g. Dell"
+                        value="{{ request.form.get('manufacturer', '') }}"
                     >
 
                 </div>
@@ -136,9 +139,50 @@
                         name="model"
                         required
                         placeholder="e.g. Latitude 5340"
+                        value="{{ request.form.get('model', '') }}"
                     >
 
                 </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             EQUIPMENT PHOTO
+             ===================================================== -->
+
+        <div class="form-section">
+
+            <div class="form-section-header">
+
+                <h2>Equipment Photo</h2>
+
+                <p>
+                    Optional. A clear photo helps identify the asset.
+                </p>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="image">
+                    Photo
+                </label>
+
+                <input
+                    type="file"
+                    id="image"
+                    name="image"
+                    accept="image/*"
+                    class="form-control form-control-file"
+                >
+
+                <small class="form-help">
+                    PNG, JPG, JPEG, GIF or WEBP. Maximum 5 MB.
+                </small>
 
             </div>
 
@@ -153,9 +197,7 @@
 
             <div class="form-section-header">
 
-                <h2>
-                    Classification
-                </h2>
+                <h2>Classification</h2>
 
                 <p>
                     Classify and locate the equipment.
@@ -183,10 +225,15 @@
                             Select category
                         </option>
 
-                        {% for category in categories %}
+                        {% for category in form.category_id.choices %}
 
-                            <option value="{{ category.id }}">
-                                {{ category.name }}
+                            <option
+                                value="{{ category[0] }}"
+                                {% if request.form.get('category_id') == category[0]|string %}
+                                    selected
+                                {% endif %}
+                            >
+                                {{ category[1] }}
                             </option>
 
                         {% endfor %}
@@ -211,10 +258,15 @@
                             Select location
                         </option>
 
-                        {% for location in locations %}
+                        {% for location in form.location_id.choices %}
 
-                            <option value="{{ location.id }}">
-                                {{ location.name }}
+                            <option
+                                value="{{ location[0] }}"
+                                {% if request.form.get('location_id') == location[0]|string %}
+                                    selected
+                                {% endif %}
+                            >
+                                {{ location[1] }}
                             </option>
 
                         {% endfor %}
@@ -230,30 +282,14 @@
                         Status
                     </label>
 
-                    <select
-                        id="status"
-                        name="status"
-                    >
+                    <select id="status" name="status">
 
-                        <option value="In Stock">
-                            In Stock
-                        </option>
-
-                        <option value="Assigned">
-                            Assigned
-                        </option>
-
-                        <option value="Under Repair">
-                            Under Repair
-                        </option>
-
-                        <option value="Retired">
-                            Retired
-                        </option>
-
-                        <option value="Disposed">
-                            Disposed
-                        </option>
+                        <option value="In Stock">In Stock</option>
+                        <option value="Assigned">Assigned</option>
+                        <option value="Under Maintenance">Under Maintenance</option>
+                        <option value="Lost">Lost</option>
+                        <option value="Retired">Retired</option>
+                        <option value="Disposed">Disposed</option>
 
                     </select>
 
@@ -266,26 +302,13 @@
                         Condition
                     </label>
 
-                    <select
-                        id="condition"
-                        name="condition"
-                    >
+                    <select id="condition" name="condition">
 
-                        <option value="Excellent">
-                            Excellent
-                        </option>
-
-                        <option value="Good">
-                            Good
-                        </option>
-
-                        <option value="Fair">
-                            Fair
-                        </option>
-
-                        <option value="Poor">
-                            Poor
-                        </option>
+                        <option value="Excellent">Excellent</option>
+                        <option value="Good">Good</option>
+                        <option value="Fair">Fair</option>
+                        <option value="Poor">Poor</option>
+                        <option value="Damaged">Damaged</option>
 
                     </select>
 
@@ -304,9 +327,7 @@
 
             <div class="form-section-header">
 
-                <h2>
-                    Purchase Information
-                </h2>
+                <h2>Purchase Information</h2>
 
                 <p>
                     Financial and warranty information.
@@ -327,6 +348,7 @@
                         type="date"
                         id="purchase_date"
                         name="purchase_date"
+                        value="{{ request.form.get('purchase_date', '') }}"
                     >
 
                 </div>
@@ -345,6 +367,7 @@
                         step="0.01"
                         min="0"
                         placeholder="0.00"
+                        value="{{ request.form.get('purchase_price', '') }}"
                     >
 
                 </div>
@@ -360,6 +383,7 @@
                         type="date"
                         id="warranty_expiry"
                         name="warranty_expiry"
+                        value="{{ request.form.get('warranty_expiry', '') }}"
                     >
 
                 </div>
@@ -377,9 +401,7 @@
 
             <div class="form-section-header">
 
-                <h2>
-                    Description
-                </h2>
+                <h2>Description</h2>
 
                 <p>
                     Optional additional information.
@@ -399,7 +421,7 @@
                     name="description"
                     rows="5"
                     placeholder="Enter any additional information about this equipment..."
-                ></textarea>
+                >{{ request.form.get('description', '') }}</textarea>
 
             </div>
 
