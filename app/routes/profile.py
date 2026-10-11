@@ -9,16 +9,7 @@ logged-in user.
 
 The current user is read from g.current_user, which
 is populated by load_current_user() on every request
-(see app/__init__.py). That means these routes always
-operate on the live User row, never on stale session
-data.
-
-Routes:
-    GET  /profile                  - view own profile
-    GET  /profile/edit             - display edit form
-    POST /profile/edit             - save changes
-    GET  /profile/change-password  - display password form
-    POST /profile/change-password  - save new password
+(see app/__init__.py).
 """
 
 from flask import (
@@ -32,6 +23,7 @@ from flask import (
 )
 
 from app.extensions import db
+from app.models import User
 from app.auth.decorators import login_required
 from app.utils.uploads import (
     save_image,
@@ -58,13 +50,7 @@ profile_bp = Blueprint(
 @profile_bp.route("/")
 @login_required
 def index():
-    """
-    Display the current user's profile.
-
-    Read-only. Editing happens on /profile/edit, and
-    password changes on /profile/change-password, so
-    that each page has exactly one job.
-    """
+    """Display the current user's profile (read-only)."""
     return render_template(
         "profile/index.html",
         user=g.current_user,
@@ -83,20 +69,132 @@ def edit():
 
     Deliberately does NOT allow editing:
 
-        - employee_number (an identifier issued by HR,
-          not self-managed)
-        - department_id (organisational, assigned by HR)
-        - role (RBAC concern, admin-only)
-        - is_active (admin-only)
+        - employee_number   (issued by HR)
+        - department_id     (organisational)
+        - role              (RBAC)
+        - is_active         (admin-only)
+        - password          (own page: /profile/change-password)
 
-    Those are all managed through /users/<id>/edit by an
-    Administrator.
-
-    Full implementation lands in commit B3.
+    Ordering of the image operation mirrors users.edit:
+        save file  ->  assign fields  ->  commit  ->  delete old file
     """
+
+    user = g.current_user
+
+    if request.method == "POST":
+
+        first_name = request.form.get("first_name", "").strip()
+        last_name  = request.form.get("last_name", "").strip()
+        email      = request.form.get("email", "").strip()
+        phone      = request.form.get("phone", "").strip()
+
+        # -------------------------------------------------
+        # REQUIRED FIELDS
+        # -------------------------------------------------
+
+        if not first_name or not last_name:
+            flash(
+                "First name and last name are required.",
+                "danger",
+            )
+            return render_template(
+                "profile/edit.html",
+                user=user,
+            )
+
+        # -------------------------------------------------
+        # EMAIL UNIQUENESS
+        # -------------------------------------------------
+
+        if email:
+            duplicate_email = User.query.filter(
+                User.email == email,
+                User.id != user.id,
+            ).first()
+
+            if duplicate_email:
+                flash(
+                    "That email address is already in use.",
+                    "danger",
+                )
+                return render_template(
+                    "profile/edit.html",
+                    user=user,
+                )
+
+        # -------------------------------------------------
+        # PROFILE IMAGE
+        # -------------------------------------------------
+
+        new_image_filename = None
+        old_image_filename = user.profile_image
+
+        try:
+            new_image_filename = save_image(
+                request.files.get("profile_image"),
+                "users",
+            )
+        except ImageUploadError as error:
+            flash(str(error), "danger")
+            return render_template(
+                "profile/edit.html",
+                user=user,
+            )
+
+        # -------------------------------------------------
+        # ASSIGN FIELDS
+        # -------------------------------------------------
+
+        user.first_name = first_name
+        user.last_name = last_name
+        user.email = email or None
+        user.phone = phone or None
+
+        if new_image_filename is not None:
+            user.profile_image = new_image_filename
+
+        # -------------------------------------------------
+        # COMMIT
+        # -------------------------------------------------
+
+        try:
+            db.session.commit()
+
+        except Exception:
+            db.session.rollback()
+
+            if new_image_filename is not None:
+                delete_image(new_image_filename, "users")
+
+            flash(
+                "Changes could not be saved. Please try again.",
+                "danger",
+            )
+            return render_template(
+                "profile/edit.html",
+                user=user,
+            )
+
+        # -------------------------------------------------
+        # DELETE OLD IMAGE (after successful commit)
+        # -------------------------------------------------
+
+        if (
+            new_image_filename is not None
+            and old_image_filename is not None
+        ):
+            delete_image(old_image_filename, "users")
+
+        flash(
+            "Your profile was updated successfully.",
+            "success",
+        )
+
+        return redirect(url_for("profile.index"))
+
     return render_template(
         "profile/edit.html",
-        user=g.current_user,
+        user=user,
     )
 
 
@@ -109,11 +207,6 @@ def edit():
 def change_password():
     """
     Change the current user's password.
-
-    Deliberately requires the current password to be
-    entered again, so that a hijacked session cannot
-    silently rotate the credential and lock the real
-    owner out.
 
     Full implementation lands in commit B4.
     """

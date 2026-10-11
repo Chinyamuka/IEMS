@@ -1,0 +1,298 @@
+{% extends "base.html" %}
+
+{% from "_macros.html" import avatar %}
+
+{% block title %}Edit My Profile - IEMS{% endblock %}
+
+
+{% block content %}
+
+<div class="page-header">
+
+    <div>
+
+        <div class="breadcrumb">
+
+            <a href="{{ url_for('dashboard.index') }}">Dashboard</a>
+            <span>/</span>
+            <a href="{{ url_for('profile.index') }}">My Profile</a>
+            <span>/</span>
+            <span>Edit</span>
+
+        </div>
+
+        <h1>Edit My Profile</h1>
+
+        <p>
+            Update your own contact details and photo.
+        </p>
+
+    </div>
+
+</div>
+
+
+<div class="card form-card">
+
+    <div class="card-header">
+
+        <div>
+
+            <h2>My Information</h2>
+
+            <p>
+                Fields that are managed by HR are shown for
+                reference but cannot be edited here.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    {#
+        enctype="multipart/form-data" is REQUIRED whenever
+        a form contains <input type="file">.
+    #}
+    <form
+        method="POST"
+        enctype="multipart/form-data"
+    >
+
+        <!-- =====================================================
+             PROFILE PHOTO
+             ===================================================== -->
+
+        <div class="form-section">
+
+            <div class="form-section-header">
+
+                <h2>Profile Photo</h2>
+
+                <p>
+                    Optional. A square image works best.
+                </p>
+
+            </div>
+
+
+            <div class="profile-photo-row">
+
+                {{ avatar(user, "lg") }}
+
+                <div class="profile-photo-controls">
+
+                    <label
+                        for="profile_image"
+                        class="form-label"
+                    >
+                        Upload new photo
+                    </label>
+
+                    <input
+                        type="file"
+                        id="profile_image"
+                        name="profile_image"
+                        accept="image/*"
+                        class="form-control form-control-file"
+                    >
+
+                    <small class="form-help">
+                        PNG, JPG, JPEG, GIF or WEBP. Maximum 5 MB.
+                        Leave empty to keep the current photo.
+                    </small>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             PERSONAL
+             ===================================================== -->
+
+        <div class="form-section">
+
+            <div class="form-section-header">
+
+                <h2>Personal Information</h2>
+
+                <p>
+                    Your name as it will appear on records.
+                </p>
+
+            </div>
+
+
+            <div class="form-grid">
+
+                <div class="form-group">
+
+                    <label for="first_name">
+                        First Name
+                        <span class="required">*</span>
+                    </label>
+
+                    <input
+                        type="text"
+                        id="first_name"
+                        name="first_name"
+                        required
+                        value="{{ request.form.get('first_name', user.first_name) }}"
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="last_name">
+                        Last Name
+                        <span class="required">*</span>
+                    </label>
+
+                    <input
+                        type="text"
+                        id="last_name"
+                        name="last_name"
+                        required
+                        value="{{ request.form.get('last_name', user.last_name) }}"
+                    >
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             CONTACT
+             ===================================================== -->
+
+        <div class="form-section">
+
+            <div class="form-section-header">
+
+                <h2>Contact Information</h2>
+
+                <p>
+                    How colleagues can reach you.
+                </p>
+
+            </div>
+
+
+            <div class="form-grid">
+
+                <div class="form-group">
+
+                    <label for="email">
+                        Email Address
+                    </label>
+
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        value="{{ request.form.get('email', user.email or '') }}"
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="phone">
+                        Phone Number
+                    </label>
+
+                    <input
+                        type="text"
+                        id="phone"
+                        name="phone"
+                        value="{{ request.form.get('phone', user.phone or '') }}"
+                    >
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             READ-ONLY HR FIELDS
+             ===================================================== -->
+
+        <div class="form-section">
+
+            <div class="form-section-header">
+
+                <h2>Employment Information</h2>
+
+                <p>
+                    Managed by HR. Contact an administrator to
+                    change any of these.
+                </p>
+
+            </div>
+
+
+            <div class="detail-list">
+
+                <div class="detail-row">
+                    <span>Employee Number</span>
+                    <strong>{{ user.employee_number }}</strong>
+                </div>
+
+                <div class="detail-row">
+                    <span>Department</span>
+                    <strong>
+                        {% if user.department %}
+                            {{ user.department.name }}
+                        {% else %}
+                            <span class="muted-text">Not assigned</span>
+                        {% endif %}
+                    </strong>
+                </div>
+
+                <div class="detail-row">
+                    <span>Role</span>
+                    <strong>{{ user.role }}</strong>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             FORM ACTIONS
+             ===================================================== -->
+
+        <div class="form-actions">
+
+            <a
+                href="{{ url_for('profile.index') }}"
+                class="btn btn-secondary"
+            >
+                Cancel
+            </a>
+
+            <button
+                type="submit"
+                class="btn btn-primary"
+            >
+                Save Changes
+            </button>
+
+        </div>
+
+    </form>
+
+</div>
+
+{% endblock %}
