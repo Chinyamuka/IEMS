@@ -38,13 +38,9 @@
 
                 <div class="brand-text">
 
-                    <strong>
-                        IEMS
-                    </strong>
+                    <strong>IEMS</strong>
 
-                    <span>
-                        ICT Equipment Management
-                    </span>
+                    <span>ICT Equipment Management</span>
 
                 </div>
 
@@ -98,13 +94,9 @@
 
                 <div class="brand-text">
 
-                    <strong>
-                        IEMS
-                    </strong>
+                    <strong>IEMS</strong>
 
-                    <small>
-                        Navigation
-                    </small>
+                    <small>Navigation</small>
 
                 </div>
 
@@ -237,13 +229,27 @@
 
         <div class="drawer-footer">
 
+            {#
+                Profile link was href="#" (dead) until the
+                /profile/ blueprint existed. Now points at
+                profile.index and highlights when the user
+                is anywhere under /profile/*.
+            #}
             <a
-                href="#"
-                class="drawer-link"
+                href="{{ url_for('profile.index') }}"
+                class="drawer-link
+                    {% if request.endpoint and request.endpoint.startswith('profile.') %}
+                        active
+                    {% endif %}
+                "
             >
-                Profile
+                <span class="drawer-link-label">
+                    Profile
+                </span>
             </a>
 
+
+            <!-- Logout MUST remain POST -->
 
             <form
                 method="POST"
@@ -364,13 +370,9 @@
         menuToggle.addEventListener("click", function () {
 
             if (sideDrawer.classList.contains("is-open")) {
-
                 closeDrawer();
-
             } else {
-
                 openDrawer();
-
             }
 
         });
@@ -384,9 +386,7 @@
         document.addEventListener("keydown", function (event) {
 
             if (event.key === "Escape") {
-
                 closeDrawer();
-
             }
 
         });
@@ -400,9 +400,7 @@
         drawerLinks.forEach(function (link) {
 
             link.addEventListener("click", function () {
-
                 closeDrawer();
-
             });
 
         });
