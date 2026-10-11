@@ -3,12 +3,23 @@ IEMS RBAC Permission Utilities
 
 Centralized authentication and role-based authorization
 for the Inventory Equipment Management System.
+
+The role for a request is read from g.current_user, which
+is populated by load_current_user() on every request via
+app.before_request. This ensures:
+
+- Role changes take effect on the user's next request
+  (not at their next login).
+- Deactivated users lose access immediately, because
+  load_current_user clears the session and sets
+  g.current_user = None when user.is_active is False.
 """
 
 from functools import wraps
 
 from flask import (
     flash,
+    g,
     redirect,
     session,
     url_for,
@@ -30,7 +41,6 @@ EMPLOYEE = "Employee"
 # ROLE GROUPS
 # =========================================================
 
-# Users who can create, edit and manage equipment.
 EQUIPMENT_MANAGEMENT_ROLES = {
     ADMINISTRATOR,
     ASSET_OFFICER,
@@ -38,15 +48,10 @@ EQUIPMENT_MANAGEMENT_ROLES = {
     IT_OFFICER,
 }
 
-
-# Users who can delete equipment.
-# Deletion is deliberately restricted to Administrators.
 EQUIPMENT_DELETE_ROLES = {
     ADMINISTRATOR,
 }
 
-
-# Users who can manage assignments.
 ASSIGNMENT_MANAGEMENT_ROLES = {
     ADMINISTRATOR,
     ASSET_OFFICER,
@@ -54,8 +59,6 @@ ASSIGNMENT_MANAGEMENT_ROLES = {
     IT_OFFICER,
 }
 
-
-# Users who can manage system users.
 USER_MANAGEMENT_ROLES = {
     ADMINISTRATOR,
 }
@@ -67,19 +70,35 @@ USER_MANAGEMENT_ROLES = {
 
 def login_required(view):
     """
-    Require the user to be authenticated.
+    Require an authenticated, active user.
+
+    The active check is delegated to load_current_user(),
+    which runs before every request and clears the
+    session if the user is missing or inactive. We
+    therefore only need to confirm that a session
+    exists and that g.current_user has been populated.
     """
 
     @wraps(view)
     def wrapped_view(*args, **kwargs):
 
         if not session.get("user_id"):
-
             flash(
                 "Please log in to continue.",
                 "error",
             )
+            return redirect(
+                url_for("auth.login")
+            )
 
+        if g.get("current_user") is None:
+            # load_current_user cleared the session because
+            # the account was deleted or deactivated.
+            flash(
+                "Your session is no longer valid. "
+                "Please sign in again.",
+                "warning",
+            )
             return redirect(
                 url_for("auth.login")
             )
@@ -95,8 +114,8 @@ def login_required(view):
 
 def role_required(*allowed_roles):
     """
-    Require the authenticated user to have one
-    of the specified roles.
+    Require the authenticated user to have one of the
+    specified roles.
 
     Example:
 
@@ -108,9 +127,15 @@ def role_required(*allowed_roles):
             "Administrator",
             "Asset Officer",
         )
+
+    The role is read from g.current_user, NOT from the
+    session. The session is a snapshot taken at login and
+    becomes stale whenever an administrator changes a
+    user's role or deactivates the account mid-session.
+    g.current_user is refreshed on every request by
+    load_current_user().
     """
 
-    # Convert to a set for clean membership testing.
     allowed_roles_set = set(allowed_roles)
 
     def decorator(view):
@@ -123,34 +148,41 @@ def role_required(*allowed_roles):
             # -------------------------------------------------
 
             if not session.get("user_id"):
-
                 flash(
                     "Please log in to continue.",
                     "error",
                 )
+                return redirect(
+                    url_for("auth.login")
+                )
 
+            current_user = g.get("current_user")
+
+            if current_user is None:
+                flash(
+                    "Your session is no longer valid. "
+                    "Please sign in again.",
+                    "warning",
+                )
                 return redirect(
                     url_for("auth.login")
                 )
 
             # -------------------------------------------------
-            # ROLE
-            # -------------------------------------------------
-
-            user_role = session.get("role")
-
-            # -------------------------------------------------
             # AUTHORIZATION
             # -------------------------------------------------
+            #
+            # Read the role from the live User object, not
+            # from session["role"].
+
+            user_role = current_user.role
 
             if user_role not in allowed_roles_set:
-
                 flash(
                     "You do not have permission "
                     "to access that page.",
                     "error",
                 )
-
                 return redirect(
                     url_for("dashboard.index")
                 )
