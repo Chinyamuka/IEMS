@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+
+{% block title %}Departments - IEMS{% endblock %}
+
+
+{% block content %}
+
+<div class="page-header">
+
+    <div>
+
+        <div class="breadcrumb">
+
+            <a href="{{ url_for('dashboard.index') }}">Dashboard</a>
+            <span>/</span>
+            <span>Departments</span>
+
+        </div>
+
+        <h1>Departments</h1>
+
+        <p>
+            Manage organisational departments used across IEMS.
+        </p>
+
+    </div>
+
+
+    <div class="page-header-actions">
+
+        <a
+            href="{{ url_for('departments.create') }}"
+            class="btn btn-primary"
+        >
+            + Add Department
+        </a>
+
+    </div>
+
+</div>
+
+
+<div class="card table-card">
+
+    <div class="card-header">
+
+        <div>
+
+            <h2>Department Directory</h2>
+
+            <p>
+                {{ departments|length }}
+                department{% if departments|length != 1 %}s{% endif %}
+                found
+            </p>
+
+        </div>
+
+    </div>
+
+
+    {% if departments %}
+
+    <div class="table-responsive">
+
+        <table class="data-table">
+
+            <thead>
+
+                <tr>
+
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Users</th>
+                    <th class="text-right">Actions</th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                {% for department in departments %}
+
+                <tr>
+
+                    <td>
+                        <strong>{{ department.name }}</strong>
+                    </td>
+
+
+                    <td>
+
+                        {% if department.description %}
+
+                            {{ department.description }}
+
+                        {% else %}
+
+                            <span class="muted-text">—</span>
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <td>
+
+                        {#
+                            Counting users here — not loading
+                            them — so a large department does
+                            not slow the page down.
+                        #}
+                        {{ department.users|length }}
+
+                    </td>
+
+
+                    <td class="text-right">
+
+                        <div class="table-actions">
+
+                            <a
+                                href="{{ url_for(
+                                    'departments.edit',
+                                    department_id=department.id
+                                ) }}"
+                                class="btn-action btn-edit"
+                            >
+                                Edit
+                            </a>
+
+                            <a
+                                href="{{ url_for(
+                                    'departments.delete',
+                                    department_id=department.id
+                                ) }}"
+                                class="btn-action btn-return"
+                            >
+                                Delete
+                            </a>
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    {% else %}
+
+    <div class="empty-state">
+
+        <h3>No departments yet</h3>
+
+        <p>
+            Add the first department to start organising
+            employees and equipment.
+        </p>
+
+        <a
+            href="{{ url_for('departments.create') }}"
+            class="btn btn-primary"
+        >
+            + Add Department
+        </a>
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}
