@@ -222,6 +222,48 @@
                     </span>
                 </a>
 
+
+                <a
+                    href="{{ url_for('departments.index') }}"
+                    class="drawer-link
+                        {% if request.endpoint and request.endpoint.startswith('departments.') %}
+                            active
+                        {% endif %}
+                    "
+                >
+                    <span class="drawer-link-label">
+                        Departments
+                    </span>
+                </a>
+
+
+                <a
+                    href="{{ url_for('locations.index') }}"
+                    class="drawer-link
+                        {% if request.endpoint and request.endpoint.startswith('locations.') %}
+                            active
+                        {% endif %}
+                    "
+                >
+                    <span class="drawer-link-label">
+                        Locations
+                    </span>
+                </a>
+
+
+                <a
+                    href="{{ url_for('categories.index') }}"
+                    class="drawer-link
+                        {% if request.endpoint and request.endpoint.startswith('categories.') %}
+                            active
+                        {% endif %}
+                    "
+                >
+                    <span class="drawer-link-label">
+                        Categories
+                    </span>
+                </a>
+
             {% endif %}
 
         </nav>
@@ -229,12 +271,6 @@
 
         <div class="drawer-footer">
 
-            {#
-                Profile link was href="#" (dead) until the
-                /profile/ blueprint existed. Now points at
-                profile.index and highlights when the user
-                is anywhere under /profile/*.
-            #}
             <a
                 href="{{ url_for('profile.index') }}"
                 class="drawer-link
@@ -248,8 +284,6 @@
                 </span>
             </a>
 
-
-            <!-- Logout MUST remain POST -->
 
             <form
                 method="POST"
