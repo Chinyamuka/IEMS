@@ -1,0 +1,54 @@
+[1mdiff --git a/app/templates/departments/delete.html b/app/templates/departments/delete.html[m
+[1mindex 4bdcfcb..f206a49 100644[m
+[1m--- a/app/templates/departments/delete.html[m
+[1m+++ b/app/templates/departments/delete.html[m
+[36m@@ -1,10 +1,37 @@[m
+[31m-<!DOCTYPE html>[m
+[31m-<html lang="en">[m
+[31m-<head>[m
+[31m-  <meta charset="UTF-8">[m
+[31m-  <title>$Title$</title>[m
+[31m-</head>[m
+[31m-<body>[m
+[31m-$END$[m
+[31m-</body>[m
+[31m-</html>[m
+\ No newline at end of file[m
+[32m+[m[32m{% extends "base.html" %}[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m{% from "_macros.html" import delete_modal %}[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m{% block title %}Delete Equipment | IEMS{% endblock %}[m[41m[m
+[32m+[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m{% block content %}[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m{#[m[41m[m
+[32m+[m[32m    The route already loaded the equipment and passed it[m[41m[m
+[32m+[m[32m    here. This page IS the confirmation — the user[m[41m[m
+[32m+[m[32m    navigated to /equipment/<id>/delete deliberately,[m[41m[m
+[32m+[m[32m    so the modal renders visible (start_visible=True).[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m    Confirming POSTs to the same URL. Cancel returns to[m[41m[m
+[32m+[m[32m    the equipment detail page.[m[41m[m
+[32m+[m[32m#}[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m{{ delete_modal([m[41m[m
+[32m+[m[32m    modal_id="equipment-delete",[m[41m[m
+[32m+[m[32m    title="Delete Equipment",[m[41m[m
+[32m+[m[32m    subtitle="This action cannot be undone.",[m[41m[m
+[32m+[m[32m    warning="Are you sure you want to permanently delete this equipment record?",[m[41m[m
+[32m+[m[32m    rows=[[m[41m[m
+[32m+[m[32m        ("Asset Tag", equipment.asset_tag),[m[41m[m
+[32m+[m[32m        ("Manufacturer", equipment.manufacturer),[m[41m[m
+[32m+[m[32m        ("Model", equipment.model),[m[41m[m
+[32m+[m[32m        ("Status", equipment.status),[m[41m[m
+[32m+[m[32m    ],[m[41m[m
+[32m+[m[32m    action_url=url_for('equipment.delete', equipment_id=equipment.id),[m[41m[m
+[32m+[m[32m    cancel_url=url_for('equipment.detail', equipment_id=equipment.id),[m[41m[m
+[32m+[m[32m    button_label="Delete Equipment",[m[41m[m
+[32m+[m[32m    start_visible=True,[m[41m[m
+[32m+[m[32m) }}[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m{% endblock %}[m
+\ No newline at end of file[m

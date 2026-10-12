@@ -1,10 +1,37 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends "base.html" %}
+
+{% from "_macros.html" import delete_modal %}
+
+{% block title %}Delete Equipment | IEMS{% endblock %}
+
+
+{% block content %}
+
+{#
+    The route already loaded the equipment and passed it
+    here. This page IS the confirmation — the user
+    navigated to /equipment/<id>/delete deliberately,
+    so the modal renders visible (start_visible=True).
+
+    Confirming POSTs to the same URL. Cancel returns to
+    the equipment detail page.
+#}
+
+{{ delete_modal(
+    modal_id="equipment-delete",
+    title="Delete Equipment",
+    subtitle="This action cannot be undone.",
+    warning="Are you sure you want to permanently delete this equipment record?",
+    rows=[
+        ("Asset Tag", equipment.asset_tag),
+        ("Manufacturer", equipment.manufacturer),
+        ("Model", equipment.model),
+        ("Status", equipment.status),
+    ],
+    action_url=url_for('equipment.delete', equipment_id=equipment.id),
+    cancel_url=url_for('equipment.detail', equipment_id=equipment.id),
+    button_label="Delete Equipment",
+    start_visible=True,
+) }}
+
+{% endblock %}
