@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+
+{% block title %}Locations - IEMS{% endblock %}
+
+
+{% block content %}
+
+<div class="page-header">
+
+    <div>
+
+        <div class="breadcrumb">
+            <a href="{{ url_for('dashboard.index') }}">Dashboard</a>
+            <span>/</span>
+            <span>Locations</span>
+        </div>
+
+        <h1>Locations</h1>
+
+        <p>
+            Manage buildings, rooms and storage areas where
+            equipment is kept.
+        </p>
+
+    </div>
+
+
+    <div class="page-header-actions">
+
+        <a
+            href="{{ url_for('locations.create') }}"
+            class="btn btn-primary"
+        >
+            + Add Location
+        </a>
+
+    </div>
+
+</div>
+
+
+<div class="card table-card">
+
+    <div class="card-header">
+
+        <div>
+
+            <h2>Location Directory</h2>
+
+            <p>
+                {{ locations|length }}
+                location{% if locations|length != 1 %}s{% endif %}
+                found
+            </p>
+
+        </div>
+
+    </div>
+
+
+    {% if locations %}
+
+    <div class="table-responsive">
+
+        <table class="data-table">
+
+            <thead>
+
+                <tr>
+
+                    <th>Name</th>
+                    <th>Building</th>
+                    <th>Room</th>
+                    <th>Equipment</th>
+                    <th class="text-right">Actions</th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                {% for location in locations %}
+
+                <tr>
+
+                    <td>
+                        <strong>{{ location.name }}</strong>
+                    </td>
+
+
+                    <td>
+                        {% if location.building %}
+                            {{ location.building }}
+                        {% else %}
+                            <span class="muted-text">—</span>
+                        {% endif %}
+                    </td>
+
+
+                    <td>
+                        {% if location.room %}
+                            {{ location.room }}
+                        {% else %}
+                            <span class="muted-text">—</span>
+                        {% endif %}
+                    </td>
+
+
+                    <td>
+                        {{ location.equipment|length }}
+                    </td>
+
+
+                    <td class="text-right">
+
+                        <div class="table-actions">
+
+                            <a
+                                href="{{ url_for(
+                                    'locations.edit',
+                                    location_id=location.id
+                                ) }}"
+                                class="btn-action btn-edit"
+                            >
+                                Edit
+                            </a>
+
+
+                            {% if location.equipment|length > 0 %}
+
+                                <button
+                                    type="button"
+                                    class="btn-action btn-return btn-disabled"
+                                    disabled
+                                    title="Cannot delete — still has equipment"
+                                >
+                                    Delete
+                                </button>
+
+                            {% else %}
+
+                                <form
+                                    method="POST"
+                                    action="{{ url_for(
+                                        'locations.delete',
+                                        location_id=location.id
+                                    ) }}"
+                                    class="inline-form"
+                                >
+
+                                    <button
+                                        type="submit"
+                                        class="btn-action btn-return"
+                                        onclick="return confirm('Delete this location?')"
+                                    >
+                                        Delete
+                                    </button>
+
+                                </form>
+
+                            {% endif %}
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    {% else %}
+
+    <div class="empty-state">
+
+        <h3>No locations yet</h3>
+
+        <p>
+            Add the first location to start recording where
+            equipment is kept.
+        </p>
+
+        <a
+            href="{{ url_for('locations.create') }}"
+            class="btn btn-primary"
+        >
+            + Add Location
+        </a>
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}
+
