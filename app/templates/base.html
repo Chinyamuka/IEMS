@@ -360,6 +360,10 @@
     </footer>
 
 
+    <!-- =====================================================
+         DRAWER TOGGLE
+         ===================================================== -->
+
     <script>
     document.addEventListener("DOMContentLoaded", function () {
 
@@ -437,6 +441,110 @@
                 closeDrawer();
             });
 
+        });
+
+    });
+    </script>
+
+
+    <!-- =====================================================
+         MODAL TOGGLE
+         ===================================================== -->
+
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        // -------------------------------------------------
+        // OPEN
+        // -------------------------------------------------
+
+        document.addEventListener("click", function (event) {
+
+            const opener = event.target.closest(
+                "[data-modal-target]"
+            );
+
+            if (!opener) {
+                return;
+            }
+
+            event.preventDefault();
+
+            const modalId = opener.dataset.modalTarget;
+            const modal = document.getElementById(modalId);
+
+            if (!modal) {
+                return;
+            }
+
+            modal.classList.remove("is-hidden");
+            document.body.classList.add("modal-open");
+        });
+
+
+        // -------------------------------------------------
+        // CLOSE — backdrop or Cancel button
+        // -------------------------------------------------
+
+        document.addEventListener("click", function (event) {
+
+            const overlay = event.target;
+
+            const clickedBackdrop = overlay.classList.contains(
+                "delete-modal-overlay"
+            );
+
+            const clickedCancel = event.target.closest(
+                ".delete-cancel-btn"
+            );
+
+            if (!clickedBackdrop && !clickedCancel) {
+                return;
+            }
+
+            if (clickedCancel) {
+                event.preventDefault();
+            }
+
+            const target = clickedCancel
+                ? clickedCancel.closest(".delete-modal-overlay")
+                : overlay;
+
+            if (!target) {
+                return;
+            }
+
+            target.classList.add("is-hidden");
+
+            const anyVisible = document.querySelector(
+                ".delete-modal-overlay:not(.is-hidden)"
+            );
+
+            if (!anyVisible) {
+                document.body.classList.remove("modal-open");
+            }
+        });
+
+
+        // -------------------------------------------------
+        // CLOSE — Escape key
+        // -------------------------------------------------
+
+        document.addEventListener("keydown", function (event) {
+
+            if (event.key !== "Escape") {
+                return;
+            }
+
+            document
+                .querySelectorAll(
+                    ".delete-modal-overlay:not(.is-hidden)"
+                )
+                .forEach(function (modal) {
+                    modal.classList.add("is-hidden");
+                });
+
+            document.body.classList.remove("modal-open");
         });
 
     });

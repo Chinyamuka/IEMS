@@ -1,7 +1,7 @@
 {#
     Shared Jinja macros. Import in any template:
 
-        {% from "_macros.html" import avatar, equipment_image %}
+        {% from "_macros.html" import avatar, equipment_image, delete_modal %}
 #}
 
 
@@ -43,10 +43,6 @@
    Equipment photo (rounded rectangle), or a generic
    ICT fallback when no photo is set.
 
-   Rounded rectangle, not a circle: a laptop or printer
-   photo looks wrong clipped to a circle. Circles are
-   reserved for people.
-
    Sizes: sm (48px), md (96px), lg (200px)
    --------------------------------------------------------- #}
 
@@ -70,5 +66,129 @@
         </div>
 
     {% endif %}
+
+{% endmacro %}
+
+
+{# ---------------------------------------------------------
+   DELETE MODAL
+   ---------------------------------------------------------
+   Renders a hidden confirmation modal. The associated
+   page must include a trigger button with
+
+       data-modal-target="<modal_id>"
+
+   and the base template wires the show/hide behaviour.
+
+   Parameters
+   ----------
+   modal_id : str
+       Unique DOM id (e.g. "delete-dept-3").
+   title : str
+       Bold header, e.g. "Delete Department".
+   subtitle : str
+       Smaller header line, e.g. "This action cannot be undone."
+   warning : str
+       The longer warning body. Explains what happens.
+   rows : list of (label, value) tuples
+       Data rows shown in the summary card.
+   action_url : str
+       POST target, url_for(...).
+   cancel_url : str
+       Where Cancel goes.
+   button_label : str
+       Confirm button text, e.g. "Delete Department".
+
+   Renders the modal hidden (class .is-hidden) so the JS
+   can show it on demand. Everything is inside one
+   overlay element with a fixed DOM id.
+   --------------------------------------------------------- #}
+
+{% macro delete_modal(
+    modal_id,
+    title,
+    subtitle,
+    warning,
+    rows,
+    action_url,
+    cancel_url,
+    button_label
+) %}
+
+    <div
+        class="delete-modal-overlay is-hidden"
+        id="{{ modal_id }}"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="{{ modal_id }}-title"
+    >
+
+        <div class="delete-modal">
+
+            <div class="delete-modal-header">
+
+                <div class="delete-warning-icon">
+                    !
+                </div>
+
+                <div>
+
+                    <h2 id="{{ modal_id }}-title">
+                        {{ title }}
+                    </h2>
+
+                    <p>
+                        {{ subtitle }}
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="delete-equipment-card">
+
+                {% for label, value in rows %}
+
+                    <div class="delete-equipment-row">
+                        <span>{{ label }}</span>
+                        <strong>{{ value }}</strong>
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+
+            <div class="delete-warning-message">
+                {{ warning }}
+            </div>
+
+
+            <form
+                method="POST"
+                action="{{ action_url }}"
+                class="delete-modal-actions"
+            >
+
+                <a
+                    href="{{ cancel_url }}"
+                    class="delete-cancel-btn"
+                >
+                    Cancel
+                </a>
+
+                <button
+                    type="submit"
+                    class="delete-confirm-btn"
+                >
+                    {{ button_label }}
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
 
 {% endmacro %}
