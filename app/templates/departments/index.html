@@ -10,11 +10,9 @@
     <div>
 
         <div class="breadcrumb">
-
             <a href="{{ url_for('dashboard.index') }}">Dashboard</a>
             <span>/</span>
             <span>Departments</span>
-
         </div>
 
         <h1>Departments</h1>
@@ -91,29 +89,16 @@
 
 
                     <td>
-
                         {% if department.description %}
-
                             {{ department.description }}
-
                         {% else %}
-
                             <span class="muted-text">—</span>
-
                         {% endif %}
-
                     </td>
 
 
                     <td>
-
-                        {#
-                            Counting users here — not loading
-                            them — so a large department does
-                            not slow the page down.
-                        #}
                         {{ department.users|length }}
-
                     </td>
 
 
@@ -131,15 +116,48 @@
                                 Edit
                             </a>
 
-                            <a
-                                href="{{ url_for(
-                                    'departments.delete',
-                                    department_id=department.id
-                                ) }}"
-                                class="btn-action btn-return"
-                            >
-                                Delete
-                            </a>
+
+                            {#
+                                Delete is refused when the
+                                department still has users.
+                                Disabling the button here is
+                                a UX signal; the server-side
+                                guard in departments.delete
+                                is the authoritative check.
+                            #}
+                            {% if department.users|length > 0 %}
+
+                                <button
+                                    type="button"
+                                    class="btn-action btn-return btn-disabled"
+                                    disabled
+                                    title="Cannot delete — still has users"
+                                >
+                                    Delete
+                                </button>
+
+                            {% else %}
+
+                                <form
+                                    method="POST"
+                                    action="{{ url_for(
+                                        'departments.delete',
+                                        department_id=department.id
+                                    ) }}"
+                                    class="inline-form"
+                                >
+
+                                    <button
+                                        type="submit"
+                                        class="btn-action btn-return"
+                                        onclick="return confirm('Delete this department?')"
+                                    >
+                                        Delete
+                                    </button>
+
+                                </form>
+
+                            {% endif %}
 
                         </div>
 

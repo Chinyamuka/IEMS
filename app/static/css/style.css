@@ -3170,3 +3170,26 @@ body.drawer-open {
     border-radius: 16px;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
 }
+
+/* =========================================================
+   DISABLED ACTION BUTTON
+   Used when an action is not available (e.g. deleting a
+   department that still has users).
+   ========================================================= */
+
+.btn-disabled,
+.btn-action.btn-disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    background: #eeeeeb;
+    border-color: #d8d8d3;
+    color: #888888;
+}
+
+.btn-action.btn-disabled:hover {
+    transform: none;
+    background: #eeeeeb;
+    border-color: #d8d8d3;
+    color: #888888;
+    box-shadow: none;
+}
