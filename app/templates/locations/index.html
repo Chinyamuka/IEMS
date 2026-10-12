@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% from "_macros.html" import delete_modal %}
+
 {% block title %}Locations - IEMS{% endblock %}
 
 
@@ -141,24 +143,13 @@
 
                             {% else %}
 
-                                <form
-                                    method="POST"
-                                    action="{{ url_for(
-                                        'locations.delete',
-                                        location_id=location.id
-                                    ) }}"
-                                    class="inline-form"
+                                <button
+                                    type="button"
+                                    class="btn-action btn-return"
+                                    data-modal-target="delete-loc-{{ location.id }}"
                                 >
-
-                                    <button
-                                        type="submit"
-                                        class="btn-action btn-return"
-                                        onclick="return confirm('Delete this location?')"
-                                    >
-                                        Delete
-                                    </button>
-
-                                </form>
+                                    Delete
+                                </button>
 
                             {% endif %}
 
@@ -175,6 +166,34 @@
         </table>
 
     </div>
+
+
+    {% for location in locations %}
+
+        {% if location.equipment|length == 0 %}
+
+            {{ delete_modal(
+                modal_id="delete-loc-" ~ location.id,
+                title="Delete Location",
+                subtitle="This action cannot be undone.",
+                warning="Are you sure you want to permanently delete this location?",
+                rows=[
+                    ("Name", location.name),
+                    ("Building", location.building or "—"),
+                    ("Room", location.room or "—"),
+                    ("Equipment", location.equipment|length),
+                ],
+                action_url=url_for(
+                    'locations.delete',
+                    location_id=location.id
+                ),
+                cancel_url=url_for('locations.index'),
+                button_label="Delete Location",
+            ) }}
+
+        {% endif %}
+
+    {% endfor %}
 
     {% else %}
 
@@ -201,4 +220,3 @@
 </div>
 
 {% endblock %}
-

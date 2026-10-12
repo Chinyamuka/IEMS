@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% from "_macros.html" import delete_modal %}
+
 {% block title %}Departments - IEMS{% endblock %}
 
 
@@ -117,6 +119,19 @@
                             </a>
 
 
+                            {#
+                                Delete opens a confirmation
+                                modal rendered further down the
+                                page (one per row). The modal
+                                contains the actual POST form.
+
+                                When the department has users,
+                                the button is disabled — the
+                                server-side guard in
+                                departments.delete remains
+                                authoritative if the page is
+                                stale.
+                            #}
                             {% if department.users|length > 0 %}
 
                                 <button
@@ -130,24 +145,13 @@
 
                             {% else %}
 
-                                <form
-                                    method="POST"
-                                    action="{{ url_for(
-                                        'departments.delete',
-                                        department_id=department.id
-                                    ) }}"
-                                    class="inline-form"
+                                <button
+                                    type="button"
+                                    class="btn-action btn-return"
+                                    data-modal-target="delete-dept-{{ department.id }}"
                                 >
-
-                                    <button
-                                        type="submit"
-                                        class="btn-action btn-return"
-                                        onclick="return confirm('Delete this department?')"
-                                    >
-                                        Delete
-                                    </button>
-
-                                </form>
+                                    Delete
+                                </button>
 
                             {% endif %}
 
@@ -164,6 +168,39 @@
         </table>
 
     </div>
+
+
+    {# ---------------------------------------------------------
+       DELETE MODALS
+       One per row. Hidden until the Delete button opens them.
+       Only rendered for rows that are actually deletable, so
+       we do not ship forms that the server would refuse.
+       --------------------------------------------------------- #}
+
+    {% for department in departments %}
+
+        {% if department.users|length == 0 %}
+
+            {{ delete_modal(
+                modal_id="delete-dept-" ~ department.id,
+                title="Delete Department",
+                subtitle="This action cannot be undone.",
+                warning="Are you sure you want to permanently delete this department?",
+                rows=[
+                    ("Name", department.name),
+                    ("Users", department.users|length),
+                ],
+                action_url=url_for(
+                    'departments.delete',
+                    department_id=department.id
+                ),
+                cancel_url=url_for('departments.index'),
+                button_label="Delete Department",
+            ) }}
+
+        {% endif %}
+
+    {% endfor %}
 
     {% else %}
 

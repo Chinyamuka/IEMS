@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% from "_macros.html" import delete_modal %}
+
 {% block title %}Categories - IEMS{% endblock %}
 
 
@@ -130,24 +132,13 @@
 
                             {% else %}
 
-                                <form
-                                    method="POST"
-                                    action="{{ url_for(
-                                        'categories.delete',
-                                        category_id=category.id
-                                    ) }}"
-                                    class="inline-form"
+                                <button
+                                    type="button"
+                                    class="btn-action btn-return"
+                                    data-modal-target="delete-cat-{{ category.id }}"
                                 >
-
-                                    <button
-                                        type="submit"
-                                        class="btn-action btn-return"
-                                        onclick="return confirm('Delete this category?')"
-                                    >
-                                        Delete
-                                    </button>
-
-                                </form>
+                                    Delete
+                                </button>
 
                             {% endif %}
 
@@ -164,6 +155,32 @@
         </table>
 
     </div>
+
+
+    {% for category in categories %}
+
+        {% if category.equipment|length == 0 %}
+
+            {{ delete_modal(
+                modal_id="delete-cat-" ~ category.id,
+                title="Delete Category",
+                subtitle="This action cannot be undone.",
+                warning="Are you sure you want to permanently delete this category?",
+                rows=[
+                    ("Name", category.name),
+                    ("Equipment", category.equipment|length),
+                ],
+                action_url=url_for(
+                    'categories.delete',
+                    category_id=category.id
+                ),
+                cancel_url=url_for('categories.index'),
+                button_label="Delete Category",
+            ) }}
+
+        {% endif %}
+
+    {% endfor %}
 
     {% else %}
 
