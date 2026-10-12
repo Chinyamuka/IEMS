@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Department - IEMS{% endblock %}
+
+
+{% block content %}
+
+<div class="page-header">
+
+    <div>
+
+        <div class="breadcrumb">
+
+            <a href="{{ url_for('dashboard.index') }}">Dashboard</a>
+            <span>/</span>
+            <a href="{{ url_for('departments.index') }}">Departments</a>
+            <span>/</span>
+            <span>{{ department.name }}</span>
+            <span>/</span>
+            <span>Edit</span>
+
+        </div>
+
+        <h1>Edit Department</h1>
+
+        <p>
+            Update the details for
+            <strong>{{ department.name }}</strong>.
+        </p>
+
+    </div>
+
+</div>
+
+
+<div class="card form-card">
+
+    <div class="card-header">
+
+        <div>
+
+            <h2>Department Details</h2>
+
+            <p>
+                Change the name or description of this
+                department.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <form method="POST">
+
+        <div class="form-section">
+
+            <div class="form-group">
+
+                <label for="name">
+                    Name
+                    <span class="required">*</span>
+                </label>
+
+                <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    required
+                    value="{{ request.form.get('name', department.name) }}"
+                    autofocus
+                >
+
+                <small class="form-help">
+                    Must be unique across all departments.
+                </small>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="description">
+                    Description
+                </label>
+
+                <textarea
+                    id="description"
+                    name="description"
+                    rows="4"
+                    placeholder="Optional. What does this department do?"
+                >{{ request.form.get('description', department.description or '') }}</textarea>
+
+            </div>
+
+        </div>
+
+
+        <div class="form-actions">
+
+            <a
+                href="{{ url_for('departments.index') }}"
+                class="btn btn-secondary"
+            >
+                Cancel
+            </a>
+
+            <button
+                type="submit"
+                class="btn btn-primary"
+            >
+                Save Changes
+            </button>
+
+        </div>
+
+    </form>
+
+</div>
+
+{% endblock %}
