@@ -2,7 +2,8 @@
 IEMS Equipment Routes
 
 Contains routes responsible for creating and viewing
-ICT equipment records.
+ICT equipment records. Every mutation is recorded in
+the activity log.
 """
 
 from flask import (
@@ -26,6 +27,7 @@ from app.utils.uploads import (
     delete_image,
     ImageUploadError,
 )
+from app.utils.activity import log_activity
 
 
 # =========================================================
@@ -56,8 +58,7 @@ def create():
     Register a new piece of ICT equipment.
 
     Supports an optional equipment photo via the 'image'
-    form field. The photo is validated and saved by
-    app/utils/uploads.py.
+    form field.
     """
 
     form = EquipmentForm()
@@ -111,15 +112,6 @@ def create():
         # -------------------------------------------------
         # SAVE IMAGE (if any)
         # -------------------------------------------------
-        #
-        # Runs before constructing the Equipment object so
-        # that a rejected file leaves the DB untouched.
-        #
-        # save_image returns:
-        #   None  -> no file submitted
-        #   str   -> the filename, already on disk
-        #
-        # Raises ImageUploadError for invalid files.
 
         new_image_filename = None
 
@@ -158,11 +150,27 @@ def create():
         db.session.add(equipment)
 
         # -------------------------------------------------
-        # COMMIT
+        # FLUSH + LOG
         # -------------------------------------------------
         #
-        # On failure: roll back and remove the newly written
-        # image so the disk does not accumulate orphans.
+        # flush() sends the INSERT to the DB and populates
+        # equipment.id without committing. We need the id
+        # to reference it in the activity log. If the
+        # subsequent commit fails, the INSERT rolls back
+        # along with the log entry — no orphan records.
+
+        db.session.flush()
+
+        log_activity(
+            "create",
+            "Equipment",
+            equipment.id,
+            f"Registered equipment {equipment.asset_tag}",
+        )
+
+        # -------------------------------------------------
+        # COMMIT
+        # -------------------------------------------------
 
         try:
             db.session.commit()
@@ -234,9 +242,7 @@ def edit(equipment_id):
     """
     Edit an existing equipment record.
 
-    Supports an optional replacement photo. If a new photo
-    is uploaded, the old file is removed after the commit
-    succeeds.
+    Supports an optional replacement photo.
     """
 
     equipment = Equipment.query.get_or_404(equipment_id)
@@ -295,10 +301,6 @@ def edit(equipment_id):
         # -------------------------------------------------
         # SAVE NEW IMAGE (if any)
         # -------------------------------------------------
-        #
-        # Runs before assigning any field to the equipment
-        # object so that a rejected file leaves the DB
-        # untouched.
 
         new_image_filename = None
         old_image_filename = equipment.image_filename
@@ -335,6 +337,20 @@ def edit(equipment_id):
 
         if new_image_filename is not None:
             equipment.image_filename = new_image_filename
+
+        # -------------------------------------------------
+        # LOG
+        # -------------------------------------------------
+        #
+        # No flush() needed here — the entity already
+        # exists and its id is known.
+
+        log_activity(
+            "update",
+            "Equipment",
+            equipment.id,
+            f"Updated equipment {equipment.asset_tag}",
+        )
 
         # -------------------------------------------------
         # COMMIT
@@ -406,12 +422,50 @@ def delete(equipment_id):
 
     if request.method == "POST":
 
+        # -------------------------------------------------
+        # CAPTURE SUMMARY BEFORE DELETION
+        # -------------------------------------------------
+        #
+        # After db.session.delete(equipment) and commit,
+        # the row is gone and its attributes are no longer
+        # loaded. Capture what we need for the log now.
+
+        asset_tag = equipment.asset_tag
+        equipment_db_id = equipment.id
+
         # Remove the image file before deleting the row.
         if equipment.image_filename:
             delete_image(equipment.image_filename, "equipment")
 
         db.session.delete(equipment)
-        db.session.commit()
+
+        # -------------------------------------------------
+        # LOG
+        # -------------------------------------------------
+        #
+        # We log the delete explicitly. Note entity_id
+        # still refers to the (now-deleted) id — useful
+        # for audit even though no live row has that id.
+
+        log_activity(
+            "delete",
+            "Equipment",
+            equipment_db_id,
+            f"Deleted equipment {asset_tag}",
+        )
+
+        try:
+            db.session.commit()
+
+        except Exception:
+            db.session.rollback()
+            flash(
+                "Equipment could not be deleted. Please try again.",
+                "danger",
+            )
+            return redirect(
+                url_for("equipment.index")
+            )
 
         flash(
             "Equipment deleted successfully.",
