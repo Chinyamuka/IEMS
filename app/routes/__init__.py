@@ -1,5 +1,6 @@
 from . import dashboard, departments
 from .auth import auth_bp
+from .categories import categories_bp
 from .dashboard import dashboard_bp
 from .departments import departments_bp
 from .equipment import  equipment_bp
@@ -17,3 +18,4 @@ def register_routes(app):
     app.register_blueprint(profile_bp)
     app.register_blueprint(departments_bp)
     app.register_blueprint(locations_bp)
+    app.register_blueprint(categories_bp)
