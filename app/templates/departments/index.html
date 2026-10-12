@@ -117,14 +117,6 @@
                             </a>
 
 
-                            {#
-                                Delete is refused when the
-                                department still has users.
-                                Disabling the button here is
-                                a UX signal; the server-side
-                                guard in departments.delete
-                                is the authoritative check.
-                            #}
                             {% if department.users|length > 0 %}
 
                                 <button
