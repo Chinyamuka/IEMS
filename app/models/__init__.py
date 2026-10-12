@@ -1,4 +1,4 @@
-
+from .activity_log import ActivityLog
 from .category import Category
 from .location import Location
 from .equipment import Equipment
@@ -13,5 +13,6 @@ __all__ = [
     "Department",
     "User",
     "EquipmentAssignment",
+    "ActivityLog",
 
 ]
