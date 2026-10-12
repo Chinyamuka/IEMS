@@ -3193,3 +3193,21 @@ body.drawer-open {
     color: #888888;
     box-shadow: none;
 }
+/* =========================================================
+   DELETE MODAL — HIDDEN STATE
+   The base .delete-modal-overlay is display: flex, so a
+   plain [hidden] attribute is overridden by CSS
+   specificity. This class gives a reliable hide that the
+   JS can toggle.
+   ========================================================= */
+
+.delete-modal-overlay.is-hidden {
+    display: none;
+}
+
+
+/* Lock background scroll while a modal is open. */
+
+body.modal-open {
+    overflow: hidden;
+}
