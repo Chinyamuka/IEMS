@@ -73,12 +73,19 @@
 {# ---------------------------------------------------------
    DELETE MODAL
    ---------------------------------------------------------
-   Renders a hidden confirmation modal. The associated
-   page must include a trigger button with
+   Renders a confirmation modal.
 
-       data-modal-target="<modal_id>"
+   Two use cases:
 
-   and the base template wires the show/hide behaviour.
+   1. Inline, hidden by default. The page has a trigger
+      button with data-modal-target="<modal_id>" and the
+      base template's JS opens the modal on click.
+      Call with start_visible=False (the default).
+
+   2. As a dedicated delete page. The user navigated to a
+      URL like /equipment/<id>/delete; the modal should be
+      visible immediately.
+      Call with start_visible=True.
 
    Parameters
    ----------
@@ -98,10 +105,9 @@
        Where Cancel goes.
    button_label : str
        Confirm button text, e.g. "Delete Department".
-
-   Renders the modal hidden (class .is-hidden) so the JS
-   can show it on demand. Everything is inside one
-   overlay element with a fixed DOM id.
+   start_visible : bool
+       If True, the modal is rendered without .is-hidden
+       and appears immediately on page load.
    --------------------------------------------------------- #}
 
 {% macro delete_modal(
@@ -112,11 +118,13 @@
     rows,
     action_url,
     cancel_url,
-    button_label
+    button_label,
+    start_visible=False
 ) %}
 
     <div
-        class="delete-modal-overlay is-hidden"
+        class="delete-modal-overlay
+            {% if not start_visible %}is-hidden{% endif %}"
         id="{{ modal_id }}"
         role="dialog"
         aria-modal="true"
