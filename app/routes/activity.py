@@ -34,10 +34,6 @@ activity_bp = Blueprint(
 # =========================================================
 # FILTER OPTIONS
 # =========================================================
-#
-# Hard-coded lists rather than GROUP BY queries. The
-# values are known statically and this keeps the route
-# cheap even when the log grows large.
 
 ENTITY_TYPES = [
     "Equipment",
@@ -113,12 +109,11 @@ def index():
             dt = datetime.strptime(from_date, "%Y-%m-%d")
             query = query.filter(ActivityLog.created_at >= dt)
         except ValueError:
-            pass  # ignore malformed input
+            pass
 
     if to_date:
         try:
             dt = datetime.strptime(to_date, "%Y-%m-%d")
-            # Include the whole "to" day.
             dt = dt + timedelta(days=1)
             query = query.filter(ActivityLog.created_at < dt)
         except ValueError:

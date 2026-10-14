@@ -264,6 +264,20 @@
                     </span>
                 </a>
 
+
+                <a
+                    href="{{ url_for('activity.index') }}"
+                    class="drawer-link
+                        {% if request.endpoint and request.endpoint.startswith('activity.') %}
+                            active
+                        {% endif %}
+                    "
+                >
+                    <span class="drawer-link-label">
+                        Activity Log
+                    </span>
+                </a>
+
             {% endif %}
 
         </nav>

@@ -1,0 +1,359 @@
+{% extends "base.html" %}
+
+{% block title %}Activity Log - IEMS{% endblock %}
+
+
+{% block content %}
+
+<div class="page-header">
+
+    <div>
+
+        <div class="breadcrumb">
+
+            <a href="{{ url_for('dashboard.index') }}">Dashboard</a>
+            <span>/</span>
+            <span>Activity Log</span>
+
+        </div>
+
+        <h1>Activity Log</h1>
+
+        <p>
+            Every recorded change in IEMS, in reverse
+            chronological order.
+        </p>
+
+    </div>
+
+</div>
+
+
+<div class="card search-card">
+
+    <form
+        method="GET"
+        action="{{ url_for('activity.index') }}"
+        class="search-form"
+        style="flex-wrap: wrap; gap: 12px;"
+    >
+
+        <div class="form-group" style="min-width: 180px;">
+            <label for="user_id">User</label>
+            <select id="user_id" name="user_id" class="form-control">
+                <option value="">All users</option>
+                {% for u in users %}
+                    <option
+                        value="{{ u.id }}"
+                        {% if selected_user == u.id %}selected{% endif %}
+                    >
+                        {{ u.full_name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group" style="min-width: 160px;">
+            <label for="entity_type">Entity</label>
+            <select id="entity_type" name="entity_type" class="form-control">
+                <option value="">All entities</option>
+                {% for et in entity_types %}
+                    <option
+                        value="{{ et }}"
+                        {% if selected_entity == et %}selected{% endif %}
+                    >
+                        {{ et }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group" style="min-width: 140px;">
+            <label for="action">Action</label>
+            <select id="action" name="action" class="form-control">
+                <option value="">All actions</option>
+                {% for a in actions %}
+                    <option
+                        value="{{ a }}"
+                        {% if selected_action == a %}selected{% endif %}
+                    >
+                        {{ a }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group" style="min-width: 140px;">
+            <label for="from">From</label>
+            <input
+                type="date"
+                id="from"
+                name="from"
+                value="{{ selected_from }}"
+                class="form-control"
+            >
+        </div>
+
+        <div class="form-group" style="min-width: 140px;">
+            <label for="to">To</label>
+            <input
+                type="date"
+                id="to"
+                name="to"
+                value="{{ selected_to }}"
+                class="form-control"
+            >
+        </div>
+
+        <div class="form-group" style="justify-content: flex-end;">
+            <label>&nbsp;</label>
+            <div style="display: flex; gap: 8px;">
+                <button type="submit" class="btn btn-primary">
+                    Filter
+                </button>
+                <a
+                    href="{{ url_for('activity.index') }}"
+                    class="btn btn-secondary"
+                >
+                    Clear
+                </a>
+            </div>
+        </div>
+
+    </form>
+
+</div>
+
+
+<div class="card table-card">
+
+    <div class="card-header">
+
+        <div>
+
+            <h2>Log Entries</h2>
+
+            <p>
+                Showing
+                {{ pagination.first or 0 }}
+                –
+                {{ pagination.last or 0 }}
+                of
+                {{ pagination.total }}
+                entries.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    {% if logs %}
+
+    <div class="table-responsive">
+
+        <table class="data-table">
+
+            <thead>
+
+                <tr>
+
+                    <th>When</th>
+                    <th>User</th>
+                    <th>Action</th>
+                    <th>Entity</th>
+                    <th>Summary</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                {% for log in logs %}
+
+                <tr>
+
+                    <td>
+                        {{ log.created_at.strftime('%d %b %Y %H:%M') }}
+                    </td>
+
+
+                    <td>
+
+                        {% if log.user %}
+                            {{ log.user.full_name }}
+                        {% else %}
+                            <span class="muted-text">System</span>
+                        {% endif %}
+
+                    </td>
+
+
+                    <td>
+
+                        <span class="role-badge">
+                            {{ log.action }}
+                        </span>
+
+                    </td>
+
+
+                    <td>
+                        {{ log.entity_type }}
+                        {% if log.entity_id %}
+                            <span class="muted-text">
+                                #{{ log.entity_id }}
+                            </span>
+                        {% endif %}
+                    </td>
+
+
+                    <td>
+                        {{ log.summary }}
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+
+    {% if pagination.pages > 1 %}
+
+    <nav
+        class="pagination"
+        aria-label="Activity pagination"
+    >
+
+        {% if pagination.has_prev %}
+
+            <a
+                href="{{ url_for(
+                    'activity.index',
+                    page=pagination.prev_num,
+                    user_id=selected_user,
+                    entity_type=selected_entity,
+                    action=selected_action,
+                    from=selected_from,
+                    to=selected_to,
+                ) }}"
+                class="pagination-link"
+            >
+                ← Previous
+            </a>
+
+        {% else %}
+
+            <span class="pagination-link disabled">
+                ← Previous
+            </span>
+
+        {% endif %}
+
+
+        {% for page_number in pagination.iter_pages(
+            left_edge=1,
+            left_current=1,
+            right_current=1,
+            right_edge=1
+        ) %}
+
+            {% if page_number %}
+
+                {% if page_number == pagination.page %}
+
+                    <span class="pagination-link active">
+                        {{ page_number }}
+                    </span>
+
+                {% else %}
+
+                    <a
+                        href="{{ url_for(
+                            'activity.index',
+                            page=page_number,
+                            user_id=selected_user,
+                            entity_type=selected_entity,
+                            action=selected_action,
+                            from=selected_from,
+                            to=selected_to,
+                        ) }}"
+                        class="pagination-link"
+                    >
+                        {{ page_number }}
+                    </a>
+
+                {% endif %}
+
+            {% else %}
+
+                <span class="pagination-link disabled">
+                    …
+                </span>
+
+            {% endif %}
+
+        {% endfor %}
+
+
+        {% if pagination.has_next %}
+
+            <a
+                href="{{ url_for(
+                    'activity.index',
+                    page=pagination.next_num,
+                    user_id=selected_user,
+                    entity_type=selected_entity,
+                    action=selected_action,
+                    from=selected_from,
+                    to=selected_to,
+                ) }}"
+                class="pagination-link"
+            >
+                Next →
+            </a>
+
+        {% else %}
+
+            <span class="pagination-link disabled">
+                Next →
+            </span>
+
+        {% endif %}
+
+    </nav>
+
+    {% endif %}
+
+
+    {% else %}
+
+    <div class="empty-state">
+
+        <h3>No log entries match your filters</h3>
+
+        <p>
+            Try widening the date range or clearing the
+            filters.
+        </p>
+
+        <a
+            href="{{ url_for('activity.index') }}"
+            class="btn btn-secondary"
+        >
+            Clear filters
+        </a>
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}
