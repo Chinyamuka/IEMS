@@ -2,14 +2,7 @@
 IEMS Self-Service Profile Routes
 
 Every logged-in user can view and edit their own
-profile. Unlike app/routes/users.py, which is the
-Administrator-only employee management tool, this
-blueprint never touches anyone but the currently
-logged-in user.
-
-The current user is read from g.current_user, which
-is populated by load_current_user() on every request
-(see app/__init__.py).
+profile. Every mutation is recorded in the activity log.
 """
 
 from flask import (
@@ -30,6 +23,7 @@ from app.utils.uploads import (
     delete_image,
     ImageUploadError,
 )
+from app.utils.activity import log_activity
 
 
 # =========================================================
@@ -68,9 +62,7 @@ def edit():
     Edit the current user's name, email, phone and photo.
 
     Deliberately does NOT allow editing employee_number,
-    department_id, role or is_active. Those are HR or
-    RBAC concerns and remain editable only by an
-    Administrator through /users/<id>/edit.
+    department_id, role or is_active.
     """
 
     user = g.current_user
@@ -131,6 +123,13 @@ def edit():
         if new_image_filename is not None:
             user.profile_image = new_image_filename
 
+        log_activity(
+            "update",
+            "User",
+            user.id,
+            "Updated own profile",
+        )
+
         try:
             db.session.commit()
 
@@ -178,16 +177,8 @@ def change_password():
     """
     Change the current user's password.
 
-    Requires the current password so that a hijacked
-    session cannot silently rotate the credential and
-    lock the real owner out.
-
-    Validation order:
-        1. All three fields present
-        2. New password length >= 8
-        3. New password equals confirmation
-        4. New password differs from current
-        5. Current password matches the stored hash
+    The log entry says only 'Changed password' — the
+    password itself is never recorded.
     """
 
     user = g.current_user
@@ -197,10 +188,6 @@ def change_password():
         current_password = request.form.get("current_password", "")
         new_password     = request.form.get("new_password", "")
         confirm_password = request.form.get("confirm_password", "")
-
-        # -------------------------------------------------
-        # 1. ALL FIELDS PRESENT
-        # -------------------------------------------------
 
         if not current_password or not new_password or not confirm_password:
             flash(
@@ -212,10 +199,6 @@ def change_password():
                 user=user,
             )
 
-        # -------------------------------------------------
-        # 2. MINIMUM LENGTH
-        # -------------------------------------------------
-
         if len(new_password) < 8:
             flash(
                 "The new password must be at least 8 characters.",
@@ -226,10 +209,6 @@ def change_password():
                 user=user,
             )
 
-        # -------------------------------------------------
-        # 3. CONFIRMATION MATCH
-        # -------------------------------------------------
-
         if new_password != confirm_password:
             flash(
                 "The new passwords do not match.",
@@ -239,10 +218,6 @@ def change_password():
                 "profile/change_password.html",
                 user=user,
             )
-
-        # -------------------------------------------------
-        # 4. DIFFERENT FROM CURRENT
-        # -------------------------------------------------
 
         if new_password == current_password:
             flash(
@@ -255,10 +230,6 @@ def change_password():
                 user=user,
             )
 
-        # -------------------------------------------------
-        # 5. CURRENT PASSWORD CORRECT
-        # -------------------------------------------------
-
         if not user.check_password(current_password):
             flash(
                 "Your current password is incorrect.",
@@ -269,11 +240,14 @@ def change_password():
                 user=user,
             )
 
-        # -------------------------------------------------
-        # UPDATE
-        # -------------------------------------------------
-
         user.set_password(new_password)
+
+        log_activity(
+            "password_change",
+            "User",
+            user.id,
+            "Changed password",
+        )
 
         try:
             db.session.commit()

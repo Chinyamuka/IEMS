@@ -1,40 +1,8 @@
 """
 IEMS Equipment Assignment Routes
 
-Handles:
-
-- Viewing assignment history
-- Assigning equipment to employees
-- Returning equipment
-- Equipment status updates
-- RBAC protection for assignment operations
-
-RBAC:
-
-Administrator
-    - View assignments
-    - Assign equipment
-    - Return equipment
-
-Asset Officer
-    - View assignments
-    - Assign equipment
-    - Return equipment
-
-IT Manager
-    - View assignments
-    - Assign equipment
-    - Return equipment
-
-IT Officer
-    - View assignments
-    - Assign equipment
-    - Return equipment
-
-Employee
-    - View assignment history
-    - Cannot assign equipment
-    - Cannot return equipment
+Handles assigning and returning ICT equipment.
+Every mutation is recorded in the activity log.
 """
 
 from datetime import datetime
@@ -56,6 +24,7 @@ from app.models import (
     EquipmentAssignment,
 )
 from app.forms.assignment import EquipmentAssignmentForm
+from app.utils.activity import log_activity
 
 
 # =========================================================
@@ -108,12 +77,7 @@ def can_manage_assignments():
 
 
 def require_login():
-    """
-    Require an authenticated active user.
-
-    Returns a redirect response when authentication fails,
-    or None when it succeeds.
-    """
+    """Require an authenticated active user."""
     user = get_current_user()
 
     if not user:
@@ -132,12 +96,7 @@ def require_login():
 
 
 def require_assignment_management():
-    """
-    Require permission to manage equipment assignments.
-
-    Returns a redirect response when the user is not
-    authorized, or None when they are.
-    """
+    """Require permission to manage equipment assignments."""
     login_redirect = require_login()
     if login_redirect:
         return login_redirect
@@ -173,9 +132,6 @@ def create():
     # -----------------------------------------------------
     # AVAILABLE EQUIPMENT
     # -----------------------------------------------------
-    #
-    # Only equipment without an active assignment and
-    # currently 'In Stock' can be assigned.
 
     active_assignment_ids = (
         db.session.query(EquipmentAssignment.equipment_id)
@@ -218,7 +174,7 @@ def create():
     ]
 
     # -----------------------------------------------------
-    # PROCESS SUBMISSION
+    # SUBMISSION
     # -----------------------------------------------------
 
     if form.validate_on_submit():
@@ -287,6 +243,24 @@ def create():
 
         db.session.add(assignment)
         equipment_item.status = "Assigned"
+
+        # -------------------------------------------------
+        # FLUSH + LOG
+        # -------------------------------------------------
+        #
+        # flush() populates assignment.id for the log's
+        # entity_id. Same transaction as the assignment
+        # itself — rollback discards both.
+
+        db.session.flush()
+
+        log_activity(
+            "assign",
+            "EquipmentAssignment",
+            assignment.id,
+            f"Assigned {equipment_item.asset_tag} "
+            f"to {user.full_name}",
+        )
 
         try:
             db.session.commit()
@@ -357,10 +331,6 @@ def return_equipment(assignment_id):
     browser via confirm() on the submit button, matching
     the pattern used for equipment delete and user
     deactivate.
-
-    On success:
-        - assignment.returned_at is set to now
-        - equipment.status is set back to 'In Stock'
     """
 
     permission_redirect = require_assignment_management()
@@ -386,8 +356,19 @@ def return_equipment(assignment_id):
         )
         return redirect(url_for("assignment.index"))
 
+    # Capture what we need for the log before mutating.
+    asset_tag = assignment.equipment.asset_tag
+    holder_name = assignment.user.full_name
+
     assignment.returned_at = datetime.utcnow()
     assignment.equipment.status = "In Stock"
+
+    log_activity(
+        "return",
+        "EquipmentAssignment",
+        assignment.id,
+        f"Returned {asset_tag} from {holder_name}",
+    )
 
     try:
         db.session.commit()
@@ -401,10 +382,7 @@ def return_equipment(assignment_id):
         return redirect(url_for("assignment.index"))
 
     flash(
-        f"{assignment.equipment.asset_tag} has been "
-        f"returned from "
-        f"{assignment.user.full_name}.",
+        f"{asset_tag} has been returned from {holder_name}.",
         "success",
     )
-
     return redirect(url_for("assignment.index"))
