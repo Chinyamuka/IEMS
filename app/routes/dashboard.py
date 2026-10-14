@@ -14,6 +14,7 @@ The dashboard itself is read-only.
 """
 
 from collections import Counter
+
 from flask import (
     Blueprint,
     render_template,
@@ -21,7 +22,8 @@ from flask import (
     url_for,
     session,
 )
-from app.models import Equipment
+
+from app.models import Equipment, ActivityLog
 
 
 # =========================================================
@@ -51,12 +53,6 @@ def index():
     # -----------------------------------------------------
     # AUTHENTICATION CHECK
     # -----------------------------------------------------
-    #
-    # We only require the user to be logged in here.
-    #
-    # An Employee/Viewer should be able to see inventory
-    # information without being allowed to modify it.
-    #
 
     if not session.get("user_id"):
         return redirect(
@@ -71,29 +67,11 @@ def index():
         Equipment.created_at.desc()
     ).all()
 
-    # -----------------------------------------------------
-    # TOTAL EQUIPMENT
-    # -----------------------------------------------------
-
     total_equipment = len(equipment)
 
     # -----------------------------------------------------
-    # NORMALISE STATUS VALUES
+    # STATUS COUNTS
     # -----------------------------------------------------
-    #
-    # The current database may contain:
-    #
-    # In Stock
-    # Assigned
-    # Under Repair
-    # Under Maintenance
-    # Retired
-    # Disposed
-    #
-    # We keep the actual database values for the status
-    # breakdown, while the summary combines equivalent
-    # lifecycle states where appropriate.
-    #
 
     status_counter = Counter()
 
@@ -102,10 +80,6 @@ def index():
         status = (item.status or "Unknown").strip()
 
         status_counter[status] += 1
-
-    # -----------------------------------------------------
-    # SUMMARY COUNTS
-    # -----------------------------------------------------
 
     in_stock = sum(
         count
@@ -141,22 +115,14 @@ def index():
     # -----------------------------------------------------
     # EQUIPMENT BY CATEGORY
     # -----------------------------------------------------
-    #
-    # Build this from the actual Equipment objects.
-    # This avoids problems with GROUP BY / relationship
-    # queries while the application is still being developed.
-    #
 
     category_counter = Counter()
 
     for item in equipment:
 
         if item.category:
-
             category_name = item.category.name
-
         else:
-
             category_name = "Uncategorised"
 
         category_counter[category_name] += 1
@@ -178,14 +144,31 @@ def index():
     # -----------------------------------------------------
     # RECENT EQUIPMENT
     # -----------------------------------------------------
-    #
-    # Limit the dashboard table to the latest 5 records.
-    #
 
     recent_equipment = equipment[:5]
 
     # -----------------------------------------------------
-    # RENDER DASHBOARD
+    # RECENT ACTIVITY
+    # -----------------------------------------------------
+    #
+    # The latest audit-trail entries. Limited to 10 so the
+    # dashboard stays compact; the full list is available
+    # on /activity/ (E6).
+    #
+    # ordered by created_at DESC rather than id DESC so
+    # the list reflects event time, not insertion order,
+    # if the DB has been restored from a backup.
+    #
+
+    recent_activity = (
+        ActivityLog.query
+        .order_by(ActivityLog.created_at.desc())
+        .limit(10)
+        .all()
+    )
+
+    # -----------------------------------------------------
+    # RENDER
     # -----------------------------------------------------
 
     return render_template(
@@ -204,4 +187,7 @@ def index():
 
         # Recent records
         recent_equipment=recent_equipment,
+
+        # Audit trail
+        recent_activity=recent_activity,
     )
