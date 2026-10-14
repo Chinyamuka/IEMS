@@ -1,259 +1,207 @@
 """
-IEMS Category Management Routes
+IEMS Dashboard Routes
 
-Administrator-only CRUD for the Category lookup table.
-Every mutation is recorded in the activity log.
+The dashboard is available to every authenticated IEMS user.
+
+RBAC is still enforced on operations such as:
+- Creating equipment
+- Editing equipment
+- Deleting equipment
+- Assigning equipment
+- Managing employees/users
+
+The dashboard itself is read-only.
 """
 
+from collections import Counter
 from flask import (
     Blueprint,
     render_template,
     redirect,
     url_for,
-    flash,
-    request,
+    session,
 )
-
-from app.extensions import db
-from app.models import Category, Equipment
-from app.auth.decorators import login_required
-from app.utils.permissions import role_required
-from app.utils.activity import log_activity
+from app.models import Equipment
 
 
 # =========================================================
 # BLUEPRINT
 # =========================================================
 
-categories_bp = Blueprint(
-    "categories",
+dashboard_bp = Blueprint(
+    "dashboard",
     __name__,
-    url_prefix="/categories",
+    url_prefix="/dashboard",
 )
 
 
 # =========================================================
-# HELPER
+# DASHBOARD
 # =========================================================
 
-def _name_in_use(name, exclude_id=None):
-    """True if a Category with this name already exists."""
-    query = Category.query.filter(
-        db.func.lower(Category.name) == name.lower()
-    )
-
-    if exclude_id is not None:
-        query = query.filter(Category.id != exclude_id)
-
-    return query.first() is not None
-
-
-# =========================================================
-# LIST
-# =========================================================
-
-@categories_bp.route("/")
-@login_required
-@role_required("Administrator")
+@dashboard_bp.route("/")
 def index():
-    """Display all categories."""
-    categories = Category.query.order_by(
-        Category.name.asc()
+    """
+    Display the IEMS dashboard.
+
+    Any authenticated user may view the dashboard.
+    RBAC is applied to sensitive operations elsewhere.
+    """
+
+    # -----------------------------------------------------
+    # AUTHENTICATION CHECK
+    # -----------------------------------------------------
+    #
+    # We only require the user to be logged in here.
+    #
+    # An Employee/Viewer should be able to see inventory
+    # information without being allowed to modify it.
+    #
+
+    if not session.get("user_id"):
+        return redirect(
+            url_for("auth.login")
+        )
+
+    # -----------------------------------------------------
+    # LOAD EQUIPMENT
+    # -----------------------------------------------------
+
+    equipment = Equipment.query.order_by(
+        Equipment.created_at.desc()
     ).all()
 
-    return render_template(
-        "categories/index.html",
-        categories=categories,
+    # -----------------------------------------------------
+    # TOTAL EQUIPMENT
+    # -----------------------------------------------------
+
+    total_equipment = len(equipment)
+
+    # -----------------------------------------------------
+    # NORMALISE STATUS VALUES
+    # -----------------------------------------------------
+    #
+    # The current database may contain:
+    #
+    # In Stock
+    # Assigned
+    # Under Repair
+    # Under Maintenance
+    # Retired
+    # Disposed
+    #
+    # We keep the actual database values for the status
+    # breakdown, while the summary combines equivalent
+    # lifecycle states where appropriate.
+    #
+
+    status_counter = Counter()
+
+    for item in equipment:
+
+        status = (item.status or "Unknown").strip()
+
+        status_counter[status] += 1
+
+    # -----------------------------------------------------
+    # SUMMARY COUNTS
+    # -----------------------------------------------------
+
+    in_stock = sum(
+        count
+        for status, count in status_counter.items()
+        if status.lower() == "in stock"
     )
 
+    assigned = sum(
+        count
+        for status, count in status_counter.items()
+        if status.lower() == "assigned"
+    )
 
-# =========================================================
-# CREATE
-# =========================================================
+    under_repair = sum(
+        count
+        for status, count in status_counter.items()
+        if status.lower() in {
+            "under repair",
+            "under maintenance",
+            "maintenance",
+        }
+    )
 
-@categories_bp.route("/new", methods=["GET", "POST"])
-@login_required
-@role_required("Administrator")
-def create():
-    """Create a new category."""
+    retired = sum(
+        count
+        for status, count in status_counter.items()
+        if status.lower() in {
+            "retired",
+            "disposed",
+        }
+    )
 
-    if request.method == "POST":
+    # -----------------------------------------------------
+    # EQUIPMENT BY CATEGORY
+    # -----------------------------------------------------
+    #
+    # Build this from the actual Equipment objects.
+    # This avoids problems with GROUP BY / relationship
+    # queries while the application is still being developed.
+    #
 
-        name        = request.form.get("name", "").strip()
-        description = request.form.get("description", "").strip()
+    category_counter = Counter()
 
-        if not name:
-            flash("Category name is required.", "danger")
-            return render_template("categories/create.html")
+    for item in equipment:
 
-        if _name_in_use(name):
-            flash(
-                f"A category named '{name}' already exists.",
-                "danger",
-            )
-            return render_template("categories/create.html")
+        if item.category:
 
-        category = Category(
-            name=name,
-            description=description or None,
-        )
+            category_name = item.category.name
 
-        db.session.add(category)
-        db.session.flush()
+        else:
 
-        log_activity(
-            "create",
-            "Category",
-            category.id,
-            f"Created category {category.name}",
-        )
+            category_name = "Uncategorised"
 
-        try:
-            db.session.commit()
-        except Exception:
-            db.session.rollback()
-            flash(
-                "The category could not be saved. "
-                "Please try again.",
-                "danger",
-            )
-            return render_template("categories/create.html")
+        category_counter[category_name] += 1
 
-        flash(
-            f"Category '{category.name}' was created.",
-            "success",
-        )
-        return redirect(url_for("categories.index"))
+    category_statistics = sorted(
+        category_counter.items(),
+        key=lambda row: row[0].lower()
+    )
 
-    return render_template("categories/create.html")
+    # -----------------------------------------------------
+    # EQUIPMENT BY STATUS
+    # -----------------------------------------------------
 
+    status_statistics = sorted(
+        status_counter.items(),
+        key=lambda row: row[0].lower()
+    )
 
-# =========================================================
-# EDIT
-# =========================================================
+    # -----------------------------------------------------
+    # RECENT EQUIPMENT
+    # -----------------------------------------------------
+    #
+    # Limit the dashboard table to the latest 5 records.
+    #
 
-@categories_bp.route("/<int:category_id>/edit", methods=["GET", "POST"])
-@login_required
-@role_required("Administrator")
-def edit(category_id):
-    """Edit an existing category."""
+    recent_equipment = equipment[:5]
 
-    category = db.get_or_404(Category, category_id)
-
-    if request.method == "POST":
-
-        name        = request.form.get("name", "").strip()
-        description = request.form.get("description", "").strip()
-
-        if not name:
-            flash("Category name is required.", "danger")
-            return render_template(
-                "categories/edit.html",
-                category=category,
-            )
-
-        if _name_in_use(name, exclude_id=category.id):
-            flash(
-                f"A category named '{name}' already exists.",
-                "danger",
-            )
-            return render_template(
-                "categories/edit.html",
-                category=category,
-            )
-
-        category.name = name
-        category.description = description or None
-
-        log_activity(
-            "update",
-            "Category",
-            category.id,
-            f"Updated category {category.name}",
-        )
-
-        try:
-            db.session.commit()
-        except Exception:
-            db.session.rollback()
-            flash(
-                "The category could not be saved. "
-                "Please try again.",
-                "danger",
-            )
-            return render_template(
-                "categories/edit.html",
-                category=category,
-            )
-
-        flash(
-            f"Category '{category.name}' was updated.",
-            "success",
-        )
-        return redirect(url_for("categories.index"))
+    # -----------------------------------------------------
+    # RENDER DASHBOARD
+    # -----------------------------------------------------
 
     return render_template(
-        "categories/edit.html",
-        category=category,
+        "dashboard/index.html",
+
+        # Summary
+        total_equipment=total_equipment,
+        in_stock=in_stock,
+        assigned=assigned,
+        under_repair=under_repair,
+        retired=retired,
+
+        # Breakdown
+        category_statistics=category_statistics,
+        status_statistics=status_statistics,
+
+        # Recent records
+        recent_equipment=recent_equipment,
     )
-
-
-# =========================================================
-# DELETE
-# =========================================================
-
-@categories_bp.route("/<int:category_id>/delete", methods=["POST"])
-@login_required
-@role_required("Administrator")
-def delete(category_id):
-    """
-    Delete a category.
-
-    POST-only. Refuses to delete a category still
-    referenced by any equipment record.
-    """
-
-    category = db.get_or_404(Category, category_id)
-
-    equipment_count = Equipment.query.filter_by(
-        category_id=category.id
-    ).count()
-
-    if equipment_count > 0:
-        flash(
-            f"Cannot delete '{category.name}' — "
-            f"{equipment_count} equipment item"
-            f"{'s are' if equipment_count != 1 else ' is'} "
-            f"still categorised here.",
-            "warning",
-        )
-        return redirect(url_for("categories.index"))
-
-    category_name = category.name
-    category_db_id = category.id
-
-    db.session.delete(category)
-
-    log_activity(
-        "delete",
-        "Category",
-        category_db_id,
-        f"Deleted category {category_name}",
-    )
-
-    try:
-        db.session.commit()
-    except Exception:
-        db.session.rollback()
-        flash(
-            "The category could not be deleted. "
-            "Please try again.",
-            "danger",
-        )
-        return redirect(url_for("categories.index"))
-
-    flash(
-        f"Category '{category_name}' was deleted.",
-        "success",
-    )
-    return redirect(url_for("categories.index"))
