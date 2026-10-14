@@ -1,15 +1,8 @@
 """
 IEMS Employee Management Routes
 
-Handles:
-- Employee listing
-- Employee creation
-- Employee details
-- Employee editing (incl. profile-photo upload)
-- Employee deactivation
-- Employee reactivation
-
-Authentication and RBAC are enforced by @login_required.
+Administrator-only employee management. Every mutation
+is recorded in the activity log.
 """
 
 from app.auth.decorators import login_required
@@ -31,6 +24,7 @@ from app.utils.uploads import (
     delete_image,
     ImageUploadError,
 )
+from app.utils.activity import log_activity
 
 
 # =========================================================
@@ -188,6 +182,18 @@ def create():
         user.set_password(password)
 
         db.session.add(user)
+
+        # flush() populates user.id for the log's entity_id.
+        db.session.flush()
+
+        log_activity(
+            "create",
+            "User",
+            user.id,
+            f"Created user {user.employee_number} "
+            f"({user.full_name})",
+        )
+
         db.session.commit()
 
         flash(
@@ -321,6 +327,13 @@ def edit(user_id):
         if new_image_filename is not None:
             user.profile_image = new_image_filename
 
+        log_activity(
+            "update",
+            "User",
+            user.id,
+            f"Updated user {user.employee_number}",
+        )
+
         try:
             db.session.commit()
 
@@ -375,28 +388,16 @@ def deactivate(user_id):
     """
     Deactivate an employee.
 
-    Records are never deleted — historical assignments
-    must remain intact.
-
     Two guards prevent Administrator lockout:
 
     1. An admin cannot deactivate their own account.
-       Doing so would immediately invalidate their own
-       session (load_current_user clears it on the next
-       request) and lock them out.
-
     2. An admin cannot deactivate the last active
-       Administrator. If they could, the system would be
-       left with nobody able to administer it, and
-       recovery would require direct database access.
+       Administrator.
     """
 
     user = db.get_or_404(User, user_id)
 
-    # -----------------------------------------------------
-    # GUARD 1 — CANNOT DEACTIVATE SELF
-    # -----------------------------------------------------
-
+    # Guard 1 — self-deactivation
     if g.current_user is not None and user.id == g.current_user.id:
         flash(
             "You cannot deactivate your own account.",
@@ -406,15 +407,8 @@ def deactivate(user_id):
             url_for("users.detail", user_id=user.id)
         )
 
-    # -----------------------------------------------------
-    # GUARD 2 — CANNOT DEACTIVATE THE LAST ADMIN
-    # -----------------------------------------------------
-    #
-    # Only relevant if the target is an Administrator.
-    # Non-admin accounts can be deactivated freely.
-
+    # Guard 2 — last active Administrator
     if user.role == "Administrator":
-
         active_admin_count = User.query.filter_by(
             role="Administrator",
             is_active=True,
@@ -430,11 +424,15 @@ def deactivate(user_id):
                 url_for("users.detail", user_id=user.id)
             )
 
-    # -----------------------------------------------------
-    # DEACTIVATE
-    # -----------------------------------------------------
-
     user.is_active = False
+
+    log_activity(
+        "deactivate",
+        "User",
+        user.id,
+        f"Deactivated user {user.employee_number}",
+    )
+
     db.session.commit()
 
     flash(
@@ -462,6 +460,14 @@ def activate(user_id):
     user = db.get_or_404(User, user_id)
 
     user.is_active = True
+
+    log_activity(
+        "activate",
+        "User",
+        user.id,
+        f"Activated user {user.employee_number}",
+    )
+
     db.session.commit()
 
     flash(
