@@ -4,6 +4,7 @@ IEMS Employee Management Routes
 Administrator-only employee management. Every mutation
 is recorded in the activity log.
 """
+import secrets
 
 from app.auth.decorators import login_required
 
@@ -25,6 +26,38 @@ from app.utils.uploads import (
     ImageUploadError,
 )
 from app.utils.activity import log_activity
+
+# =========================================================
+# HELPERS
+# =========================================================
+
+def generate_temp_password():
+    """
+    Produce a random temporary password of the form
+    IEMS-XXXXXX, where X is a decimal digit.
+
+    Uses secrets.choice rather than random.choice: the
+    latter is not cryptographically secure and could
+    allow an attacker to predict generated passwords
+    from earlier observations.
+
+    Six digits gives 10^6 = 1,000,000 possibilities.
+    Combined with must_change_password=True (so the
+    password only works once) and short admin-mediated
+    handoff, this is sufficient. If we ever add
+    self-service password reset via email, we would
+    increase the entropy.
+    """
+    digits = "".join(
+        secrets.choice("0123456789")
+        for _ in range(6)
+    )
+    return f"IEMS-{digits}"
+
+
+# =========================================================
+# BLUEPRINT
+# =========================================================
 
 
 # =========================================================
@@ -472,6 +505,77 @@ def activate(user_id):
 
     flash(
         f"{user.full_name} has been reactivated.",
+        "success"
+    )
+
+    return redirect(
+        url_for("users.detail", user_id=user.id)
+    )
+
+
+# =========================================================
+# RESET PASSWORD
+# =========================================================
+
+@users_bp.route(
+    "/<int:user_id>/reset-password",
+    methods=["POST"]
+)
+@login_required
+def reset_password(user_id):
+    """
+    Admin-initiated password reset.
+
+    Generates a random temporary password, stores only
+    its hash, sets must_change_password=True so the user
+    is forced to change it on next login, and flashes
+    the plaintext one time so the administrator can hand
+    it to the employee.
+
+    The plaintext is never written to the database.
+    """
+
+    user = db.get_or_404(User, user_id)
+
+    # -----------------------------------------------------
+    # GUARD — CANNOT RESET YOUR OWN PASSWORD HERE
+    # -----------------------------------------------------
+
+    if g.current_user is not None and user.id == g.current_user.id:
+        flash(
+            "Use the Profile page to change your own password.",
+            "warning"
+        )
+        return redirect(
+            url_for("users.detail", user_id=user.id)
+        )
+
+    # -----------------------------------------------------
+    # GENERATE + STORE
+    # -----------------------------------------------------
+
+    temp_password = generate_temp_password()
+
+    user.set_password(temp_password)
+    user.must_change_password = True
+
+    log_activity(
+        "password_reset",
+        "User",
+        user.id,
+        f"Reset password for {user.employee_number}",
+    )
+
+    db.session.commit()
+
+    # -----------------------------------------------------
+    # FLASH THE TEMP PASSWORD — SHOWN ONCE
+    # -----------------------------------------------------
+
+    flash(
+        f"Password reset for {user.full_name}. "
+        f"Temporary password: {temp_password}. "
+        f"The user must change it on next login.",
         "success"
     )
 

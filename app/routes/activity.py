@@ -53,6 +53,7 @@ ACTIONS = [
     "deactivate",
     "activate",
     "password_change",
+    "password_reset",
 ]
 
 
