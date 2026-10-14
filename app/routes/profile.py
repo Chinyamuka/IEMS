@@ -177,6 +177,11 @@ def change_password():
     """
     Change the current user's password.
 
+    Also clears must_change_password on success, which
+    releases the before_request guard in app/__init__.py
+    that otherwise forces the user back to this page on
+    every request.
+
     The log entry says only 'Changed password' — the
     password itself is never recorded.
     """
@@ -241,6 +246,12 @@ def change_password():
             )
 
         user.set_password(new_password)
+
+        # Clear the flag in the same transaction as the
+        # password change. If we set it after the commit
+        # and the process crashed between the two, the
+        # user would be flagged despite having changed.
+        user.must_change_password = False
 
         log_activity(
             "password_change",
