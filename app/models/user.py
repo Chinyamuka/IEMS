@@ -22,6 +22,24 @@ class User(db.Model):
     profile_image = db.Column(db.String(255), nullable=True)
     department_id = db.Column( db.Integer, db.ForeignKey("department.id"), nullable=True, index=True )
     password_hash = db.Column(db.String(255), nullable=False)
+
+    # -----------------------------------------------------
+    # FORCED PASSWORD CHANGE
+    # -----------------------------------------------------
+    #
+    # When True, the user must change their password on
+    # their next request before they can access anything
+    # else in the app. Set by the admin-initiated reset
+    # flow (/users/<id>/reset-password) and cleared by
+    # /profile/change-password after a successful change.
+    #
+    # server_default="false" ensures existing rows get a
+    # value when the column is added to a non-empty table
+    # — without it, the migration would fail because
+    # NOT NULL columns cannot be added to populated tables
+    # without a default.
+    #
+    must_change_password = db.Column(db.Boolean,nullable=False,default=False,server_default="false", )
     role = db.Column(db.String(50),nullable=False,default="employee",index=True )
     is_active = db.Column( db.Boolean, nullable=False,default=True)
     department = db.relationship( "Department",back_populates="users" )
