@@ -2,10 +2,7 @@
 IEMS Location Management Routes
 
 Administrator-only CRUD for the Location lookup table.
-
-Locations are referenced by Equipment.location_id.
-Deleting a location that still has equipment attached
-is blocked by a server-side guard.
+Every mutation is recorded in the activity log.
 """
 
 from flask import (
@@ -21,6 +18,7 @@ from app.extensions import db
 from app.models import Location, Equipment
 from app.auth.decorators import login_required
 from app.utils.permissions import role_required
+from app.utils.activity import log_activity
 
 
 # =========================================================
@@ -105,6 +103,14 @@ def create():
         )
 
         db.session.add(location)
+        db.session.flush()
+
+        log_activity(
+            "create",
+            "Location",
+            location.id,
+            f"Created location {location.name}",
+        )
 
         try:
             db.session.commit()
@@ -167,6 +173,13 @@ def edit(location_id):
         location.room = room or None
         location.description = description or None
 
+        log_activity(
+            "update",
+            "Location",
+            location.id,
+            f"Updated location {location.name}",
+        )
+
         try:
             db.session.commit()
         except Exception:
@@ -204,15 +217,11 @@ def delete(location_id):
     """
     Delete a location.
 
-    POST-only. Refuses to delete a location that is still
+    POST-only. Refuses to delete a location still
     referenced by any equipment record.
     """
 
     location = db.get_or_404(Location, location_id)
-
-    # -----------------------------------------------------
-    # REFERENCE GUARD
-    # -----------------------------------------------------
 
     equipment_count = Equipment.query.filter_by(
         location_id=location.id
@@ -228,11 +237,17 @@ def delete(location_id):
         )
         return redirect(url_for("locations.index"))
 
-    # -----------------------------------------------------
-    # DELETE
-    # -----------------------------------------------------
+    location_name = location.name
+    location_db_id = location.id
 
     db.session.delete(location)
+
+    log_activity(
+        "delete",
+        "Location",
+        location_db_id,
+        f"Deleted location {location_name}",
+    )
 
     try:
         db.session.commit()
@@ -246,7 +261,7 @@ def delete(location_id):
         return redirect(url_for("locations.index"))
 
     flash(
-        f"Location '{location.name}' was deleted.",
+        f"Location '{location_name}' was deleted.",
         "success",
     )
     return redirect(url_for("locations.index"))

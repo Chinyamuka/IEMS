@@ -2,10 +2,7 @@
 IEMS Department Management Routes
 
 Administrator-only CRUD for the Department lookup table.
-
-Departments are referenced by User.department_id.
-Deleting a department that still has users attached is
-blocked by a server-side guard.
+Every mutation is recorded in the activity log.
 """
 
 from flask import (
@@ -21,6 +18,7 @@ from app.extensions import db
 from app.models import Department, User
 from app.auth.decorators import login_required
 from app.utils.permissions import role_required
+from app.utils.activity import log_activity
 
 
 # =========================================================
@@ -107,6 +105,18 @@ def create():
 
         db.session.add(department)
 
+        # flush() populates department.id for the log's
+        # entity_id column. Rolled back with the commit if
+        # anything fails.
+        db.session.flush()
+
+        log_activity(
+            "create",
+            "Department",
+            department.id,
+            f"Created department {department.name}",
+        )
+
         try:
             db.session.commit()
         except Exception:
@@ -164,6 +174,13 @@ def edit(department_id):
         department.name = name
         department.description = description or None
 
+        log_activity(
+            "update",
+            "Department",
+            department.id,
+            f"Updated department {department.name}",
+        )
+
         try:
             db.session.commit()
         except Exception:
@@ -201,12 +218,8 @@ def delete(department_id):
     """
     Delete a department.
 
-    POST-only. The list page provides an inline form
-    with a browser confirm() dialog. The client-side
-    button is disabled when the department has users,
-    but a server-side guard is the authoritative check
-    — a page loaded before another admin assigned a
-    user would otherwise bypass the disabled state.
+    POST-only. Server-side guard refuses to remove a
+    department that still has users assigned.
     """
 
     department = db.get_or_404(Department, department_id)
@@ -214,10 +227,6 @@ def delete(department_id):
     # -----------------------------------------------------
     # REFERENCE GUARD
     # -----------------------------------------------------
-    #
-    # SELECT COUNT(*) is cheaper than loading every user
-    # row, and is sufficient for the "is any user here"
-    # decision.
 
     user_count = User.query.filter_by(
         department_id=department.id
@@ -234,10 +243,24 @@ def delete(department_id):
         return redirect(url_for("departments.index"))
 
     # -----------------------------------------------------
-    # DELETE
+    # CAPTURE FOR LOG
     # -----------------------------------------------------
+    #
+    # Capture the name before deletion. After commit the
+    # row is gone and its attributes are no longer safe
+    # to access.
+
+    department_name = department.name
+    department_db_id = department.id
 
     db.session.delete(department)
+
+    log_activity(
+        "delete",
+        "Department",
+        department_db_id,
+        f"Deleted department {department_name}",
+    )
 
     try:
         db.session.commit()
@@ -251,7 +274,7 @@ def delete(department_id):
         return redirect(url_for("departments.index"))
 
     flash(
-        f"Department '{department.name}' was deleted.",
+        f"Department '{department_name}' was deleted.",
         "success",
     )
     return redirect(url_for("departments.index"))
