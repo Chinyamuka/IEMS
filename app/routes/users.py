@@ -5,9 +5,7 @@ Administrator-only employee management. Every mutation
 is recorded in the activity log.
 """
 import secrets
-
 from app.auth.decorators import login_required
-
 from flask import (
     Blueprint,
     render_template,
@@ -26,6 +24,7 @@ from app.utils.uploads import (
     ImageUploadError,
 )
 from app.utils.activity import log_activity
+from app.utils.permissions import role_required
 
 # =========================================================
 # HELPERS
@@ -77,6 +76,7 @@ users_bp = Blueprint(
 
 @users_bp.route("/")
 @login_required
+@role_required("Administrator")
 def index():
     """Display all employees with optional search."""
 
@@ -115,6 +115,7 @@ def index():
 
 @users_bp.route("/new", methods=["GET", "POST"])
 @login_required
+@role_required("Administrator")
 def create():
     """Create a new employee account."""
 
@@ -250,6 +251,7 @@ def create():
 
 @users_bp.route("/<int:user_id>")
 @login_required
+@role_required("Administrator")
 def detail(user_id):
     """Display employee details."""
 
@@ -267,6 +269,7 @@ def detail(user_id):
 
 @users_bp.route("/<int:user_id>/edit", methods=["GET", "POST"])
 @login_required
+@role_required("Administrator")
 def edit(user_id):
     """
     Edit an existing employee, with optional profile-photo
@@ -412,11 +415,9 @@ def edit(user_id):
 # DEACTIVATE EMPLOYEE
 # =========================================================
 
-@users_bp.route(
-    "/<int:user_id>/deactivate",
-    methods=["POST"]
-)
+@users_bp.route("/<int:user_id>/deactivate",methods=["POST"])
 @login_required
+@role_required("Administrator")
 def deactivate(user_id):
     """
     Deactivate an employee.
@@ -482,11 +483,9 @@ def deactivate(user_id):
 # REACTIVATE EMPLOYEE
 # =========================================================
 
-@users_bp.route(
-    "/<int:user_id>/activate",
-    methods=["POST"]
-)
+@users_bp.route("/<int:user_id>/activate",methods=["POST"])
 @login_required
+@role_required("Administrator")
 def activate(user_id):
     """Reactivate an employee."""
 
@@ -517,18 +516,16 @@ def activate(user_id):
 # RESET PASSWORD
 # =========================================================
 
-@users_bp.route(
-    "/<int:user_id>/reset-password",
-    methods=["POST"]
-)
+@users_bp.route( "/<int:user_id>/reset-password",  methods=["POST"])
 @login_required
+@role_required("Administrator")
 def reset_password(user_id):
     """
     Admin-initiated password reset.
 
     Generates a random temporary password, stores only
     its hash, sets must_change_password=True so the user
-    is forced to change it on next login, and flashes
+    is forced to change it on the next login, and flashes
     the plaintext one time so the administrator can hand
     it to the employee.
 
