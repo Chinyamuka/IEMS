@@ -2,10 +2,7 @@
 IEMS Category Management Routes
 
 Administrator-only CRUD for the Category lookup table.
-
-Categories are referenced by Equipment.category_id.
-Deleting a category that still has equipment attached
-is blocked by a server-side guard.
+Every mutation is recorded in the activity log.
 """
 
 from flask import (
@@ -21,6 +18,7 @@ from app.extensions import db
 from app.models import Category, Equipment
 from app.auth.decorators import login_required
 from app.utils.permissions import role_required
+from app.utils.activity import log_activity
 
 
 # =========================================================
@@ -101,6 +99,14 @@ def create():
         )
 
         db.session.add(category)
+        db.session.flush()
+
+        log_activity(
+            "create",
+            "Category",
+            category.id,
+            f"Created category {category.name}",
+        )
 
         try:
             db.session.commit()
@@ -159,6 +165,13 @@ def edit(category_id):
         category.name = name
         category.description = description or None
 
+        log_activity(
+            "update",
+            "Category",
+            category.id,
+            f"Updated category {category.name}",
+        )
+
         try:
             db.session.commit()
         except Exception:
@@ -196,15 +209,11 @@ def delete(category_id):
     """
     Delete a category.
 
-    POST-only. Refuses to delete a category that is
-    still referenced by any equipment record.
+    POST-only. Refuses to delete a category still
+    referenced by any equipment record.
     """
 
     category = db.get_or_404(Category, category_id)
-
-    # -----------------------------------------------------
-    # REFERENCE GUARD
-    # -----------------------------------------------------
 
     equipment_count = Equipment.query.filter_by(
         category_id=category.id
@@ -220,11 +229,17 @@ def delete(category_id):
         )
         return redirect(url_for("categories.index"))
 
-    # -----------------------------------------------------
-    # DELETE
-    # -----------------------------------------------------
+    category_name = category.name
+    category_db_id = category.id
 
     db.session.delete(category)
+
+    log_activity(
+        "delete",
+        "Category",
+        category_db_id,
+        f"Deleted category {category_name}",
+    )
 
     try:
         db.session.commit()
@@ -238,8 +253,7 @@ def delete(category_id):
         return redirect(url_for("categories.index"))
 
     flash(
-        f"Category '{category.name}' was deleted.",
+        f"Category '{category_name}' was deleted.",
         "success",
     )
     return redirect(url_for("categories.index"))
-
