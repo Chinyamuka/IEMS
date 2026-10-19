@@ -11,57 +11,103 @@
 <div class="dashboard-page">
 
     <section class="dashboard-header">
+
         <div>
-            <div class="breadcrumb"><span>Dashboard</span></div>
-            <h1 class="dashboard-title">IEMS Dashboard</h1>
-            <p class="dashboard-subtitle">ICT Equipment Inventory Management System</p>
-        </div>
-        {% if session.get("role") in ["Administrator", "IT Manager", "IT Officer"] %}
-            <div class="button-group">
-                <a href="{{ url_for('equipment.create') }}" class="btn btn-primary">Add Equipment</a>
+
+            <div class="breadcrumb">
+                <span>Dashboard</span>
             </div>
+
+            <h1 class="dashboard-title">
+                IEMS Dashboard
+            </h1>
+
+            <p class="dashboard-subtitle">
+                ICT Equipment Inventory Management System
+            </p>
+
+        </div>
+
+
+        {% if session.get("role") in [
+            "Administrator",
+            "IT Manager",
+            "IT Officer"
+        ] %}
+
+            <div class="button-group">
+
+                <a
+                    href="{{ url_for('equipment.create') }}"
+                    class="btn btn-primary"
+                >
+                    Add Equipment
+                </a>
+
+            </div>
+
         {% endif %}
+
     </section>
 
+
     <section class="dashboard-stats-grid">
+
         <div class="stat-card stat-card-primary">
             <div>
                 <span class="stat-label">Total Equipment</span>
                 <span class="stat-value">{{ total_equipment }}</span>
             </div>
-            <span class="stat-description">Equipment records in the inventory</span>
+            <span class="stat-description">
+                Equipment records in the inventory
+            </span>
         </div>
+
         <div class="stat-card">
             <div>
                 <span class="stat-label">In Stock</span>
                 <span class="stat-value">{{ in_stock }}</span>
             </div>
-            <span class="stat-description">Equipment currently available</span>
+            <span class="stat-description">
+                Equipment currently available
+            </span>
         </div>
+
         <div class="stat-card">
             <div>
                 <span class="stat-label">Assigned</span>
                 <span class="stat-value">{{ assigned }}</span>
             </div>
-            <span class="stat-description">Equipment assigned to employees</span>
+            <span class="stat-description">
+                Equipment assigned to employees
+            </span>
         </div>
+
         <div class="stat-card">
             <div>
                 <span class="stat-label">Under Maintenance</span>
                 <span class="stat-value">{{ under_repair }}</span>
             </div>
-            <span class="stat-description">Equipment currently under maintenance</span>
+            <span class="stat-description">
+                Equipment currently under maintenance
+            </span>
         </div>
+
         <div class="stat-card">
             <div>
                 <span class="stat-label">Disposed</span>
                 <span class="stat-value">{{ retired }}</span>
             </div>
-            <span class="stat-description">Retired or disposed equipment</span>
+            <span class="stat-description">
+                Retired or disposed equipment
+            </span>
         </div>
+
     </section>
 
+
     <section class="dashboard-breakdown-grid">
+
         <div class="card">
             <div class="card-header">
                 <h2>Equipment by Category</h2>
@@ -109,16 +155,21 @@
                 {% endif %}
             </div>
         </div>
+
     </section>
 
+
     <section class="dashboard-recent-card">
+
         <div class="card-header">
             <div class="dashboard-section-header">
                 <div>
                     <h2>Recent Equipment</h2>
                     <p>The latest equipment added to the inventory.</p>
                 </div>
-                <a href="{{ url_for('equipment.index') }}" class="section-link">View All</a>
+                <a href="{{ url_for('equipment.index') }}" class="section-link">
+                    View All
+                </a>
             </div>
         </div>
 
@@ -139,19 +190,40 @@
                         {% for item in recent_equipment %}
                             <tr>
                                 <td>
-                                    <a href="{{ url_for('equipment.detail', equipment_id=item.id) }}" class="table-primary-link">
+                                    <a
+                                        href="{{ url_for('equipment.detail', equipment_id=item.id) }}"
+                                        class="table-primary-link"
+                                    >
                                         {{ item.asset_tag }}
                                     </a>
                                 </td>
+
                                 <td>{{ item.manufacturer or "—" }}</td>
                                 <td>{{ item.model or "—" }}</td>
-                                <td>{% if item.category %}{{ item.category.name }}{% else %}—{% endif %}</td>
                                 <td>
-                                    {% set status_class = (item.status or "unknown")|lower|replace(" ", "-") %}
-                                    <span class="status-badge status-{{ status_class }}">{{ item.status or "Unknown" }}</span>
+                                    {% if item.category_name %}
+                                        {{ item.category_name }}
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% set status_class =
+                                        (item.status or "unknown")
+                                        |lower
+                                        |replace(" ", "-")
+                                    %}
+                                    <span class="status-badge status-{{ status_class }}">
+                                        {{ item.status or "Unknown" }}
+                                    </span>
                                 </td>
                                 <td class="table-action-column">
-                                    <a href="{{ url_for('equipment.detail', equipment_id=item.id) }}" class="btn-action btn-view">View</a>
+                                    <a
+                                        href="{{ url_for('equipment.detail', equipment_id=item.id) }}"
+                                        class="btn-action btn-view"
+                                    >
+                                        View
+                                    </a>
                                 </td>
                             </tr>
                         {% endfor %}
@@ -164,9 +236,12 @@
                 <p>Add equipment to begin building the inventory.</p>
             </div>
         {% endif %}
+
     </section>
 
+
     <section class="dashboard-recent-card">
+
         <div class="card-header">
             <div class="dashboard-section-header">
                 <div>
@@ -189,9 +264,15 @@
                     <tbody>
                         {% for log in recent_activity %}
                             <tr>
-                                <td>{{ log.created_at.strftime('%d %b %H:%M') }}</td>
                                 <td>
-                                    {% if log.user %}{{ log.user.full_name }}{% else %}<span class="muted-text">System</span>{% endif %}
+                                    {{ log.created_at.strftime('%d %b %H:%M') }}
+                                </td>
+                                <td>
+                                    {% if log.user %}
+                                        {{ log.user.full_name }}
+                                    {% else %}
+                                        <span class="muted-text">System</span>
+                                    {% endif %}
                                 </td>
                                 <td>{{ log.summary }}</td>
                             </tr>
@@ -205,6 +286,7 @@
                 <p>Changes made in IEMS will appear here.</p>
             </div>
         {% endif %}
+
     </section>
 
 </div>

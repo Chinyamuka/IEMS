@@ -2,7 +2,8 @@
 IEMS Equipment Assignment Routes
 
 Handles assigning and returning ICT equipment.
-Every mutation is recorded in the activity log.
+Every mutation is recorded in the activity log and
+invalidates the dashboard cache.
 """
 
 from datetime import datetime
@@ -25,6 +26,8 @@ from app.models import (
 )
 from app.forms.assignment import EquipmentAssignmentForm
 from app.utils.activity import log_activity
+from app.utils.cache import cache_delete
+from app.routes.dashboard import CACHE_KEY_DASHBOARD_STATS
 
 
 # =========================================================
@@ -51,64 +54,44 @@ ASSIGNMENT_MANAGEMENT_ROLES = {
 
 
 def get_current_user():
-    """Return the current User object, or None."""
     user_id = session.get("user_id")
     if not user_id:
         return None
     return db.session.get(User, user_id)
 
 
-def is_authenticated():
-    """True if a user is logged in and active."""
-    user = get_current_user()
-    return user is not None and user.is_active
-
-
 def can_manage_assignments():
-    """True if the current user may assign/return equipment."""
     user = get_current_user()
-
     if not user or not user.is_active:
         return False
-
     role = (user.role or "").strip().lower()
-
     return role in ASSIGNMENT_MANAGEMENT_ROLES
 
 
 def require_login():
-    """Require an authenticated active user."""
     user = get_current_user()
-
     if not user:
         return redirect(url_for("auth.login"))
-
     if not user.is_active:
         session.clear()
         flash(
-            "Your account is inactive. "
-            "Please contact an administrator.",
+            "Your account is inactive. Please contact an administrator.",
             "danger",
         )
         return redirect(url_for("auth.login"))
-
     return None
 
 
 def require_assignment_management():
-    """Require permission to manage equipment assignments."""
     login_redirect = require_login()
     if login_redirect:
         return login_redirect
-
     if not can_manage_assignments():
         flash(
-            "You do not have permission to manage "
-            "equipment assignments.",
+            "You do not have permission to manage equipment assignments.",
             "danger",
         )
         return redirect(url_for("assignment.index"))
-
     return None
 
 
@@ -116,10 +99,7 @@ def require_assignment_management():
 # ASSIGN EQUIPMENT
 # =========================================================
 
-@assignment_bp.route(
-    "/new",
-    methods=["GET", "POST"],
-)
+@assignment_bp.route("/new", methods=["GET", "POST"])
 def create():
     """Assign available ICT equipment to an active user."""
 
@@ -128,10 +108,6 @@ def create():
         return permission_redirect
 
     form = EquipmentAssignmentForm()
-
-    # -----------------------------------------------------
-    # AVAILABLE EQUIPMENT
-    # -----------------------------------------------------
 
     active_assignment_ids = (
         db.session.query(EquipmentAssignment.equipment_id)
@@ -147,16 +123,9 @@ def create():
     )
 
     form.equipment_id.choices = [
-        (
-            item.id,
-            f"{item.asset_tag} — {item.manufacturer} {item.model}",
-        )
+        (item.id, f"{item.asset_tag} — {item.manufacturer} {item.model}")
         for item in equipment
     ]
-
-    # -----------------------------------------------------
-    # ACTIVE USERS
-    # -----------------------------------------------------
 
     users = (
         User.query
@@ -166,72 +135,41 @@ def create():
     )
 
     form.user_id.choices = [
-        (
-            user.id,
-            f"{user.full_name} ({user.employee_number})",
-        )
+        (user.id, f"{user.full_name} ({user.employee_number})")
         for user in users
     ]
 
-    # -----------------------------------------------------
-    # SUBMISSION
-    # -----------------------------------------------------
-
     if form.validate_on_submit():
 
-        equipment_item = db.session.get(
-            Equipment,
-            form.equipment_id.data,
-        )
-
+        equipment_item = db.session.get(Equipment, form.equipment_id.data)
         if not equipment_item:
-            flash(
-                "The selected equipment could not be found.",
-                "danger",
-            )
+            flash("The selected equipment could not be found.", "danger")
             return redirect(url_for("assignment.create"))
 
-        user = db.session.get(
-            User,
-            form.user_id.data,
-        )
-
+        user = db.session.get(User, form.user_id.data)
         if not user:
-            flash(
-                "The selected employee could not be found.",
-                "danger",
-            )
+            flash("The selected employee could not be found.", "danger")
             return redirect(url_for("assignment.create"))
 
         if not user.is_active:
-            flash(
-                "The selected employee account is inactive.",
-                "warning",
-            )
+            flash("The selected employee account is inactive.", "warning")
             return redirect(url_for("assignment.create"))
 
         if equipment_item.status != "In Stock":
             flash(
-                "Only equipment currently marked "
-                "'In Stock' can be assigned.",
+                "Only equipment currently marked 'In Stock' can be assigned.",
                 "warning",
             )
             return redirect(url_for("assignment.create"))
 
         existing_assignment = (
             EquipmentAssignment.query
-            .filter_by(
-                equipment_id=equipment_item.id,
-                returned_at=None,
-            )
+            .filter_by(equipment_id=equipment_item.id, returned_at=None)
             .first()
         )
 
         if existing_assignment:
-            flash(
-                "This equipment is already assigned.",
-                "warning",
-            )
+            flash("This equipment is already assigned.", "warning")
             return redirect(url_for("assignment.create"))
 
         assignment = EquipmentAssignment(
@@ -244,22 +182,13 @@ def create():
         db.session.add(assignment)
         equipment_item.status = "Assigned"
 
-        # -------------------------------------------------
-        # FLUSH + LOG
-        # -------------------------------------------------
-        #
-        # flush() populates assignment.id for the log's
-        # entity_id. Same transaction as the assignment
-        # itself — rollback discards both.
-
         db.session.flush()
 
         log_activity(
             "assign",
             "EquipmentAssignment",
             assignment.id,
-            f"Assigned {equipment_item.asset_tag} "
-            f"to {user.full_name}",
+            f"Assigned {equipment_item.asset_tag} to {user.full_name}",
         )
 
         try:
@@ -267,15 +196,15 @@ def create():
         except Exception:
             db.session.rollback()
             flash(
-                "The equipment assignment could not be "
-                "completed. Please try again.",
+                "The equipment assignment could not be completed. Please try again.",
                 "danger",
             )
             return redirect(url_for("assignment.create"))
 
+        cache_delete(CACHE_KEY_DASHBOARD_STATS)
+
         flash(
-            f"{equipment_item.asset_tag} has been assigned "
-            f"to {user.full_name}.",
+            f"{equipment_item.asset_tag} has been assigned to {user.full_name}.",
             "success",
         )
         return redirect(url_for("assignment.index"))
@@ -292,7 +221,7 @@ def create():
 
 @assignment_bp.route("/")
 def index():
-    """Display assignment history for any authenticated user."""
+    """Display assignment history."""
 
     login_redirect = require_login()
     if login_redirect:
@@ -319,44 +248,24 @@ def index():
 # RETURN EQUIPMENT
 # =========================================================
 
-@assignment_bp.route(
-    "/<int:assignment_id>/return",
-    methods=["POST"],
-)
+@assignment_bp.route("/<int:assignment_id>/return", methods=["POST"])
 def return_equipment(assignment_id):
-    """
-    Return currently assigned equipment.
-
-    POST-only. The confirmation step is handled by the
-    browser via confirm() on the submit button, matching
-    the pattern used for equipment delete and user
-    deactivate.
-    """
+    """Return currently assigned equipment."""
 
     permission_redirect = require_assignment_management()
     if permission_redirect:
         return permission_redirect
 
-    assignment = db.session.get(
-        EquipmentAssignment,
-        assignment_id,
-    )
+    assignment = db.session.get(EquipmentAssignment, assignment_id)
 
     if not assignment:
-        flash(
-            "The assignment could not be found.",
-            "danger",
-        )
+        flash("The assignment could not be found.", "danger")
         return redirect(url_for("assignment.index"))
 
     if not assignment.is_active:
-        flash(
-            "This equipment has already been returned.",
-            "warning",
-        )
+        flash("This equipment has already been returned.", "warning")
         return redirect(url_for("assignment.index"))
 
-    # Capture what we need for the log before mutating.
     asset_tag = assignment.equipment.asset_tag
     holder_name = assignment.user.full_name
 
@@ -375,11 +284,12 @@ def return_equipment(assignment_id):
     except Exception:
         db.session.rollback()
         flash(
-            "The equipment could not be returned. "
-            "Please try again.",
+            "The equipment could not be returned. Please try again.",
             "danger",
         )
         return redirect(url_for("assignment.index"))
+
+    cache_delete(CACHE_KEY_DASHBOARD_STATS)
 
     flash(
         f"{asset_tag} has been returned from {holder_name}.",

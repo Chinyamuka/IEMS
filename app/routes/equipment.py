@@ -3,7 +3,7 @@ IEMS Equipment Routes
 
 Contains routes responsible for creating and viewing
 ICT equipment records. Every mutation is recorded in
-the activity log.
+the activity log and invalidates the dashboard cache.
 """
 
 from flask import (
@@ -28,6 +28,8 @@ from app.utils.uploads import (
     ImageUploadError,
 )
 from app.utils.activity import log_activity
+from app.utils.cache import cache_delete
+from app.routes.dashboard import CACHE_KEY_DASHBOARD_STATS
 
 
 # =========================================================
@@ -54,46 +56,21 @@ equipment_bp = Blueprint(
     "IT Officer",
 )
 def create():
-    """
-    Register a new piece of ICT equipment.
-
-    Supports an optional equipment photo via the 'image'
-    form field.
-    """
+    """Register a new piece of ICT equipment."""
 
     form = EquipmentForm()
 
-    # -----------------------------------------------------
-    # POPULATE SELECT CHOICES
-    # -----------------------------------------------------
-
-    categories = Category.query.order_by(
-        Category.name
-    ).all()
-
+    categories = Category.query.order_by(Category.name).all()
     form.category_id.choices = [
-        (c.id, c.name)
-        for c in categories
+        (c.id, c.name) for c in categories
     ]
 
-    locations = Location.query.order_by(
-        Location.name
-    ).all()
-
+    locations = Location.query.order_by(Location.name).all()
     form.location_id.choices = [
-        (l.id, l.name)
-        for l in locations
+        (l.id, l.name) for l in locations
     ]
-
-    # -----------------------------------------------------
-    # SUBMISSION
-    # -----------------------------------------------------
 
     if form.validate_on_submit():
-
-        # -------------------------------------------------
-        # DUPLICATE ASSET TAG
-        # -------------------------------------------------
 
         existing_equipment = Equipment.query.filter_by(
             asset_tag=form.asset_tag.data
@@ -109,10 +86,6 @@ def create():
                 form=form,
             )
 
-        # -------------------------------------------------
-        # SAVE IMAGE (if any)
-        # -------------------------------------------------
-
         new_image_filename = None
 
         try:
@@ -126,10 +99,6 @@ def create():
                 "equipment/create.html",
                 form=form,
             )
-
-        # -------------------------------------------------
-        # CREATE RECORD
-        # -------------------------------------------------
 
         equipment = Equipment(
             asset_tag=form.asset_tag.data,
@@ -148,17 +117,6 @@ def create():
         )
 
         db.session.add(equipment)
-
-        # -------------------------------------------------
-        # FLUSH + LOG
-        # -------------------------------------------------
-        #
-        # flush() sends the INSERT to the DB and populates
-        # equipment.id without committing. We need the id
-        # to reference it in the activity log. If the
-        # subsequent commit fails, the INSERT rolls back
-        # along with the log entry — no orphan records.
-
         db.session.flush()
 
         log_activity(
@@ -168,19 +126,12 @@ def create():
             f"Registered equipment {equipment.asset_tag}",
         )
 
-        # -------------------------------------------------
-        # COMMIT
-        # -------------------------------------------------
-
         try:
             db.session.commit()
-
         except Exception:
             db.session.rollback()
-
             if new_image_filename is not None:
                 delete_image(new_image_filename, "equipment")
-
             flash(
                 "Equipment could not be saved. Please try again.",
                 "danger",
@@ -190,18 +141,13 @@ def create():
                 form=form,
             )
 
+        cache_delete(CACHE_KEY_DASHBOARD_STATS)
+
         flash(
             "Equipment registered successfully.",
             "success",
         )
-
-        return redirect(
-            url_for("equipment.index")
-        )
-
-    # -----------------------------------------------------
-    # GET — display form
-    # -----------------------------------------------------
+        return redirect(url_for("equipment.index"))
 
     return render_template(
         "equipment/create.html",
@@ -217,9 +163,7 @@ def create():
 @login_required
 def detail(equipment_id):
     """Display a single equipment record."""
-
     equipment = Equipment.query.get_or_404(equipment_id)
-
     return render_template(
         "equipment/detail.html",
         equipment=equipment,
@@ -239,47 +183,22 @@ def detail(equipment_id):
     "IT Officer",
 )
 def edit(equipment_id):
-    """
-    Edit an existing equipment record.
-
-    Supports an optional replacement photo.
-    """
+    """Edit an existing equipment record."""
 
     equipment = Equipment.query.get_or_404(equipment_id)
-
     form = EquipmentForm(obj=equipment)
 
-    # -----------------------------------------------------
-    # POPULATE SELECT CHOICES
-    # -----------------------------------------------------
-
-    categories = Category.query.order_by(
-        Category.name
-    ).all()
-
+    categories = Category.query.order_by(Category.name).all()
     form.category_id.choices = [
-        (c.id, c.name)
-        for c in categories
+        (c.id, c.name) for c in categories
     ]
 
-    locations = Location.query.order_by(
-        Location.name
-    ).all()
-
+    locations = Location.query.order_by(Location.name).all()
     form.location_id.choices = [
-        (l.id, l.name)
-        for l in locations
+        (l.id, l.name) for l in locations
     ]
-
-    # -----------------------------------------------------
-    # SUBMISSION
-    # -----------------------------------------------------
 
     if form.validate_on_submit():
-
-        # -------------------------------------------------
-        # DUPLICATE ASSET TAG (excluding self)
-        # -------------------------------------------------
 
         existing_equipment = Equipment.query.filter(
             Equipment.asset_tag == form.asset_tag.data,
@@ -298,10 +217,6 @@ def edit(equipment_id):
                 equipment=equipment,
             )
 
-        # -------------------------------------------------
-        # SAVE NEW IMAGE (if any)
-        # -------------------------------------------------
-
         new_image_filename = None
         old_image_filename = equipment.image_filename
 
@@ -317,10 +232,6 @@ def edit(equipment_id):
                 form=form,
                 equipment=equipment,
             )
-
-        # -------------------------------------------------
-        # ASSIGN FIELDS
-        # -------------------------------------------------
 
         equipment.asset_tag = form.asset_tag.data
         equipment.serial_number = form.serial_number.data
@@ -338,13 +249,6 @@ def edit(equipment_id):
         if new_image_filename is not None:
             equipment.image_filename = new_image_filename
 
-        # -------------------------------------------------
-        # LOG
-        # -------------------------------------------------
-        #
-        # No flush() needed here — the entity already
-        # exists and its id is known.
-
         log_activity(
             "update",
             "Equipment",
@@ -352,19 +256,12 @@ def edit(equipment_id):
             f"Updated equipment {equipment.asset_tag}",
         )
 
-        # -------------------------------------------------
-        # COMMIT
-        # -------------------------------------------------
-
         try:
             db.session.commit()
-
         except Exception:
             db.session.rollback()
-
             if new_image_filename is not None:
                 delete_image(new_image_filename, "equipment")
-
             flash(
                 "Changes could not be saved. Please try again.",
                 "danger",
@@ -375,31 +272,22 @@ def edit(equipment_id):
                 equipment=equipment,
             )
 
-        # -------------------------------------------------
-        # DELETE OLD IMAGE (after successful commit)
-        # -------------------------------------------------
-
         if (
             new_image_filename is not None
             and old_image_filename is not None
         ):
             delete_image(old_image_filename, "equipment")
 
+        cache_delete(CACHE_KEY_DASHBOARD_STATS)
+
         flash(
             "Equipment updated successfully.",
             "success",
         )
-
-        return redirect(
-            url_for(
-                "equipment.detail",
-                equipment_id=equipment.id,
-            )
-        )
-
-    # -----------------------------------------------------
-    # GET — display form
-    # -----------------------------------------------------
+        return redirect(url_for(
+            "equipment.detail",
+            equipment_id=equipment.id,
+        ))
 
     return render_template(
         "equipment/edit.html",
@@ -422,30 +310,13 @@ def delete(equipment_id):
 
     if request.method == "POST":
 
-        # -------------------------------------------------
-        # CAPTURE SUMMARY BEFORE DELETION
-        # -------------------------------------------------
-        #
-        # After db.session.delete(equipment) and commit,
-        # the row is gone and its attributes are no longer
-        # loaded. Capture what we need for the log now.
-
         asset_tag = equipment.asset_tag
         equipment_db_id = equipment.id
 
-        # Remove the image file before deleting the row.
         if equipment.image_filename:
             delete_image(equipment.image_filename, "equipment")
 
         db.session.delete(equipment)
-
-        # -------------------------------------------------
-        # LOG
-        # -------------------------------------------------
-        #
-        # We log the delete explicitly. Note entity_id
-        # still refers to the (now-deleted) id — useful
-        # for audit even though no live row has that id.
 
         log_activity(
             "delete",
@@ -456,25 +327,21 @@ def delete(equipment_id):
 
         try:
             db.session.commit()
-
         except Exception:
             db.session.rollback()
             flash(
                 "Equipment could not be deleted. Please try again.",
                 "danger",
             )
-            return redirect(
-                url_for("equipment.index")
-            )
+            return redirect(url_for("equipment.index"))
+
+        cache_delete(CACHE_KEY_DASHBOARD_STATS)
 
         flash(
             "Equipment deleted successfully.",
             "success",
         )
-
-        return redirect(
-            url_for("equipment.index")
-        )
+        return redirect(url_for("equipment.index"))
 
     return render_template(
         "equipment/delete.html",
@@ -489,10 +356,7 @@ def delete(equipment_id):
 @equipment_bp.route("/")
 @login_required
 def index():
-    """
-    Display the ICT equipment inventory with search,
-    filters and pagination.
-    """
+    """Display the ICT equipment inventory."""
 
     search = request.args.get("q", "").strip()
     category_id = request.args.get("category", type=int)
@@ -500,13 +364,8 @@ def index():
     location_id = request.args.get("location", type=int)
     page = request.args.get("page", 1, type=int)
 
-    categories = Category.query.order_by(
-        Category.name.asc()
-    ).all()
-
-    locations = Location.query.order_by(
-        Location.name.asc()
-    ).all()
+    categories = Category.query.order_by(Category.name.asc()).all()
+    locations = Location.query.order_by(Location.name.asc()).all()
 
     query = Equipment.query
 
@@ -522,23 +381,15 @@ def index():
         )
 
     if category_id:
-        query = query.filter(
-            Equipment.category_id == category_id
-        )
+        query = query.filter(Equipment.category_id == category_id)
 
     if status:
-        query = query.filter(
-            Equipment.status == status
-        )
+        query = query.filter(Equipment.status == status)
 
     if location_id:
-        query = query.filter(
-            Equipment.location_id == location_id
-        )
+        query = query.filter(Equipment.location_id == location_id)
 
-    pagination = query.order_by(
-        Equipment.id.desc()
-    ).paginate(
+    pagination = query.order_by(Equipment.id.desc()).paginate(
         page=page,
         per_page=10,
     )
