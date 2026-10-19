@@ -4,7 +4,8 @@ IEMS Application Factory
 Creates the Flask app, initialises extensions, registers
 blueprints, and wires app-wide request hooks.
 """
-
+from email import init_mail
+from email.commands import register_mail_commands
 from flask import (
     Flask,
     flash,
@@ -89,9 +90,12 @@ def create_app(config_class=Config):
 
     db.init_app(app)
     migrate.init_app(app, db)
+    init_mail(app)
+    register_mail_commands(app)
     app.before_request(load_current_user)
     app.before_request(enforce_password_change)
     app.context_processor(inject_current_user)
     register_routes(app)
+
 
     return app
