@@ -23,7 +23,6 @@ from .context_processors import (
 from .extensions import db, migrate
 from . import models
 from .routes import register_routes
-from .config_mail import MailSettings
 from .email import init_mail
 from .email.commands import register_mail_commands
 
@@ -90,13 +89,6 @@ def create_app(config_class=Config):
 
     app = Flask(__name__)
     app.config.from_object(config_class)
-
-    # Mail settings live in a separate module so config.py
-    # does not have to be rewritten. Copy them onto the
-    # app config before init_mail reads them.
-    for _name in dir(MailSettings):
-        if _name.isupper() and not _name.startswith("_"):
-            app.config[_name] = getattr(MailSettings, _name)
 
     db.init_app(app)
     migrate.init_app(app, db)
