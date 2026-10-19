@@ -1,4 +1,3 @@
-cat > config.py <<'EOF'
 """
 IEMS Configuration
 
@@ -69,4 +68,3 @@ class Config:
 
     # Derived from MAIL_ENABLED. Do not set independently.
     MAIL_SUPPRESS_SEND = not MAIL_ENABLED
-EOF
