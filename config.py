@@ -17,3 +17,14 @@ class Config:
     UPLOAD_FOLDER = os.path.join(BASE_DIR, "app","static", "uploads") # Directory to store uploaded files
     MAX_CONTENT_LENGTH = 5 * 1024 * 1024  # 5 MB
     ALLOWED_IMAGE_EXTENSIONS = {"png", "jpg", "jpeg", "gif","webp"} # Image file extensions allowed
+    # -----------------------------------------------------
+    # CACHE (Redis / Upstash)
+    # -----------------------------------------------------
+    #
+    # CACHE_ENABLED must be true for any caching to
+    # happen. When false, cache_* functions are no-ops
+    # and the app falls through to the database.
+
+    REDIS_URL = os.getenv("REDIS_URL")
+    CACHE_ENABLED = os.getenv("CACHE_ENABLED", "false").lower() == "true"
+    CACHE_TTL_SECONDS = int(os.getenv("CACHE_TTL_SECONDS", "60"))
