@@ -4,6 +4,8 @@ IEMS Employee Management Routes
 Administrator-only employee management. Every mutation
 is recorded in the activity log.
 """
+from app.utils.cache import get_cached_departments
+
 import secrets
 from app.auth.decorators import login_required
 from flask import (
@@ -119,9 +121,7 @@ def index():
 def create():
     """Create a new employee account."""
 
-    departments = Department.query.order_by(
-        Department.name.asc()
-    ).all()
+    departments = get_cached_departments()
 
     if request.method == "POST":
 

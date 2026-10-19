@@ -4,7 +4,7 @@ IEMS Location Management Routes
 Administrator-only CRUD for the Location lookup table.
 Every mutation is recorded in the activity log.
 """
-
+from app.utils.cache import invalidate_locations
 from flask import (
     Blueprint,
     render_template,
@@ -114,6 +114,7 @@ def create():
 
         try:
             db.session.commit()
+            invalidate_locations()
         except Exception:
             db.session.rollback()
             flash(
@@ -182,6 +183,7 @@ def edit(location_id):
 
         try:
             db.session.commit()
+            invalidate_locations()
         except Exception:
             db.session.rollback()
             flash(
@@ -251,6 +253,7 @@ def delete(location_id):
 
     try:
         db.session.commit()
+        invalidate_locations()
     except Exception:
         db.session.rollback()
         flash(

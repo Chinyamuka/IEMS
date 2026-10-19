@@ -6,6 +6,14 @@ ICT equipment records. Every mutation is recorded in
 the activity log and invalidates the dashboard cache.
 """
 
+from app.utils.cache import (
+    cache_delete,
+    get_cached_departments,      # unused here, but keep imports tidy
+    get_cached_locations,
+    get_cached_categories,
+)
+
+
 from flask import (
     Blueprint,
     flash,
@@ -14,6 +22,7 @@ from flask import (
     url_for,
     request,
 )
+
 
 from app.extensions import db
 from app.forms.equipment_form import EquipmentForm
@@ -60,14 +69,14 @@ def create():
 
     form = EquipmentForm()
 
-    categories = Category.query.order_by(Category.name).all()
+    categories = get_cached_categories()
     form.category_id.choices = [
-        (c.id, c.name) for c in categories
+        (c["id"], c["name"]) for c in categories
     ]
 
-    locations = Location.query.order_by(Location.name).all()
+    locations = get_cached_locations()
     form.location_id.choices = [
-        (l.id, l.name) for l in locations
+        (l["id"], l["name"]) for l in locations
     ]
 
     if form.validate_on_submit():
@@ -364,8 +373,8 @@ def index():
     location_id = request.args.get("location", type=int)
     page = request.args.get("page", 1, type=int)
 
-    categories = Category.query.order_by(Category.name.asc()).all()
-    locations = Location.query.order_by(Location.name.asc()).all()
+    categories = get_cached_categories()
+    locations = get_cached_locations()
 
     query = Equipment.query
 

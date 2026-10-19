@@ -4,7 +4,7 @@ IEMS Category Management Routes
 Administrator-only CRUD for the Category lookup table.
 Every mutation is recorded in the activity log.
 """
-
+from app.utils.cache import invalidate_categories
 from flask import (
     Blueprint,
     render_template,
@@ -110,6 +110,7 @@ def create():
 
         try:
             db.session.commit()
+            invalidate_categories()
         except Exception:
             db.session.rollback()
             flash(
@@ -174,6 +175,7 @@ def edit(category_id):
 
         try:
             db.session.commit()
+            invalidate_categories()
         except Exception:
             db.session.rollback()
             flash(
@@ -243,6 +245,7 @@ def delete(category_id):
 
     try:
         db.session.commit()
+        invalidate_categories()
     except Exception:
         db.session.rollback()
         flash(

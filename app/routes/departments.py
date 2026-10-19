@@ -4,6 +4,7 @@ IEMS Department Management Routes
 Administrator-only CRUD for the Department lookup table.
 Every mutation is recorded in the activity log.
 """
+from app.utils.cache import get_cached_departments, invalidate_departments
 
 from flask import (
     Blueprint,
@@ -119,6 +120,7 @@ def create():
 
         try:
             db.session.commit()
+            invalidate_departments()
         except Exception:
             db.session.rollback()
             flash(
@@ -183,6 +185,7 @@ def edit(department_id):
 
         try:
             db.session.commit()
+            invalidate_departments()
         except Exception:
             db.session.rollback()
             flash(

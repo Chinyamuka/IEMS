@@ -19,10 +19,13 @@ Key behaviours:
 
 import os
 import tempfile
+
 import pytest
+
 from app import create_app
 from app.extensions import db as _db
 from app.models import User, Department
+from tests.test_config import TestConfig
 
 
 # =========================================================
@@ -34,31 +37,15 @@ def app():
     """
     A fresh Flask app per test, pointed at an in-memory
     SQLite database.
+
+    TestConfig is passed to create_app so SQLAlchemy
+    binds the engine to sqlite:///:memory: BEFORE
+    db.init_app runs. Mutating app.config afterwards
+    would be a no-op — the engine would already be
+    bound to whatever Config specified.
     """
 
-    app = create_app()
-
-    # -----------------------------------------------------
-    # OVERRIDE DATABASE
-    # -----------------------------------------------------
-    #
-    # This must be set BEFORE db.init_app runs — but
-    # create_app already called init_app. So we override
-    # the config and force SQLAlchemy to rebind by using
-    # a fresh engine.
-    #
-    # The safe pattern: dispose any existing engine
-    # bindings, set the new URI, and let the next
-    # db.create_all() build the schema in memory.
-
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
-    app.config["TESTING"] = True
-    app.config["WTF_CSRF_ENABLED"] = False
-
-    # Use a temporary upload folder so image tests do not
-    # write into the real static/uploads tree.
-    uploads = tempfile.mkdtemp(prefix="iems-test-uploads-")
-    app.config["UPLOAD_FOLDER"] = uploads
+    app = create_app(config_class=TestConfig)
 
     with app.app_context():
         _db.create_all()
@@ -154,6 +141,27 @@ def inactive_user(app, department):
     return user
 
 
+@pytest.fixture
+def officer(app, department):
+    """
+    An IT Officer user (equipment management role).
+    Password is 'officer1234'.
+    """
+    user = User(
+        employee_number="OFF-TEST-001",
+        first_name="Test",
+        last_name="Officer",
+        email="officer@test.local",
+        role="IT Officer",
+        department_id=department.id,
+        is_active=True,
+    )
+    user.set_password("officer1234")
+    _db.session.add(user)
+    _db.session.commit()
+    return user
+
+
 # =========================================================
 # LOGGED-IN CLIENT FIXTURES
 # =========================================================
@@ -183,6 +191,14 @@ def logged_in_employee(client, employee):
     _login(client, "EMP-TEST-001", "emp12345")
     return client
 
+
+@pytest.fixture
+def logged_in_officer(client, officer):
+    """Client authenticated as the officer fixture."""
+    _login(client, "OFF-TEST-001", "officer1234")
+    return client
+
+
 # =========================================================
 # ADDITIONAL FIXTURES FOR EXPANDED TESTS
 # =========================================================
@@ -192,7 +208,10 @@ def category(app):
     """An equipment Category for equipment tests."""
     from app.models import Category
 
-    cat = Category(name="Laptops", description="Portable computers")
+    cat = Category(
+        name="Laptops",
+        description="Portable computers",
+    )
     _db.session.add(cat)
     _db.session.commit()
     return cat
@@ -234,30 +253,3 @@ def equipment(app, category, location):
     _db.session.add(eq)
     _db.session.commit()
     return eq
-
-
-@pytest.fixture
-def officer(app, department):
-    """An IT Officer user (equipment management role)."""
-    from app.models import User
-
-    user = User(
-        employee_number="OFF-TEST-001",
-        first_name="Test",
-        last_name="Officer",
-        email="officer@test.local",
-        role="IT Officer",
-        department_id=department.id,
-        is_active=True,
-    )
-    user.set_password("officer1234")
-    _db.session.add(user)
-    _db.session.commit()
-    return user
-
-
-@pytest.fixture
-def logged_in_officer(client, officer):
-    """Client authenticated as the officer fixture."""
-    _login(client, "OFF-TEST-001", "officer1234")
-    return client
