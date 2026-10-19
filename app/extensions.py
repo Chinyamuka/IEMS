@@ -15,4 +15,9 @@ from flask_mail import Mail
 # Create the SQLAlchemy database object.
 db = SQLAlchemy()
 migrate = Migrate()
+
+# Flask-Mail extension. Bound to the app in create_app()
+# via app.email.bootstrap.init_mail(). Importable everywhere
+# without a cycle because this module imports nothing from
+# the app package.
 mail = Mail()
