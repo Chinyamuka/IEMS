@@ -1,0 +1,23 @@
+{#- IEMS EMAIL BASE TEMPLATE — PLAINTEXT
+
+    Every .html template has a matching .txt sibling.
+    Clients that prefer plaintext (terminal MUAs, some
+    corporate gateways, screen readers) use this file;
+    HTML-capable clients ignore it. Both must exist
+    because automatically stripping HTML produces bad
+    output — broken wrapping, stray entities, and
+    unreadable table-cell spill.
+
+    Keep lines under ~72 characters. Some clients
+    hard-wrap long lines in ways you cannot predict.
+-#}
+IEMS — ICT Equipment Management
+========================================
+
+{% block content %}This is a message from IEMS.{% endblock %}
+
+========================================
+{% block footer_note -%}
+This message was sent by IEMS.
+If you were not expecting it, you can ignore it.
+{%- endblock %}
