@@ -1,0 +1,33 @@
+IEMS — ICT Equipment Management
+========================================
+
+Hello {{ assignment.user.first_name }},
+
+The following equipment has been assigned to you and
+recorded in IEMS. Please take note of the asset tag —
+it identifies the item in all future correspondence.
+
+Equipment:
+    {{ equipment.manufacturer }} {{ equipment.model }}
+    Asset tag: {{ equipment.asset_tag }}
+{% if equipment.serial_number %}    Serial:    {{ equipment.serial_number }}
+{% endif %}
+
+Assigned on: {{ assignment.assigned_at.strftime('%d %B %Y, %H:%M') }}
+
+{% if assignment.notes %}
+Notes from the assigning officer:
+{{ assignment.notes }}
+
+{% endif %}
+You are responsible for this equipment while it is in
+your custody. To return it, contact your IT
+administrator and reference the asset tag above.
+
+Do not reply to this email — it is sent from an
+unmonitored address.
+
+========================================
+This message confirms an equipment
+assignment recorded in IEMS.
+========================================

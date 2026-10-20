@@ -1,0 +1,29 @@
+IEMS — ICT Equipment Management
+========================================
+
+Hello {{ user.first_name }},
+
+Your IEMS account has been created. IEMS is the ICT
+Equipment Inventory Management System — it tracks every
+ICT asset, its assignment history, and its service
+record.
+
+Your sign-in details:
+
+    Employee number:  {{ user.employee_number }}
+    Initial password: {{ initial_password }}
+
+You will be required to choose a new password the first
+time you sign in.
+
+Sign in at:
+
+    {{ login_url }}
+
+Keep this message private. If you did not expect an IEMS
+account, contact your administrator.
+
+========================================
+This message contains initial credentials.
+Do not forward it.
+========================================
