@@ -516,7 +516,7 @@ def activate(user_id):
 # RESET PASSWORD
 # =========================================================
 
-@users_bp.route( "/<int:user_id>/reset-password",  methods=["POST"])
+@users_bp.route("/<int:user_id>/reset-password", methods=["POST"])
 @login_required
 @role_required("Administrator")
 def reset_password(user_id):
@@ -525,18 +525,26 @@ def reset_password(user_id):
 
     Generates a random temporary password, stores only
     its hash, sets must_change_password=True so the user
-    is forced to change it on the next login, and flashes
-    the plaintext one time so the administrator can hand
-    it to the employee.
+    is forced to change it on next login, and tries to
+    deliver the plaintext to the user by email.
+
+    Delivery policy:
+
+        - User has an email address AND the send succeeds
+          -> short success flash; password never appears
+             in the flash.
+        - No email, send fails, or mail suppressed (dev)
+          -> fall back to the legacy on-screen flash so
+             the reset is never a dead end.
 
     The plaintext is never written to the database.
+
+    Ordering: the database commit succeeds BEFORE the
+    send attempt, so an SMTP outage cannot roll back a
+    password reset.
     """
 
     user = db.get_or_404(User, user_id)
-
-    # -----------------------------------------------------
-    # GUARD — CANNOT RESET YOUR OWN PASSWORD HERE
-    # -----------------------------------------------------
 
     if g.current_user is not None and user.id == g.current_user.id:
         flash(
@@ -546,6 +554,68 @@ def reset_password(user_id):
         return redirect(
             url_for("users.detail", user_id=user.id)
         )
+
+    temp_password = generate_temp_password()
+
+    user.set_password(temp_password)
+    user.must_change_password = True
+
+    log_activity(
+        "password_reset",
+        "User",
+        user.id,
+        f"Reset password for {user.employee_number}",
+    )
+
+    db.session.commit()
+
+    from flask import current_app
+    from app.email import render, send
+
+    delivered_by_email = False
+
+    if user.email and not current_app.config.get("MAIL_SUPPRESS_SEND"):
+        try:
+            email_message = render(
+                "password_reset",
+                subject="Your IEMS password has been reset",
+                to=(user.email,),
+                user=user,
+                temp_password=temp_password,
+                login_url=url_for("auth.login", _external=True),
+            )
+            delivered_by_email = send(email_message)
+        except Exception:
+            current_app.logger.exception(
+                "Password reset email failed for user_id=%s", user.id
+            )
+            delivered_by_email = False
+
+    if delivered_by_email:
+        flash(
+            f"Password reset for {user.full_name}. "
+            f"A temporary password has been sent to "
+            f"{user.email}. The user must change it on "
+            f"next login.",
+            "success",
+        )
+    else:
+        reason = (
+            "user has no email address"
+            if not user.email
+            else "email delivery is disabled or failed"
+        )
+        flash(
+            f"Password reset for {user.full_name}. "
+            f"Temporary password: {temp_password}. "
+            f"The user must change it on next login. "
+            f"({reason}; deliver this password in person.)",
+            "success",
+        )
+
+    return redirect(
+        url_for("users.detail", user_id=user.id)
+    )
 
     # -----------------------------------------------------
     # GENERATE + STORE
