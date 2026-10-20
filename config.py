@@ -66,5 +66,17 @@ class Config:
     MAIL_DEFAULT_SENDER = os.getenv("MAIL_DEFAULT_SENDER", "noreply@iems.local")
     MAIL_TIMEOUT = int(os.getenv("MAIL_TIMEOUT", "10"))
 
+    # Template rendering
+    MAIL_TEMPLATE_DIR = os.getenv(
+        "MAIL_TEMPLATE_DIR",
+        os.path.join(BASE_DIR, "app", "email", "templates"),
+    )
+    # Jinja autoescape is OFF by default outside Flask's
+    # web jinja env. Turn it on for email — the same
+    # reason it is on for HTML pages.
+    MAIL_TEMPLATE_AUTOESCAPE = _env_bool(
+        "MAIL_TEMPLATE_AUTOESCAPE", default=True
+    )
+
     # Derived from MAIL_ENABLED. Do not set independently.
     MAIL_SUPPRESS_SEND = not MAIL_ENABLED

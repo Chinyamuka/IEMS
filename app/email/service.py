@@ -107,3 +107,93 @@ def send_many(emails: Iterable[Email]) -> list[bool]:
     scale. If N4 needs throughput, batching happens there.
     """
     return [send(e) for e in emails]
+
+
+# =========================================================
+# TEMPLATE RENDERING
+# =========================================================
+
+def render(
+    template_name: str,
+    *,
+    subject: str,
+    to: tuple[str, ...],
+    cc: tuple[str, ...] = (),
+    bcc: tuple[str, ...] = (),
+    reply_to: str | None = None,
+    **context,
+) -> Email:
+    """
+    Render an email template into a ready-to-send Email.
+
+    Parameters
+    ----------
+    template_name : str
+        Base name (no extension). Two files must exist
+        under MAIL_TEMPLATE_DIR: <name>.html and <name>.txt.
+    subject : str
+        Set by the caller, not by the template. One
+        template can be reused with different subjects
+        (e.g. the same shell for password_reset and
+        password_reset_reminder).
+    to, cc, bcc, reply_to
+        Recipients. Passed straight through to Email.
+    **context
+        Variables made available to both templates.
+
+    Returns
+    -------
+    Email
+        A complete Email with both .html and .body set.
+
+    Raises
+    ------
+    FileNotFoundError
+        If either sibling is missing. Deliberately strict:
+        silently falling back to HTML-only would let
+        future authors forget the .txt version and only
+        discover it when a corporate gateway mangles the
+        message.
+    RuntimeError
+        If Jinja rendering fails (syntax error, missing
+        variable, etc.).
+    """
+    from jinja2 import Environment, FileSystemLoader, TemplateNotFound
+
+    template_dir = current_app.config["MAIL_TEMPLATE_DIR"]
+    autoescape = bool(current_app.config.get("MAIL_TEMPLATE_AUTOESCAPE", True))
+
+    env = Environment(
+        loader=FileSystemLoader(template_dir),
+        autoescape=autoescape,
+        trim_blocks=True,
+        lstrip_blocks=True,
+    )
+
+    try:
+        html_source = env.get_template(f"{template_name}.html")
+        text_source = env.get_template(f"{template_name}.txt")
+    except TemplateNotFound as exc:
+        raise FileNotFoundError(
+            f"Email template {template_name!r} is incomplete: "
+            f"{exc.name} not found under {template_dir}. "
+            f"Both .html and .txt siblings are required."
+        ) from exc
+
+    try:
+        html_body = html_source.render(**context)
+        text_body = text_source.render(**context)
+    except Exception as exc:        # noqa: BLE001 — Jinja errors are opaque
+        raise RuntimeError(
+            f"Failed to render email template {template_name!r}: {exc}"
+        ) from exc
+
+    return Email(
+        to=to,
+        subject=subject,
+        body=text_body,
+        html=html_body,
+        cc=cc,
+        bcc=bcc,
+        reply_to=reply_to,
+    )
