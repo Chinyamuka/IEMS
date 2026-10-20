@@ -25,6 +25,7 @@ Design rules:
 from __future__ import annotations
 
 import logging
+import os
 from typing import Iterable
 
 from flask import current_app
@@ -160,7 +161,14 @@ def render(
     """
     from jinja2 import Environment, FileSystemLoader, TemplateNotFound
 
-    template_dir = current_app.config["MAIL_TEMPLATE_DIR"]
+    template_dir = current_app.config.get(
+        "MAIL_TEMPLATE_DIR",
+        os.path.join(
+            current_app.root_path,
+            "email",
+            "templates",
+        ),
+    )
     autoescape = bool(current_app.config.get("MAIL_TEMPLATE_AUTOESCAPE", True))
 
     env = Environment(

@@ -7,9 +7,11 @@ Covers:
 - Editing users
 - Deactivation and reactivation
 - Admin lockout guards
+- Password reset email and fallbacks
 """
 
 from app.models import User, ActivityLog
+from app.extensions import mail as flask_mail_ext
 
 
 # =========================================================
@@ -118,17 +120,14 @@ def test_cannot_deactivate_self(logged_in_admin, admin, db):
     logged_in_admin.post(f"/users/{admin.id}/deactivate")
 
     db.session.refresh(admin)
-    assert admin.is_active is True  # Still active
+    assert admin.is_active is True
 
 
-def test_cannot_deactivate_last_admin(
-    logged_in_admin, admin, db
-):
+def test_cannot_deactivate_last_admin(logged_in_admin, admin, db):
     """
     admin is the only Administrator. Deactivating
     another admin (or self) must be refused.
     """
-    # Try to deactivate self
     logged_in_admin.post(f"/users/{admin.id}/deactivate")
 
     db.session.refresh(admin)
@@ -139,9 +138,7 @@ def test_cannot_deactivate_last_admin(
 # ACTIVITY LOG
 # =========================================================
 
-def test_create_user_writes_activity(
-    logged_in_admin, department, db
-):
+def test_create_user_writes_activity(logged_in_admin, department, db):
     before = ActivityLog.query.count()
 
     logged_in_admin.post(
@@ -163,9 +160,7 @@ def test_create_user_writes_activity(
     assert newest.entity_type == "User"
 
 
-def test_deactivate_writes_activity(
-    logged_in_admin, employee, db
-):
+def test_deactivate_writes_activity(logged_in_admin, employee, db):
     before = ActivityLog.query.count()
 
     logged_in_admin.post(f"/users/{employee.id}/deactivate")
@@ -175,3 +170,124 @@ def test_deactivate_writes_activity(
     newest = ActivityLog.query.order_by(ActivityLog.id.desc()).first()
     assert newest.action == "deactivate"
 
+
+# =========================================================
+# PASSWORD RESET — EMAIL AND FALLBACKS
+# =========================================================
+
+def test_reset_password_sends_email_when_user_has_email(logged_in_admin, db):
+    """
+    reset_password must send a password_reset email to the
+    target user and must NOT show the temp password in
+    the flash.
+    """
+    target = User(
+        employee_number="EMP-TEST-1",
+        first_name="Ada",
+        last_name="Lovelace",
+        email="ada@example.test",
+        role="Employee",
+        is_active=True,
+    )
+    target.set_password("initial-pass")
+    db.session.add(target)
+    db.session.commit()
+
+    with flask_mail_ext.record_messages() as outbox:
+        response = logged_in_admin.post(
+            f"/users/{target.id}/reset-password",
+            follow_redirects=True,
+        )
+
+    assert response.status_code == 200
+    assert len(outbox) == 1
+    assert outbox[0].subject == "Your IEMS password has been reset"
+    assert outbox[0].recipients == ["ada@example.test"]
+
+    body_html = outbox[0].html or ""
+    body_text = outbox[0].body or ""
+    assert "IEMS-" in body_html
+    assert "IEMS-" in body_text
+
+    page = response.get_data(as_text=True)
+    assert "A temporary password has been sent" in page
+    assert "Temporary password: IEMS-" not in page
+
+
+def test_reset_password_falls_back_to_flash_when_user_has_no_email(
+    logged_in_admin, db
+):
+    """
+    When the target user has no email address, the route
+    must flash the temp password instead and must NOT
+    attempt a send.
+    """
+    target = User(
+        employee_number="EMP-TEST-2",
+        first_name="Grace",
+        last_name="Hopper",
+        email=None,
+        role="Employee",
+        is_active=True,
+    )
+    target.set_password("initial-pass")
+    db.session.add(target)
+    db.session.commit()
+
+    with flask_mail_ext.record_messages() as outbox:
+        response = logged_in_admin.post(
+            f"/users/{target.id}/reset-password",
+            follow_redirects=True,
+        )
+
+    assert response.status_code == 200
+    assert len(outbox) == 0
+
+    page = response.get_data(as_text=True)
+    assert "Temporary password: IEMS-" in page
+    assert "user has no email address" in page
+
+
+def test_reset_password_survives_smtp_failure(
+    logged_in_admin, db, monkeypatch
+):
+    """
+    A failing SMTP layer must not break the route. The
+    password reset is already committed by the time the
+    send attempt runs, so the route must fall back to the
+    flash and return a normal redirect.
+
+    Patch app.email.send — the symbol the route imports —
+    not app.email.service.send. A monkeypatch on the
+    underlying module does not rebind the re-exported name
+    in the package, so patching service.send would leave
+    the real send in place.
+    """
+    import app.email as app_email
+
+    target = User(
+        employee_number="EMP-TEST-3",
+        first_name="Alan",
+        last_name="Turing",
+        email="alan@example.test",
+        role="Employee",
+        is_active=True,
+    )
+    target.set_password("initial-pass")
+    db.session.add(target)
+    db.session.commit()
+
+    def _explode(_email):
+        raise RuntimeError("SMTP down")
+
+    monkeypatch.setattr(app_email, "send", _explode)
+
+    response = logged_in_admin.post(
+        f"/users/{target.id}/reset-password",
+        follow_redirects=True,
+    )
+
+    assert response.status_code == 200
+    page = response.get_data(as_text=True)
+    assert "Temporary password: IEMS-" in page
+    assert "email delivery is disabled or failed" in page

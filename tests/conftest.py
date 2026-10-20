@@ -12,6 +12,12 @@ Key behaviours:
   otherwise rejects POST requests without a token, which
   would make every form test fail.
 
+- Mail is enabled with MAIL_SUPPRESS_SEND cleared, so
+  flask_mail.record_messages() captures sends instead of
+  service.send() short-circuiting. No real SMTP is
+  touched — record_messages() intercepts at the
+  mail.send() boundary.
+
 - load_current_user and the forced-password-change guard
   in app/__init__.py still run. Tests exercise the real
   request lifecycle.
@@ -41,11 +47,26 @@ def app():
     TestConfig is passed to create_app so SQLAlchemy
     binds the engine to sqlite:///:memory: BEFORE
     db.init_app runs. Mutating app.config afterwards
-    would be a no-op — the engine would already be
-    bound to whatever Config specified.
+    would be a no-op for the DATABASE engine — the engine
+    would already be bound to whatever Config specified.
+
+    MAIL_* config is different: it is read at
+    send-time by service.send(), so it can be flipped
+    after create_app() returns. We enable mail here so
+    tests that exercise the send path reach
+    flask_mail.record_messages() instead of being
+    short-circuited by MAIL_SUPPRESS_SEND.
     """
 
     app = create_app(config_class=TestConfig)
+
+    # TestConfig inherits Config, so MAIL_ENABLED comes
+    # from .env like production. Local .env typically has
+    # MAIL_ENABLED=false, which sets MAIL_SUPPRESS_SEND=True
+    # in Config. Tests that exercise the send path need
+    # that off; record_messages() intercepts at
+    # mail.send() so no real SMTP is contacted.
+    app.config["MAIL_SUPPRESS_SEND"] = False
 
     with app.app_context():
         _db.create_all()
