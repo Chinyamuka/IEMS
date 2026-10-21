@@ -12,19 +12,27 @@ Key behaviours:
   otherwise rejects POST requests without a token, which
   would make every form test fail.
 
-- Mail is enabled with MAIL_SUPPRESS_SEND cleared, so
-  flask_mail.record_messages() captures sends instead of
-  service.send() short-circuiting. No real SMTP is
-  touched — record_messages() intercepts at the
-  mail.send() boundary.
+- Cache lookups are cleared between tests. The lookup
+  cache (depts:all, locs:all, cats:all, dashboard:stats)
+  lives in a global Redis namespace that survives across
+  tests. Without clearing, a test that populates the
+  cache with its own category id leaves stale
+  {id: name} pairs that the next test's form validation
+  cannot match. Cleared inside the app context so that
+  current_app.config is resolvable.
+
+- Mail: TestConfig inherits Config, so MAIL_* keys come
+  from production config plus .env. Local .env typically
+  has MAIL_ENABLED=false, which sets MAIL_SUPPRESS_SEND
+  True in Config. Tests that exercise the send path need
+  that off, so the app fixture flips MAIL_SUPPRESS_SEND to
+  False. flask_mail.record_messages() intercepts at
+  mail.send(), so no real SMTP is contacted.
 
 - load_current_user and the forced-password-change guard
   in app/__init__.py still run. Tests exercise the real
   request lifecycle.
 """
-
-import os
-import tempfile
 
 import pytest
 
@@ -44,31 +52,43 @@ def app():
     A fresh Flask app per test, pointed at an in-memory
     SQLite database.
 
-    TestConfig is passed to create_app so SQLAlchemy
-    binds the engine to sqlite:///:memory: BEFORE
-    db.init_app runs. Mutating app.config afterwards
-    would be a no-op for the DATABASE engine — the engine
-    would already be bound to whatever Config specified.
+    TestConfig is passed to create_app so SQLAlchemy binds
+    the engine to sqlite:///:memory: BEFORE db.init_app
+    runs. Mutating the DATABASE config afterwards would be
+    a no-op — the engine would already be bound to
+    whatever Config specified.
 
-    MAIL_* config is different: it is read at
-    send-time by service.send(), so it can be flipped
-    after create_app() returns. We enable mail here so
-    tests that exercise the send path reach
-    flask_mail.record_messages() instead of being
-    short-circuited by MAIL_SUPPRESS_SEND.
+    MAIL_* config is read at send-time by service.send(),
+    so MAIL_SUPPRESS_SEND can be flipped after create_app
+    returns. Tests that exercise the send path rely on
+    this.
     """
 
     app = create_app(config_class=TestConfig)
 
-    # TestConfig inherits Config, so MAIL_ENABLED comes
-    # from .env like production. Local .env typically has
-    # MAIL_ENABLED=false, which sets MAIL_SUPPRESS_SEND=True
-    # in Config. Tests that exercise the send path need
-    # that off; record_messages() intercepts at
-    # mail.send() so no real SMTP is contacted.
+    # TestConfig inherits Config, so MAIL_SUPPRESS_SEND
+    # mirrors MAIL_ENABLED from .env. Tests want the send
+    # path to run, so flip it off. record_messages()
+    # captures at mail.send() — no real SMTP contacted.
     app.config["MAIL_SUPPRESS_SEND"] = False
 
     with app.app_context():
+        # Clear cached lookups so a prior test's fixture
+        # IDs (category, location, department) cannot be
+        # served to the current test's form validation.
+        #
+        # Must run INSIDE app_context: cache_delete reads
+        # current_app.config via _get_client(), which
+        # raises RuntimeError outside an application
+        # context.
+        from app.utils.cache import cache_delete
+        cache_delete(
+            "depts:all",
+            "locs:all",
+            "cats:all",
+            "dashboard:stats",
+        )
+
         _db.create_all()
         yield app
         _db.session.remove()
