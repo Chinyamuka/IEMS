@@ -4,25 +4,18 @@ Test-only configuration.
 Passed to create_app() by the app fixture in conftest.py.
 
 Inherits from the production Config so that every setting
-not explicitly overridden here (MAIL_*, CACHE_*, SECRET_KEY
-fallback, ALLOWED_IMAGE_EXTENSIONS, ...) is identical to
-production. This means a new config key added to Config
-automatically becomes available in tests — no risk of a
-test passing in isolation but failing against the real
-config shape.
+not explicitly overridden here is identical to production.
 
-Overrides applied here are limited to changes that are
-strictly about *how tests run*, not *what the app does*:
-
-- SQLALCHEMY_DATABASE_URI  → in-memory SQLite, not Postgres
-- SQLALCHEMY_TRACK_MODIFICATIONS → silenced, faster teardown
-- TESTING                  → Flask propagates exceptions
-- WTF_CSRF_ENABLED         → disabled so POST forms work
-- UPLOAD_FOLDER            → temp directory per test session
-- SECRET_KEY               → fixed, known value
+Cache is disabled at the config level so that stale
+lookup entries cannot leak between tests. If a specific
+test needs the cache on (test_cache_dashboard.py), it can
+opt in via a fixture that sets app.config["CACHE_ENABLED"]
+= True and rebuilds the client.
 """
 
 import tempfile
+
+from sqlalchemy.pool import StaticPool
 
 from config import Config
 
@@ -33,6 +26,20 @@ class TestConfig(Config):
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     TESTING = True
     WTF_CSRF_ENABLED = False
+
+    # SQLite :memory: databases are per-connection. StaticPool
+    # pins one connection for the lifetime of the engine, so
+    # every checkout returns the same underlying SQLite
+    # connection and every test sees one database.
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        "poolclass": StaticPool,
+        "connect_args": {"check_same_thread": False},
+    }
+
+    # Cache is off by default in tests. The conftest app
+    # fixture also clears the four known lookup keys as a
+    # second layer of defence — belt and braces.
+    CACHE_ENABLED = False
 
     # Temporary uploads folder — re-created per app instance.
     UPLOAD_FOLDER = tempfile.mkdtemp(prefix="iems-test-uploads-")

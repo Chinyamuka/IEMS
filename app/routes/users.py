@@ -230,10 +230,71 @@ def create():
 
         db.session.commit()
 
-        flash(
-            f"{user.full_name} was added successfully.",
-            "success"
-        )
+        # -------------------------------------------------
+        # WELCOME EMAIL — preferred delivery channel
+        # -------------------------------------------------
+        #
+        # The user row is committed at this point. The
+        # initial password exists only in this request's
+        # form data — it was never stored in the clear.
+        #
+        # If the user has an email and the send succeeds,
+        # the flash congratulates the admin and does NOT
+        # echo the password. Otherwise we fall back to the
+        # original behaviour (admin sees a plain success
+        # flash and can read the initial password from the
+        # form they just submitted).
+        #
+        # Note: unlike reset_password, we do NOT re-flash
+        # the password here on failure. The admin typed it
+        # in the form; they already know it.
+
+        from flask import current_app
+        from app.email import render, send
+
+        delivered_by_email = False
+
+        if user.email and not current_app.config.get("MAIL_SUPPRESS_SEND"):
+            try:
+                email_message = render(
+                    "welcome",
+                    subject="Your IEMS account has been created",
+                    to=(user.email,),
+                    user=user,
+                    initial_password=password,
+                    login_url=url_for("auth.login", _external=True),
+                )
+                delivered_by_email = send(email_message)
+            except Exception:      # noqa: BLE001
+                current_app.logger.exception(
+                    "Welcome email failed for user_id=%s", user.id
+                )
+                delivered_by_email = False
+
+        # -------------------------------------------------
+        # FLASH — outcome-specific
+        # -------------------------------------------------
+
+        if delivered_by_email:
+            flash(
+                f"{user.full_name} was added successfully. "
+                f"Sign-in details have been sent to "
+                f"{user.email}.",
+                "success",
+            )
+        else:
+            reason = (
+                "user has no email address"
+                if not user.email
+                else "email delivery is disabled or failed"
+            )
+            flash(
+                f"{user.full_name} was added successfully. "
+                f"(No welcome email sent: {reason}; "
+                f"share the initial password you entered "
+                f"in person.)",
+                "success",
+            )
 
         return redirect(
             url_for("users.detail", user_id=user.id)

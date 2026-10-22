@@ -203,10 +203,69 @@ def create():
 
         cache_delete(CACHE_KEY_DASHBOARD_STATS)
 
-        flash(
-            f"{equipment_item.asset_tag} has been assigned to {user.full_name}.",
-            "success",
-        )
+        # -------------------------------------------------
+        # ASSIGNMENT NOTICE EMAIL
+        # -------------------------------------------------
+        #
+        # The assignment row and the equipment status
+        # change are committed. Delivery is best-effort.
+        #
+        # The template expects `assignment` and
+        # `equipment` as separate variables — equipment
+        # is `assignment.equipment` but passing it
+        # explicitly lets the template reference it
+        # directly without traversing the relationship.
+
+        from flask import current_app
+        from app.email import render, send
+
+        delivered_by_email = False
+
+        if user.email and not current_app.config.get("MAIL_SUPPRESS_SEND"):
+            try:
+                email_message = render(
+                    "assignment_notice",
+                    subject=(
+                        f"{equipment_item.asset_tag} has been "
+                        f"assigned to you"
+                    ),
+                    to=(user.email,),
+                    assignment=assignment,
+                    equipment=equipment_item,
+                )
+                delivered_by_email = send(email_message)
+            except Exception:      # noqa: BLE001
+                current_app.logger.exception(
+                    "Assignment notice email failed for assignment_id=%s",
+                    assignment.id,
+                )
+                delivered_by_email = False
+
+        # -------------------------------------------------
+        # FLASH — outcome-specific
+        # -------------------------------------------------
+
+        if delivered_by_email:
+            flash(
+                f"{equipment_item.asset_tag} has been assigned "
+                f"to {user.full_name}. A notification has been "
+                f"sent to {user.email}.",
+                "success",
+            )
+        else:
+            reason = (
+                "user has no email address"
+                if not user.email
+                else "email delivery is disabled or failed"
+            )
+            flash(
+                f"{equipment_item.asset_tag} has been assigned "
+                f"to {user.full_name}. "
+                f"(No notification sent: {reason}; inform "
+                f"them in person.)",
+                "success",
+            )
+
         return redirect(url_for("assignment.index"))
 
     return render_template(
