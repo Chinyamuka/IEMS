@@ -414,3 +414,73 @@ def index():
         selected_status=status,
         selected_location=location_id,
     )
+
+# =========================================================
+# CSV EXPORT
+# =========================================================
+
+@equipment_bp.route("/export.csv")
+@login_required
+@role_required(
+    "Administrator",
+    "Asset Officer",
+    "IT Manager",
+    "IT Officer",
+)
+def export_csv():
+    """
+    Export the full equipment inventory as a CSV file.
+
+    Respects the same search/filter params as the index
+    page so the user can export the current view, not
+    just the full unfiltered list.
+    """
+    from app.utils.csv_export import csv_response
+
+    search = request.args.get("q", "").strip()
+    category_id = request.args.get("category", type=int)
+    status = request.args.get("status", "").strip()
+    location_id = request.args.get("location", type=int)
+
+    query = Equipment.query
+
+    if search:
+        term = f"%{search}%"
+        query = query.filter(
+            db.or_(
+                Equipment.asset_tag.ilike(term),
+                Equipment.serial_number.ilike(term),
+                Equipment.manufacturer.ilike(term),
+                Equipment.model.ilike(term),
+            )
+        )
+    if category_id:
+        query = query.filter(Equipment.category_id == category_id)
+    if status:
+        query = query.filter(Equipment.status == status)
+    if location_id:
+        query = query.filter(Equipment.location_id == location_id)
+
+    items = query.order_by(Equipment.asset_tag.asc()).all()
+
+    rows = [
+        {
+            "Asset Tag":           eq.asset_tag,
+            "Serial Number":       eq.serial_number or "",
+            "Manufacturer":        eq.manufacturer,
+            "Model":               eq.model,
+            "Category":            eq.category.name if eq.category else "",
+            "Location":            eq.location.name if eq.location else "",
+            "Status":              eq.status,
+            "Condition":           eq.condition,
+            "Purchase Date":       eq.purchase_date.isoformat() if eq.purchase_date else "",
+            "Purchase Price":      str(eq.purchase_price) if eq.purchase_price is not None else "",
+            "Warranty Expiry":     eq.warranty_expiry.isoformat() if eq.warranty_expiry else "",
+            "Description":         eq.description or "",
+            "Created":             eq.created_at.strftime("%Y-%m-%d %H:%M:%S") if eq.created_at else "",
+            "Last Updated":        eq.updated_at.strftime("%Y-%m-%d %H:%M:%S") if eq.updated_at else "",
+        }
+        for eq in items
+    ]
+
+    return csv_response(rows, filename_prefix="iems-equipment")

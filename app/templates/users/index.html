@@ -27,6 +27,13 @@
     <div class="page-header-actions">
 
         <a
+            href="{{ url_for('users.export_csv', **request.args) }}"
+            class="btn btn-secondary"
+        >
+            Export CSV
+        </a>
+
+        <a
             href="{{ url_for('users.create') }}"
             class="btn btn-primary"
         >

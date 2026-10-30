@@ -27,14 +27,25 @@
     </div>
 
 
-    <!-- Add equipment button -->
+    <!-- Header actions -->
 
-    <a
-        href="{{ url_for('equipment.create') }}"
-        class="btn"
-    >
-        + Add Equipment
-    </a>
+    <div class="page-header-actions">
+
+        <a
+            href="{{ url_for('equipment.export_csv', **request.args) }}"
+            class="btn btn-secondary"
+        >
+            Export CSV
+        </a>
+
+        <a
+            href="{{ url_for('equipment.create') }}"
+            class="btn"
+        >
+            + Add Equipment
+        </a>
+
+    </div>
 
 </div>
 

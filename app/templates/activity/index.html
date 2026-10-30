@@ -26,6 +26,17 @@
 
     </div>
 
+    <div class="page-header-actions">
+
+        <a
+            href="{{ url_for('activity.export_csv', **request.args) }}"
+            class="btn btn-secondary"
+        >
+            Export CSV
+        </a>
+
+    </div>
+
 </div>
 
 

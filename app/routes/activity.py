@@ -158,3 +158,64 @@ def index():
         selected_from=from_date,
         selected_to=to_date,
     )
+
+# =========================================================
+# CSV EXPORT
+# =========================================================
+
+@activity_bp.route("/export.csv")
+@login_required
+@role_required("Administrator")
+def export_csv():
+    """
+    Export the activity log as CSV.
+
+    Respects the same filters as the index page (user,
+    entity_type, action, from, to) so the user can
+    export the current view.
+    """
+    from app.utils.csv_export import csv_response
+    from datetime import datetime, timedelta
+
+    user_id = request.args.get("user_id", type=int)
+    entity_type = request.args.get("entity_type", "").strip()
+    action = request.args.get("action", "").strip()
+    from_date = request.args.get("from", "").strip()
+    to_date = request.args.get("to", "").strip()
+
+    query = ActivityLog.query
+
+    if user_id:
+        query = query.filter(ActivityLog.user_id == user_id)
+    if entity_type:
+        query = query.filter(ActivityLog.entity_type == entity_type)
+    if action:
+        query = query.filter(ActivityLog.action == action)
+    if from_date:
+        try:
+            dt = datetime.strptime(from_date, "%Y-%m-%d")
+            query = query.filter(ActivityLog.created_at >= dt)
+        except ValueError:
+            pass
+    if to_date:
+        try:
+            dt = datetime.strptime(to_date, "%Y-%m-%d") + timedelta(days=1)
+            query = query.filter(ActivityLog.created_at < dt)
+        except ValueError:
+            pass
+
+    logs = query.order_by(ActivityLog.created_at.desc()).all()
+
+    rows = [
+        {
+            "When":        log.created_at.strftime("%Y-%m-%d %H:%M:%S") if log.created_at else "",
+            "User":        log.user.full_name if log.user else "System",
+            "Action":      log.action,
+            "Entity Type": log.entity_type,
+            "Entity ID":   log.entity_id if log.entity_id else "",
+            "Summary":     log.summary,
+        }
+        for log in logs
+    ]
+
+    return csv_response(rows, filename_prefix="iems-activity")

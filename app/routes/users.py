@@ -710,3 +710,47 @@ def reset_password(user_id):
     return redirect(
         url_for("users.detail", user_id=user.id)
     )
+
+# =========================================================
+# CSV EXPORT
+# =========================================================
+
+@users_bp.route("/export.csv")
+@login_required
+@role_required("Administrator")
+def export_csv():
+    """Export the full employee directory as CSV."""
+    from app.utils.csv_export import csv_response
+
+    search = request.args.get("search", "", type=str).strip()
+
+    query = User.query
+    if search:
+        pattern = f"%{search}%"
+        query = query.filter(
+            db.or_(
+                User.employee_number.ilike(pattern),
+                User.first_name.ilike(pattern),
+                User.last_name.ilike(pattern),
+                User.email.ilike(pattern),
+            )
+        )
+
+    users = query.order_by(User.employee_number.asc()).all()
+
+    rows = [
+        {
+            "Employee Number":  u.employee_number,
+            "First Name":       u.first_name,
+            "Last Name":        u.last_name,
+            "Email":            u.email or "",
+            "Phone":            u.phone or "",
+            "Department":       u.department.name if u.department else "",
+            "Role":             u.role,
+            "Active":           "yes" if u.is_active else "no",
+            "Must Change Pwd":  "yes" if u.must_change_password else "no",
+        }
+        for u in users
+    ]
+
+    return csv_response(rows, filename_prefix="iems-users")
