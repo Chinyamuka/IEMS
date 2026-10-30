@@ -1,0 +1,12 @@
+# CI-only test dependencies.
+#
+# These are intentionally NOT in requirements.txt because
+# they are not needed in the runtime container — Render runs
+# `gunicorn run:app`, not pytest.
+#
+# Currently the only entry is pytest-forked, which
+# pytest.ini requires via `addopts = --forked`. Once the
+# fork workaround is removed (test debt cleanup), this file
+# can be deleted.
+
+pytest-forked==1.6.0
