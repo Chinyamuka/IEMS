@@ -7,7 +7,8 @@ recomputing on every page load. Mutating routes clear
 the cache when equipment changes.
 """
 
-from collections import Counter
+from collections import Counter, OrderedDict
+from datetime import date, datetime, timedelta
 
 from flask import (
     Blueprint,
@@ -17,7 +18,8 @@ from flask import (
     session,
 )
 
-from app.models import Equipment, ActivityLog
+from app.extensions import db
+from app.models import Equipment, ActivityLog, EquipmentAssignment
 from app.utils.cache import (
     cache_get,
     cache_set,
@@ -101,6 +103,8 @@ def index():
         status_statistics=stats["status_statistics"],
 
         recent_equipment=stats["recent_equipment"],
+
+        assignments_over_time=stats["assignments_over_time"],
 
         recent_activity=recent_activity,
     )
@@ -208,6 +212,65 @@ def _compute_stats():
     ]
 
     # -----------------------------------------------------
+    # ASSIGNMENTS OVER TIME — last 6 calendar months
+    # -----------------------------------------------------
+    #
+    # Portable approach: fetch only the assigned_at
+    # timestamps for the last ~6 months, then bucket
+    # them by month in Python. This works on every
+    # SQLAlchemy dialect — Postgres, SQLite, MySQL —
+    # with no database-specific SQL functions.
+    #
+    # Chart.js wants (labels[], values[]) aligned. We
+    # build a zero-filled 6-bucket series so months with
+    # no assignments still appear on the line, then
+    # overlay the real counts.
+
+    today = date.today()
+
+    # First day of this month, minus 5 months = 6 buckets
+    first_bucket = (
+        today.replace(day=1) - timedelta(days=150)
+    ).replace(day=1)
+
+    # Fetch only the timestamps we need. On an IEMS-scale
+    # inventory this is at most a few thousand rows — the
+    # cost of the query is dominated by the index scan,
+    # not the row payload.
+    timestamp_rows = (
+        db.session.query(EquipmentAssignment.assigned_at)
+        .filter(EquipmentAssignment.assigned_at >= first_bucket)
+        .all()
+    )
+
+    # Build the fixed 6-bucket month series first, so
+    # months with no assignments are rendered as 0.
+    months = OrderedDict()
+    cursor = first_bucket
+    while cursor <= today:
+        months[cursor.strftime("%Y-%m")] = 0
+        if cursor.month == 12:
+            cursor = cursor.replace(year=cursor.year + 1, month=1)
+        else:
+            cursor = cursor.replace(month=cursor.month + 1)
+
+    # Overlay real counts.
+    for (assigned_at,) in timestamp_rows:
+        if assigned_at is None:
+            continue
+        month_key = assigned_at.strftime("%Y-%m")
+        if month_key in months:
+            months[month_key] += 1
+
+    assignments_over_time = {
+        "labels": [
+            datetime.strptime(m, "%Y-%m").strftime("%b %Y")
+            for m in months.keys()
+        ],
+        "values": list(months.values()),
+    }
+
+    # -----------------------------------------------------
     # RETURN
     # -----------------------------------------------------
 
@@ -220,4 +283,5 @@ def _compute_stats():
         "category_statistics": category_statistics,
         "status_statistics": status_statistics,
         "recent_equipment": recent_equipment,
+        "assignments_over_time": assignments_over_time,
     }

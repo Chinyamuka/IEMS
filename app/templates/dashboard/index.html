@@ -4,6 +4,7 @@
 
 {% block head_extra %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<script src="{{ url_for('static', filename='js/chart.umd.min.js') }}"></script>
 {% endblock %}
 
 {% block content %}
@@ -101,6 +102,45 @@
             <span class="stat-description">
                 Retired or disposed equipment
             </span>
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         CHARTS — visual summary
+         ===================================================== -->
+
+    <section class="dashboard-charts-grid">
+
+        <div class="card dashboard-chart-card">
+            <div class="card-header">
+                <h2>Equipment by Status</h2>
+                <p>Current distribution across all statuses.</p>
+            </div>
+            <div class="chart-container">
+                <canvas id="statusChart"></canvas>
+            </div>
+        </div>
+
+        <div class="card dashboard-chart-card">
+            <div class="card-header">
+                <h2>Equipment by Category</h2>
+                <p>Inventory distribution across categories.</p>
+            </div>
+            <div class="chart-container">
+                <canvas id="categoryChart"></canvas>
+            </div>
+        </div>
+
+        <div class="card dashboard-chart-card dashboard-chart-wide">
+            <div class="card-header">
+                <h2>Assignments — Last 6 Months</h2>
+                <p>Number of equipment assignments recorded per month.</p>
+            </div>
+            <div class="chart-container">
+                <canvas id="assignmentsChart"></canvas>
+            </div>
         </div>
 
     </section>
@@ -291,4 +331,145 @@
 
 </div>
 
+{% endblock %}
+
+
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    // ---------------------------------------------------
+    // Guard: Chart.js failed to load (offline / CDN down)
+    // ---------------------------------------------------
+    if (typeof Chart === "undefined") {
+        console.warn("Chart.js did not load — charts skipped.");
+        return;
+    }
+
+    const mono = "#111111";
+    const grid = "#e7e7e2";
+
+    // ---------------------------------------------------
+    // STATUS — doughnut
+    // ---------------------------------------------------
+    const statusLabels = {{ status_statistics | map(attribute=0) | list | tojson }};
+    const statusValues = {{ status_statistics | map(attribute=1) | list | tojson }};
+
+    const statusCanvas = document.getElementById("statusChart");
+    if (statusCanvas) {
+        new Chart(statusCanvas, {
+            type: "doughnut",
+            data: {
+                labels: statusLabels,
+                datasets: [{
+                    data: statusValues,
+                    backgroundColor: [
+                        "#111111", "#444444", "#777777", "#aaaaaa", "#cccccc",
+                    ],
+                    borderColor: "#fffdf8",
+                    borderWidth: 2,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: "65%",
+                plugins: {
+                    legend: {
+                        position: "bottom",
+                        labels: {
+                            color: mono,
+                            font: { size: 11, weight: "600" },
+                            padding: 14,
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // ---------------------------------------------------
+    // CATEGORY — horizontal bar
+    // ---------------------------------------------------
+    const catLabels = {{ category_statistics | map(attribute=0) | list | tojson }};
+    const catValues = {{ category_statistics | map(attribute=1) | list | tojson }};
+
+    const catCanvas = document.getElementById("categoryChart");
+    if (catCanvas) {
+        new Chart(catCanvas, {
+            type: "bar",
+            data: {
+                labels: catLabels,
+                datasets: [{
+                    label: "Equipment",
+                    data: catValues,
+                    backgroundColor: "#111111",
+                    borderRadius: 6,
+                }]
+            },
+            options: {
+                indexAxis: "y",
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        ticks: { precision: 0, color: mono },
+                        grid: { color: grid }
+                    },
+                    y: {
+                        ticks: { color: mono, font: { size: 11 } },
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+    }
+
+    // ---------------------------------------------------
+    // ASSIGNMENTS OVER TIME — line
+    // ---------------------------------------------------
+    const assignLabels = {{ assignments_over_time["labels"] | tojson }};
+    const assignValues = {{ assignments_over_time["values"] | tojson }};
+
+    const assignCanvas = document.getElementById("assignmentsChart");
+    if (assignCanvas) {
+        new Chart(assignCanvas, {
+            type: "line",
+            data: {
+                labels: assignLabels,
+                datasets: [{
+                    label: "Assignments",
+                    data: assignValues,
+                    borderColor: "#111111",
+                    backgroundColor: "rgba(17,17,17,0.08)",
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: true,
+                    pointBackgroundColor: "#111111",
+                    pointRadius: 4,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { precision: 0, color: mono },
+                        grid: { color: grid }
+                    },
+                    x: {
+                        ticks: { color: mono },
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+    }
+
+});
+</script>
 {% endblock %}
