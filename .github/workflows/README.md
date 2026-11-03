@@ -19,4 +19,12 @@ Append to the `steps:` list in `ci.yml`. Test locally first:
 
     act -j test
 
+# IEMS
+
+[![CI](https://github.com/Chinyamuka/IEMS/actions/workflows/ci.yml/badge.svg)](https://github.com/Chinyamuka/IEMS/actions/workflows/ci.yml)
+
+ICT Equipment Inventory Management System — Flask + PostgreSQL.
+
+See [BUILD_HISTORY.md](BUILD_HISTORY.md) for project state and roadmap.
+
 (requires [nektos/act](https://github.com/nektos/act))

@@ -9,7 +9,9 @@ from .departments import departments_bp
 from .locations import locations_bp
 from .categories import categories_bp
 from .activity import activity_bp
-
+from .search import search_bp
+from .equipment_bulk import equipment_bulk_bp
+from .users_bulk import users_bulk_bp
 
 def register_routes(app):
     app.register_blueprint(equipment_bp)
@@ -22,3 +24,6 @@ def register_routes(app):
     app.register_blueprint(locations_bp)
     app.register_blueprint(categories_bp)
     app.register_blueprint(activity_bp)
+    app.register_blueprint(search_bp)
+    app.register_blueprint(equipment_bulk_bp)
+    app.register_blueprint(users_bulk_bp)

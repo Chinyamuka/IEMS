@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+
+{% block title %}Search: {{ query }} — IEMS{% endblock %}
+
+
+{% block content %}
+
+<div class="page-header">
+
+    <div>
+
+        <div class="breadcrumb">
+            <a href="{{ url_for('dashboard.index') }}">Dashboard</a>
+            <span>/</span>
+            <span>Search</span>
+        </div>
+
+        <h1>Search results</h1>
+
+        <p class="subtitle">
+            {% if query %}
+                {{ total }}
+                result{% if total != 1 %}s{% endif %}
+                for <strong>"{{ query }}"</strong>
+            {% else %}
+                Type a query in the search box above.
+            {% endif %}
+        </p>
+
+    </div>
+
+</div>
+
+
+{% if query and total == 0 %}
+
+<div class="empty-state">
+    <h3>No matches</h3>
+    <p>Try a different search term.</p>
+</div>
+
+{% endif %}
+
+
+{% if equipment %}
+
+<section class="dashboard-section">
+    <div class="section-header">
+        <h2>Equipment ({{ equipment|length }})</h2>
+    </div>
+    <div class="recent-equipment-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>Asset Tag</th>
+                    <th>Manufacturer</th>
+                    <th>Model</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in equipment %}
+                <tr>
+                    <td>
+                        <a href="{{ url_for('equipment.detail', equipment_id=item.id) }}">
+                            {{ item.asset_tag }}
+                        </a>
+                    </td>
+                    <td>{{ item.manufacturer }}</td>
+                    <td>{{ item.model }}</td>
+                    <td>
+                        <span class="status-badge status-{{ item.status|lower|replace(' ', '-') }}">
+                            {{ item.status }}
+                        </span>
+                    </td>
+                    <td>
+                        <a href="{{ url_for('equipment.detail', equipment_id=item.id) }}"
+                           class="btn-action btn-view">View</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+{% endif %}
+
+
+{% if users %}
+
+<section class="dashboard-section">
+    <div class="section-header">
+        <h2>Users ({{ users|length }})</h2>
+    </div>
+    <div class="recent-equipment-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>Employee Number</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in users %}
+                <tr>
+                    <td><strong>{{ u.employee_number }}</strong></td>
+                    <td>{{ u.full_name }}</td>
+                    <td>{{ u.email or "—" }}</td>
+                    <td>{{ u.role }}</td>
+                    <td>
+                        <a href="{{ url_for('users.detail', user_id=u.id) }}"
+                           class="btn-action btn-view">View</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+{% endif %}
+
+
+{% if assignments %}
+
+<section class="dashboard-section">
+    <div class="section-header">
+        <h2>Assignments ({{ assignments|length }})</h2>
+    </div>
+    <div class="recent-equipment-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>Equipment</th>
+                    <th>Employee</th>
+                    <th>Assigned</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for a in assignments %}
+                <tr>
+                    <td>
+                        <a href="{{ url_for('equipment.detail', equipment_id=a.equipment.id) }}">
+                            {{ a.equipment.asset_tag }}
+                        </a>
+                    </td>
+                    <td>{{ a.user.full_name }}</td>
+                    <td>{{ a.assigned_at.strftime('%d %b %Y') }}</td>
+                    <td>
+                        {% if a.is_active %}
+                            <span class="status-badge status-active">Active</span>
+                        {% else %}
+                            <span class="status-badge status-returned">Returned</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+{% endif %}
+
+
+{% if departments %}
+
+<section class="dashboard-section">
+    <div class="section-header">
+        <h2>Departments ({{ departments|length }})</h2>
+    </div>
+    <div class="recent-equipment-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for d in departments %}
+                <tr>
+                    <td><strong>{{ d.name }}</strong></td>
+                    <td>{{ d.description or "—" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+{% endif %}
+
+
+{% if locations %}
+
+<section class="dashboard-section">
+    <div class="section-header">
+        <h2>Locations ({{ locations|length }})</h2>
+    </div>
+    <div class="recent-equipment-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Building</th>
+                    <th>Room</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for l in locations %}
+                <tr>
+                    <td><strong>{{ l.name }}</strong></td>
+                    <td>{{ l.building or "—" }}</td>
+                    <td>{{ l.room or "—" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+{% endif %}
+
+{% endblock %}

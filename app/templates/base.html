@@ -49,6 +49,24 @@
 
             {% if session.get("user_id") %}
 
+            <form
+                method="GET"
+                action="{{ url_for('search.index') }}"
+                class="global-search-form"
+            >
+
+                <input
+                    type="search"
+                    name="q"
+                    value="{% if request.endpoint == 'search.index' %}{{ request.args.get('q', '') }}{% endif %}"
+                    placeholder="Search equipment, users, assignments..."
+                    class="global-search-input"
+                    autocomplete="off"
+                >
+
+            </form>
+
+
             <button
                 type="button"
                 class="menu-toggle"
@@ -179,6 +197,20 @@
             >
                 <span class="drawer-link-label">
                     Assignments
+                </span>
+            </a>
+
+
+            <a
+                href="{{ url_for('search.index') }}"
+                class="drawer-link
+                    {% if request.endpoint and request.endpoint.startswith('search.') %}
+                        active
+                    {% endif %}
+                "
+            >
+                <span class="drawer-link-label">
+                    Search
                 </span>
             </a>
 
@@ -563,6 +595,7 @@
 
     });
     </script>
+
 
     {% block scripts %}{% endblock %}
 

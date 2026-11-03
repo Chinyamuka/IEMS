@@ -1,0 +1,43 @@
+{% macro bulk_checkbox(value) %}
+    <input
+        type="checkbox"
+        name="ids[]"
+        value="{{ value }}"
+        class="bulk-select-checkbox"
+    >
+{% endmacro %}
+
+
+{% macro bulk_actions_bar(form_action) %}
+    <div class="bulk-actions-bar" id="bulkActionsBar" style="display:none;">
+        <span class="bulk-count" id="bulkCount">0 selected</span>
+
+        <div class="bulk-buttons">
+            <button
+                type="submit"
+                name="action"
+                value="retire"
+                class="btn btn-secondary bulk-action-btn"
+                data-confirm="Retire {{ '{{' }}count{{ '}}' }} item(s)?"
+            >
+                Retire selected
+            </button>
+            <button
+                type="submit"
+                name="action"
+                value="delete"
+                class="btn btn-danger bulk-action-btn"
+                data-confirm="Permanently delete {{ '{{' }}count{{ '}}' }} item(s)? This cannot be undone."
+            >
+                Delete selected
+            </button>
+            <button
+                type="button"
+                class="btn btn-secondary bulk-action-btn"
+                onclick="bulkClearSelection()"
+            >
+                Cancel
+            </button>
+        </div>
+    </div>
+{% endmacro %}
