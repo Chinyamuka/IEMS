@@ -12,6 +12,8 @@ from .activity import activity_bp
 from .search import search_bp
 from .equipment_bulk import equipment_bulk_bp
 from .users_bulk import users_bulk_bp
+from .equipment_label import equipment_label_bp
+
 
 def register_routes(app):
     app.register_blueprint(equipment_bp)
@@ -27,3 +29,4 @@ def register_routes(app):
     app.register_blueprint(search_bp)
     app.register_blueprint(equipment_bulk_bp)
     app.register_blueprint(users_bulk_bp)
+    app.register_blueprint(equipment_label_bp)

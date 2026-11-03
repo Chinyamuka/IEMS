@@ -3371,3 +3371,11 @@ body.modal-open {
         justify-content: flex-end;
     }
 }
+
+/* =========================================================
+   LABEL BUTTONS
+   ========================================================= */
+
+.page-header-actions .btn-secondary {
+    white-space: nowrap;
+}

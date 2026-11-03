@@ -33,6 +33,14 @@
     <div class="page-header-actions">
 
         <a
+            href="{{ url_for('equipment_label.all_labels', **request.args) }}"
+            target="_blank"
+            class="btn btn-secondary"
+        >
+            Print All Labels
+        </a>
+
+        <a
             href="{{ url_for('equipment.export_csv', **request.args) }}"
             class="btn btn-secondary"
         >

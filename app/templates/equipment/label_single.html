@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Label: {{ equipment.asset_tag }}</title>
+<style>
+    * { box-sizing: border-box; }
+    body {
+        margin: 0;
+        padding: 40px;
+        font-family: -apple-system, BlinkMacSystemFont,
+                     "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        background: #f3f3f1;
+        color: #111111;
+    }
+    .toolbar {
+        max-width: 500px;
+        margin: 0 auto 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+    }
+    .toolbar a,
+    .toolbar button {
+        padding: 8px 14px;
+        border: 1px solid #cfcfca;
+        border-radius: 10px;
+        background: #ffffff;
+        color: #111111;
+        font-size: 13px;
+        font-weight: 700;
+        text-decoration: none;
+        cursor: pointer;
+    }
+    .toolbar button {
+        background: #111111;
+        color: #ffffff;
+        border-color: #111111;
+    }
+    .label-sheet {
+        max-width: 500px;
+        margin: 0 auto;
+        padding: 28px;
+        background: #ffffff;
+        border: 1px solid #deded9;
+        border-radius: 16px;
+    }
+    .label-brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 20px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #e7e7e2;
+    }
+    .label-brand-badge {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 9px;
+        background: #111111;
+        color: #ffffff;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+    }
+    .label-brand-text strong {
+        display: block;
+        font-size: 15px;
+        font-weight: 800;
+    }
+    .label-brand-text small {
+        display: block;
+        font-size: 10px;
+        color: #777777;
+        margin-top: 2px;
+    }
+    .label-body {
+        display: flex;
+        gap: 22px;
+        align-items: center;
+    }
+    .label-qr {
+        width: 180px;
+        height: 180px;
+        flex: 0 0 180px;
+        display: block;
+    }
+    .label-meta {
+        flex: 1;
+        min-width: 0;
+    }
+    .label-asset-tag {
+        margin: 0 0 4px;
+        font-family: Menlo, Consolas, "Courier New", monospace;
+        font-size: 22px;
+        font-weight: 800;
+        letter-spacing: -0.3px;
+        word-break: break-all;
+    }
+    .label-model {
+        margin: 0 0 12px;
+        font-size: 14px;
+        color: #555555;
+    }
+    .label-meta-row {
+        display: flex;
+        gap: 8px;
+        font-size: 11px;
+        padding: 4px 0;
+        color: #777777;
+    }
+    .label-meta-row strong {
+        color: #111111;
+        font-weight: 700;
+    }
+    .label-footer {
+        margin-top: 20px;
+        padding-top: 14px;
+        border-top: 1px solid #e7e7e2;
+        font-size: 10px;
+        color: #999999;
+        text-align: center;
+        word-break: break-all;
+    }
+    @media print {
+        body { padding: 0; background: #ffffff; }
+        .toolbar { display: none; }
+        .label-sheet {
+            max-width: none;
+            margin: 0;
+            border: 1px solid #000000;
+            border-radius: 0;
+            padding: 15mm;
+        }
+        @page { size: A6; margin: 10mm; }
+    }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+    <a href="{{ url_for('equipment.detail', equipment_id=equipment.id) }}">
+        ← Back to equipment
+    </a>
+    <button type="button" onclick="window.print()">
+        Print this label
+    </button>
+</div>
+
+<div class="label-sheet">
+
+    <div class="label-brand">
+        <div class="label-brand-badge">ICT</div>
+        <div class="label-brand-text">
+            <strong>IEMS</strong>
+            <small>ICT Equipment Inventory</small>
+        </div>
+    </div>
+
+    <div class="label-body">
+        <img
+            src="{{ url_for('equipment_label.single_png', equipment_id=equipment.id) }}"
+            alt="QR code for {{ equipment.asset_tag }}"
+            class="label-qr"
+        >
+
+        <div class="label-meta">
+            <h1 class="label-asset-tag">{{ equipment.asset_tag }}</h1>
+            <p class="label-model">{{ equipment.manufacturer }} {{ equipment.model }}</p>
+            {% if equipment.serial_number %}
+            <div class="label-meta-row">
+                <strong>Serial:</strong>
+                <span>{{ equipment.serial_number }}</span>
+            </div>
+            {% endif %}
+            {% if equipment.category %}
+            <div class="label-meta-row">
+                <strong>Category:</strong>
+                <span>{{ equipment.category.name }}</span>
+            </div>
+            {% endif %}
+            <div class="label-meta-row">
+                <strong>Status:</strong>
+                <span>{{ equipment.status }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="label-footer">
+        Scan to open in IEMS · {{ equipment_url }}
+    </div>
+
+</div>
+
+</body>
+</html>
