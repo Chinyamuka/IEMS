@@ -1,5 +1,13 @@
 """
 IEMS Users Bulk Actions
+
+Handles bulk deactivate and bulk activate from the
+users list page. Both are POST-only; each row's ID
+arrives via the `ids[]` form field.
+
+Safety guard: if any of the selected users is the
+last active Administrator, that user is skipped and
+counted separately, so the app cannot be locked out.
 """
 
 from flask import (
@@ -29,6 +37,8 @@ users_bulk_bp = Blueprint(
 @login_required
 @role_required("Administrator")
 def index():
+    """Apply a bulk action to selected users."""
+
     action = request.form.get("action", "").strip()
     ids = request.form.getlist("ids[]")
 
@@ -41,20 +51,30 @@ def index():
         return redirect(url_for("users.index"))
 
     users = User.query.filter(User.id.in_(ids)).all()
-    count = 0
+
+    if not users:
+        flash("The selected users could not be found.", "warning")
+        return redirect(url_for("users.index"))
+
+    changed = 0
+    skipped = 0
 
     if action == "deactivate":
         for u in users:
-            if u.id == g.current_user.id:
+            if g.current_user is not None and u.id == g.current_user.id:
+                skipped += 1
                 continue
-            if u.role == "Administrator":
-                other_admins = User.query.filter(
+
+            if u.role == "Administrator" and u.is_active:
+                other_active_admins = User.query.filter(
                     User.role == "Administrator",
-                    User.is_active == True,
+                    User.is_active.is_(True),
                     User.id != u.id,
                 ).count()
-                if other_admins == 0:
+                if other_active_admins == 0:
+                    skipped += 1
                     continue
+
             if u.is_active:
                 u.is_active = False
                 log_activity(
@@ -63,7 +83,25 @@ def index():
                     u.id,
                     f"Bulk deactivated {u.employee_number}",
                 )
-                count += 1
+                changed += 1
+
+        try:
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            flash(
+                "Bulk deactivate failed. Please try again.",
+                "danger",
+            )
+            return redirect(url_for("users.index"))
+
+        message = f"{changed} user{'s' if changed != 1 else ''} deactivated."
+        if skipped:
+            message += (
+                f" {skipped} skipped "
+                f"(self or last active Administrator)."
+            )
+        flash(message, "success")
 
     elif action == "activate":
         for u in users:
@@ -75,14 +113,21 @@ def index():
                     u.id,
                     f"Bulk activated {u.employee_number}",
                 )
-                count += 1
+                changed += 1
 
-    try:
-        db.session.commit()
-    except Exception:
-        db.session.rollback()
-        flash("Bulk action failed. Please try again.", "danger")
-        return redirect(url_for("users.index"))
+        try:
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            flash(
+                "Bulk activate failed. Please try again.",
+                "danger",
+            )
+            return redirect(url_for("users.index"))
 
-    flash(f"{count} item(s) updated.", "success")
+        flash(
+            f"{changed} user{'s' if changed != 1 else ''} activated.",
+            "success",
+        )
+
     return redirect(url_for("users.index"))

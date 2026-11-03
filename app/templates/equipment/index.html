@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 
+{% from "_bulk_actions_macros.html" import checkbox, select_all_header, actions_bar, bulk_script %}
 
 {% block title %}
     Equipment — IEMS
@@ -64,7 +65,6 @@
 
         <input
             type="search"
-            style="width: 100%; border-radius: 8px; border: 1px solid rgb(126 123 123 / 0.71); padding: 8px;"
             name="q"
             value="{{ request.args.get('q', '') }}"
             placeholder="Search asset tag, serial number, manufacturer..."
@@ -135,6 +135,31 @@
 
     {% if equipment %}
 
+    <form
+        method="POST"
+        action="{{ url_for('equipment_bulk.index') }}"
+        id="bulkForm"
+    >
+
+        {{ actions_bar([
+            {
+                "value": "retire",
+                "label": "Retire selected",
+                "css_class": "btn-secondary",
+                "confirm": "Retire {count} item(s)?",
+            },
+            {
+                "value": "delete",
+                "label": "Delete selected",
+                "css_class": "btn-danger",
+                "confirm": "Permanently delete {count} item(s)? This cannot be undone.",
+            },
+            {
+                "kind": "cancel",
+                "label": "Cancel",
+            },
+        ]) }}
+
         <div class="recent-equipment-table">
 
             <table>
@@ -142,6 +167,8 @@
                 <thead>
 
                     <tr>
+
+                        {{ select_all_header() }}
 
                         <th>
                             Asset Tag
@@ -181,6 +208,10 @@
                     {% for item in equipment %}
 
                         <tr>
+
+                            <td class="bulk-checkbox-column">
+                                {{ checkbox(item.id) }}
+                            </td>
 
                             <!-- Asset tag -->
 
@@ -298,6 +329,8 @@
             </table>
 
         </div>
+
+    </form>
 
 
     {% else %}
@@ -453,4 +486,9 @@
 {% endif %}
 
 
+{% endblock %}
+
+
+{% block scripts %}
+{{ bulk_script() }}
 {% endblock %}

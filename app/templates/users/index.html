@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% from "_macros.html" import avatar %}
+{% from "_bulk_actions_macros.html" import checkbox, select_all_header, actions_bar, bulk_script %}
 
 {% block title %}Employees - IEMS{% endblock %}
 
@@ -104,145 +105,178 @@
 
     {% if users %}
 
-    <div class="table-responsive">
+    <form
+        method="POST"
+        action="{{ url_for('users_bulk.index') }}"
+        id="bulkForm"
+    >
 
-        <table class="data-table">
+        {{ actions_bar([
+            {
+                "value": "deactivate",
+                "label": "Deactivate selected",
+                "css_class": "btn-secondary",
+                "confirm": "Deactivate {count} user(s)?",
+            },
+            {
+                "value": "activate",
+                "label": "Activate selected",
+                "css_class": "btn-secondary",
+                "confirm": "Activate {count} user(s)?",
+            },
+            {
+                "kind": "cancel",
+                "label": "Cancel",
+            },
+        ]) }}
 
-            <thead>
+        <div class="table-responsive">
 
-                <tr>
+            <table class="data-table">
 
-                    <th>Employee</th>
+                <thead>
 
-                    <th>Name</th>
+                    <tr>
 
-                    <th>Department</th>
+                        {{ select_all_header() }}
 
-                    <th>Email</th>
+                        <th>Employee</th>
 
-                    <th>Status</th>
+                        <th>Name</th>
 
-                    <th class="text-right">Actions</th>
+                        <th>Department</th>
 
-                </tr>
+                        <th>Email</th>
 
-            </thead>
+                        <th>Status</th>
 
+                        <th class="text-right">Actions</th>
 
-            <tbody>
+                    </tr>
 
-                {% for user in users %}
-
-                <tr>
-
-                    <td>
-                        <strong>
-                            {{ user.employee_number }}
-                        </strong>
-                    </td>
+                </thead>
 
 
-                    <td>
+                <tbody>
 
-                        <div class="person-cell">
+                    {% for user in users %}
 
-                            {{ avatar(user, "sm") }}
+                    <tr>
 
-                            <div>
-                                <strong>
-                                    {{ user.full_name }}
-                                </strong>
+                        <td class="bulk-checkbox-column">
+                            {{ checkbox(user.id) }}
+                        </td>
+
+                        <td>
+                            <strong>
+                                {{ user.employee_number }}
+                            </strong>
+                        </td>
+
+
+                        <td>
+
+                            <div class="person-cell">
+
+                                {{ avatar(user, "sm") }}
+
+                                <div>
+                                    <strong>
+                                        {{ user.full_name }}
+                                    </strong>
+                                </div>
+
                             </div>
 
-                        </div>
-
-                    </td>
+                        </td>
 
 
-                    <td>
+                        <td>
 
-                        {% if user.department %}
+                            {% if user.department %}
 
-                            {{ user.department.name }}
+                                {{ user.department.name }}
 
-                        {% else %}
+                            {% else %}
 
-                            <span class="muted-text">
-                                Not assigned
-                            </span>
+                                <span class="muted-text">
+                                    Not assigned
+                                </span>
 
-                        {% endif %}
+                            {% endif %}
 
-                    </td>
-
-
-                    <td>
-
-                        {% if user.email %}
-
-                            {{ user.email }}
-
-                        {% else %}
-
-                            <span class="muted-text">
-                                —
-                            </span>
-
-                        {% endif %}
-
-                    </td>
+                        </td>
 
 
-                    <td>
+                        <td>
 
-                        {% if user.is_active %}
+                            {% if user.email %}
 
-                            <span class="status-badge status-active">
-                                Active
-                            </span>
+                                {{ user.email }}
 
-                        {% else %}
+                            {% else %}
 
-                            <span class="status-badge status-inactive">
-                                Inactive
-                            </span>
+                                <span class="muted-text">
+                                    —
+                                </span>
 
-                        {% endif %}
+                            {% endif %}
 
-                    </td>
+                        </td>
 
 
-                    <td class="text-right">
+                        <td>
 
-                        <div class="table-actions">
+                            {% if user.is_active %}
 
-                            <a
-                                href="{{ url_for('users.detail', user_id=user.id) }}"
-                                class="btn-action btn-view"
-                            >
-                                View
-                            </a>
+                                <span class="status-badge status-active">
+                                    Active
+                                </span>
 
-                            <a
-                                href="{{ url_for('users.edit', user_id=user.id) }}"
-                                class="btn-action btn-edit"
-                            >
-                                Edit
-                            </a>
+                            {% else %}
 
-                        </div>
+                                <span class="status-badge status-inactive">
+                                    Inactive
+                                </span>
 
-                    </td>
+                            {% endif %}
 
-                </tr>
+                        </td>
 
-                {% endfor %}
 
-            </tbody>
+                        <td class="text-right">
 
-        </table>
+                            <div class="table-actions">
 
-    </div>
+                                <a
+                                    href="{{ url_for('users.detail', user_id=user.id) }}"
+                                    class="btn-action btn-view"
+                                >
+                                    View
+                                </a>
+
+                                <a
+                                    href="{{ url_for('users.edit', user_id=user.id) }}"
+                                    class="btn-action btn-edit"
+                                >
+                                    Edit
+                                </a>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </form>
 
     {% else %}
 
@@ -285,4 +319,9 @@
 
 </div>
 
+{% endblock %}
+
+
+{% block scripts %}
+{{ bulk_script() }}
 {% endblock %}

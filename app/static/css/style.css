@@ -3287,3 +3287,87 @@ body.modal-open {
         display: none;
     }
 }
+
+/* =========================================================
+   BULK ACTIONS (B1)
+   ========================================================= */
+
+.bulk-checkbox-column {
+    width: 40px;
+    padding-right: 0 !important;
+    text-align: center;
+}
+
+.bulk-checkbox-column input[type="checkbox"],
+.bulk-select-checkbox {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: #111111;
+}
+
+.bulk-actions-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+
+    margin: 0 0 12px;
+    padding: 14px 18px;
+
+    background: #111111;
+    color: #ffffff;
+    border-radius: 12px;
+
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.bulk-count {
+    font-size: 13px;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: 0.2px;
+}
+
+.bulk-buttons {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.bulk-actions-bar .btn {
+    background: #ffffff;
+    color: #111111;
+    border-color: #ffffff;
+    font-size: 12px;
+    min-height: 34px;
+}
+
+.bulk-actions-bar .btn:hover {
+    background: #f0f0ed;
+    border-color: #f0f0ed;
+}
+
+.bulk-actions-bar .btn.btn-danger {
+    background: #dc2626;
+    color: #ffffff;
+    border-color: #dc2626;
+}
+
+.bulk-actions-bar .btn.btn-danger:hover {
+    background: #b91c1c;
+    border-color: #b91c1c;
+}
+
+@media (max-width: 600px) {
+    .bulk-actions-bar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .bulk-buttons {
+        justify-content: flex-end;
+    }
+}

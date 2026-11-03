@@ -1,43 +1,164 @@
-{% macro bulk_checkbox(value) %}
+{#
+    Shared bulk-action macros.
+
+    Import in a template:
+        {% from "_bulk_actions_macros.html" import checkbox, actions_bar %}
+
+    checkbox(id)     -> a single row checkbox
+    actions_bar(...) -> the sticky bar that appears when >=1 row is selected
+#}
+
+
+{% macro checkbox(id) %}
     <input
         type="checkbox"
         name="ids[]"
-        value="{{ value }}"
+        value="{{ id }}"
         class="bulk-select-checkbox"
+        aria-label="Select row {{ id }}"
     >
 {% endmacro %}
 
 
-{% macro bulk_actions_bar(form_action) %}
-    <div class="bulk-actions-bar" id="bulkActionsBar" style="display:none;">
+{% macro select_all_header() %}
+    <th class="bulk-checkbox-column">
+        <input
+            type="checkbox"
+            id="selectAllCheckbox"
+            class="bulk-select-all"
+            aria-label="Select all rows"
+        >
+    </th>
+{% endmacro %}
+
+
+{% macro actions_bar(buttons) %}
+    <div
+        class="bulk-actions-bar"
+        id="bulkActionsBar"
+        style="display:none;"
+    >
         <span class="bulk-count" id="bulkCount">0 selected</span>
 
         <div class="bulk-buttons">
-            <button
-                type="submit"
-                name="action"
-                value="retire"
-                class="btn btn-secondary bulk-action-btn"
-                data-confirm="Retire {{ '{{' }}count{{ '}}' }} item(s)?"
-            >
-                Retire selected
-            </button>
-            <button
-                type="submit"
-                name="action"
-                value="delete"
-                class="btn btn-danger bulk-action-btn"
-                data-confirm="Permanently delete {{ '{{' }}count{{ '}}' }} item(s)? This cannot be undone."
-            >
-                Delete selected
-            </button>
-            <button
-                type="button"
-                class="btn btn-secondary bulk-action-btn"
-                onclick="bulkClearSelection()"
-            >
-                Cancel
-            </button>
+
+            {% for button in buttons %}
+
+                {% if button.kind == "cancel" %}
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary bulk-action-btn"
+                        id="bulkCancelBtn"
+                    >
+                        {{ button.label }}
+                    </button>
+
+                {% else %}
+
+                    <button
+                        type="submit"
+                        name="action"
+                        value="{{ button.value }}"
+                        class="btn {{ button.css_class }} bulk-action-btn"
+                        data-confirm-template="{{ button.confirm }}"
+                    >
+                        {{ button.label }}
+                    </button>
+
+                {% endif %}
+
+            {% endfor %}
+
         </div>
     </div>
+{% endmacro %}
+
+
+{% macro bulk_script() %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const form = document.getElementById("bulkForm");
+    if (!form) {
+        return;
+    }
+
+    const selectAll = document.getElementById("selectAllCheckbox");
+    const checkboxes = form.querySelectorAll(".bulk-select-checkbox");
+    const bar = document.getElementById("bulkActionsBar");
+    const countEl = document.getElementById("bulkCount");
+    const cancelBtn = document.getElementById("bulkCancelBtn");
+
+    function updateBar() {
+        const checked = form.querySelectorAll(
+            ".bulk-select-checkbox:checked"
+        );
+        const n = checked.length;
+
+        if (n > 0) {
+            bar.style.display = "flex";
+            countEl.textContent = n + " selected";
+        } else {
+            bar.style.display = "none";
+        }
+
+        if (selectAll) {
+            selectAll.checked = (n > 0 && n === checkboxes.length);
+            selectAll.indeterminate =
+                (n > 0 && n < checkboxes.length);
+        }
+    }
+
+    if (selectAll) {
+        selectAll.addEventListener("change", function () {
+            checkboxes.forEach(function (cb) {
+                cb.checked = selectAll.checked;
+            });
+            updateBar();
+        });
+    }
+
+    checkboxes.forEach(function (cb) {
+        cb.addEventListener("change", updateBar);
+    });
+
+    if (cancelBtn) {
+        cancelBtn.addEventListener("click", function () {
+            checkboxes.forEach(function (cb) {
+                cb.checked = false;
+            });
+            if (selectAll) {
+                selectAll.checked = false;
+                selectAll.indeterminate = false;
+            }
+            updateBar();
+        });
+    }
+
+    form.querySelectorAll(".bulk-action-btn[data-confirm-template]").forEach(
+        function (btn) {
+            btn.addEventListener("click", function (event) {
+                const n = form.querySelectorAll(
+                    ".bulk-select-checkbox:checked"
+                ).length;
+
+                if (n === 0) {
+                    event.preventDefault();
+                    return;
+                }
+
+                const message = btn.dataset.confirmTemplate.replace(
+                    "{count}", n
+                );
+
+                if (!window.confirm(message)) {
+                    event.preventDefault();
+                }
+            });
+        }
+    );
+
+});
+</script>
 {% endmacro %}

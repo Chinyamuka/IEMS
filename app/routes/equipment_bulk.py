@@ -1,5 +1,9 @@
 """
 IEMS Equipment Bulk Actions
+
+Handles bulk retire and bulk delete from the equipment
+list page. Both are POST-only; each row's ID arrives
+via the `ids[]` form field.
 """
 
 from flask import (
@@ -8,11 +12,10 @@ from flask import (
     url_for,
     flash,
     request,
-    session,
 )
 
 from app.extensions import db
-from app.models import Equipment, User
+from app.models import Equipment
 from app.auth.decorators import login_required
 from app.utils.permissions import role_required
 from app.utils.activity import log_activity
@@ -31,6 +34,8 @@ equipment_bulk_bp = Blueprint(
 @login_required
 @role_required("Administrator")
 def index():
+    """Apply a bulk action to selected equipment rows."""
+
     action = request.form.get("action", "").strip()
     ids = request.form.getlist("ids[]")
 
@@ -43,6 +48,11 @@ def index():
         return redirect(url_for("equipment.index"))
 
     items = Equipment.query.filter(Equipment.id.in_(ids)).all()
+
+    if not items:
+        flash("The selected items could not be found.", "warning")
+        return redirect(url_for("equipment.index"))
+
     count = 0
 
     if action == "retire":
@@ -56,14 +66,23 @@ def index():
                     f"Bulk retired {eq.asset_tag}",
                 )
                 count += 1
+
         try:
             db.session.commit()
         except Exception:
             db.session.rollback()
-            flash("Bulk retire failed. Please try again.", "danger")
+            flash(
+                "Bulk retire failed. Please try again.",
+                "danger",
+            )
             return redirect(url_for("equipment.index"))
+
         cache_delete(CACHE_KEY_DASHBOARD_STATS)
-        flash(f"{count} item(s) retired.", "success")
+        flash(
+            f"{count} equipment item"
+            f"{'s' if count != 1 else ''} retired.",
+            "success",
+        )
 
     elif action == "delete":
         for eq in items:
@@ -75,13 +94,22 @@ def index():
             )
             db.session.delete(eq)
             count += 1
+
         try:
             db.session.commit()
         except Exception:
             db.session.rollback()
-            flash("Bulk delete failed. Please try again.", "danger")
+            flash(
+                "Bulk delete failed. Please try again.",
+                "danger",
+            )
             return redirect(url_for("equipment.index"))
+
         cache_delete(CACHE_KEY_DASHBOARD_STATS)
-        flash(f"{count} item(s) deleted.", "success")
+        flash(
+            f"{count} equipment item"
+            f"{'s' if count != 1 else ''} deleted.",
+            "success",
+        )
 
     return redirect(url_for("equipment.index"))
